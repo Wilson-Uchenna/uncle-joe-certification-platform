@@ -134,6 +134,12 @@
   height: 1em;
 }
 
+.arrow-icon-2 {
+   width: 2em;
+  height: 2em;
+  color: var(--color-primary);
+}
+
 /* ── Material Symbols ─────────────────────────────────────────────────── */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
