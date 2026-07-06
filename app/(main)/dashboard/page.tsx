@@ -1,18 +1,19 @@
 
+import { auth } from '@/lib/auth';
 import { authClient } from '@/lib/auth-client';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
-  const { data} = await authClient.getSession();
+  const  session = await auth.api.getSession();
 
-  if (!data?.user) {
+  if (!session?.user) {
     redirect('/login');
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Welcome, {data.user.name}</h1>
-      {/* <p className="text-gray-600 mb-6">Skill Level: {data.user.skillLevel}</p> */}
+      <h1 className="text-2xl font-bold mb-4">Welcome, {session.user.name}</h1>
+      {/* <p className="text-gray-600 mb-6">Skill Level: {session.user.skillLevel}</p> */}
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <a href="/categories" className="p-6 bg-blue-50 rounded-lg hover:bg-blue-100">

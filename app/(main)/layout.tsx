@@ -1,4 +1,5 @@
-import { authClient } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
+
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -7,7 +8,7 @@ export default async function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await authClient.getSession();
+  const session = await auth.api.getSession();
 
   if (!session) {
     redirect("/login");
