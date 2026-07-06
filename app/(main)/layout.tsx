@@ -15,9 +15,9 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <a href="/dashboard" className="font-bold text-xl">Uncle Joe</a>
           <div className="flex gap-4">
-            <a href="/dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</a>
-            <a href="/categories" className="text-gray-600 hover:text-gray-900">Categories</a>
-            <a href="/leaderboard" className="text-gray-600 hover:text-gray-900">Leaderboard</a>
+            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
+            <Link href="/categories" className="text-gray-600 hover:text-gray-900">Categories</Link>
+            <Link href="/leaderboard" className="text-gray-600 hover:text-gray-900">Leaderboard</Link>
             <form action="/api/auth/sign-out" method="post">
               <button type="submit" className="text-red-600 hover:text-red-700">Logout</button>
             </form>
