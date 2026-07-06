@@ -142,6 +142,7 @@ async function runTests() {
   
   console.log('🏁 All tests complete');
   console.log('💡 Note: If you see connection errors, check your MongoDB service and network settings.');
+  console.log('💡 For Atlas, ensure your IP is whitelisted and credentials are correct.');
   process.exit(0);
 }
 
