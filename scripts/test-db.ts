@@ -141,7 +141,10 @@ async function runTests() {
   await testMongoose();
   
   console.log('🏁 All tests complete');
+  console.log('💡 Note: If you see connection errors, check your MongoDB service and network settings.');
   process.exit(0);
 }
+
+// c
 
 runTests();
