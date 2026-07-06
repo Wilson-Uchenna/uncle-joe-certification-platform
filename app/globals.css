@@ -129,6 +129,10 @@
   align-items: center;
 }
 
+.login-link-2 {
+  gap: 0.25em;
+}
+
 .arrow-icon{
    width: 0.7em;
   height: 1em;

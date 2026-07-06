@@ -31,7 +31,7 @@ export default function Certification() {
 
               <div className="relative">
                 {/* Vertical connecting line */}
-                <div className="absolute left-3 top-6 bottom-6 w-px bg-gray-200 md:left-5.5 md:-translate-x-1/2" />
+                <div className="absolute left-5 md:left-3 top-6 bottom-6 w-px bg-gray-200 md:left-5.5 md:-translate-x-1/2" />
 
                 <div className="flex flex-col gap-8 md:gap-12">
                   {[

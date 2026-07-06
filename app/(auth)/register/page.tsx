@@ -152,25 +152,25 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     const result = await authClient.signUp.email({
-    email: formData.email,
-    password: formData.password,
-    name: formData.fullName,
-    fullName: formData.fullName,
-    phone: formData.phone,
-    skillLevel: formData.skillLevel,
-    employer: formData.employer,
-    state: formData.state,
-    country: formData.country,
-  } as any);
+      email: formData.email,
+      password: formData.password,
+      name: formData.fullName,
+      fullName: formData.fullName,
+      phone: formData.phone,
+      skillLevel: formData.skillLevel,
+      employer: formData.employer,
+      state: formData.state,
+      country: formData.country,
+    } as any);
 
-  if (result.error) {
-    setError(result.error.message || "An error occurred during registration");
-    setIsLoading(false);
-    return;
-  }
+    if (result.error) {
+      setError(result.error.message ?? "An error occurred");
+      setIsLoading(false);
+      return;
+    }
 
-  // User is now logged in, redirect to email verification
-  router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+    // User is now logged in, redirect to email verification
+    router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
   };
 
   return (
@@ -180,11 +180,13 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="flex items-center gap-2 mb-10">
           <div className="flex items-center justify-center">
-            <img
-              src={"/skillora-3.png"}
-              alt="company logo"
-              className="w-28 h-10"
-            />
+            <Link href="/" className="font-bold text-xl">
+              <img
+                src={"/skillora-3.png"}
+                alt="company logo"
+                className="w-28 h-10"
+              />
+            </Link>
           </div>
         </div>
 
@@ -280,8 +282,8 @@ export default function RegisterPage() {
         {/* Form */}
         <form className="space-y-5" onSubmit={handleSubmit}>
           {/* Email */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="basis-[30vw]">
+          <div className="md:flex md:items-center md:justify-between md:gap-4 sm:block">
+            <div className="basis-[30vw] md:basis-[50vw]">
               <label
                 htmlFor="email"
                 className="block text-sm font-semibold text-gray-900 mb-2"
@@ -303,7 +305,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="basis-[30vw]">
+            <div className="basis-[30vw] md:basis-[50vw]">
               <label
                 htmlFor="fullName"
                 className="block text-sm font-semibold text-gray-900 mb-2"
@@ -326,9 +328,9 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-4">
+          <div className="md:flex md:items-center md:justify-between md:gap-4 sm:block">
             {/* Password */}
-            <div className="basis-[30vw]">
+            <div className="basis-[30vw] md:basis-[50vw]">
               <label
                 htmlFor="password"
                 className="block text-sm font-semibold text-gray-900 mb-2"
@@ -363,7 +365,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Confirm Password */}
-            <div className="basis-[30vw]">
+            <div className="basis-[30vw] md:basis-[50vw]">
               <label
                 htmlFor="confirm_password"
                 className="block text-sm font-semibold text-gray-900 mb-2"
@@ -397,8 +399,8 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="flex gap-4 items-center justify-between">
-            <div className="basis-[30vw]">
+          <div className="md:flex md:items-center md:justify-between md:gap-4 sm:block">
+            <div className="basis-[30vw] md:basis-[50vw]">
               <label
                 htmlFor="phone"
                 className="text-label-caps text-on-surface-variant uppercase tracking-widest"
@@ -419,7 +421,7 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
-            <div className="basis-[30vw]">
+            <div className="basis-[30vw] md:basis-[50vw]">
               {/* State */}
               <div className="flex flex-col gap-1">
                 <label
@@ -451,8 +453,8 @@ export default function RegisterPage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <div className="basis-[10vw]">
+          <div className="md:flex lg:block xl:flex md:items-center md:justify-between md:gap-4 sm:block">
+            <div className="basis-[10vw] md:basis-[30vw]">
               {/* Country (read-only, Nigeria) */}
               <div className="flex flex-col gap-1">
                 <label
@@ -467,27 +469,29 @@ export default function RegisterPage() {
                     id="country"
                     name="country"
                     type="text"
-                    value={formData.country || "Nigeria"}  //
+                    value={formData.country || "Nigeria"} //
                     readOnly
                     className="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg text-body-md text-on-surface-variant cursor-not-allowed"
                   />
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-2 md:col-span-2">
+            <div className="flex flex-col gap-2 md:col-span-2 md:basis-[60vw]">
               <label className="text-label-caps text-on-surface-variant uppercase">
                 Skill Level
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {SKILL_LEVELS.map((level) => {
-                  const active = formData.skillLevel === level.key;  // ← USE formData.skillLevel
+                  const active = formData.skillLevel === level.key; // ← USE formData.skillLevel
                   return (
                     <button
                       key={level.key}
                       type="button"
                       onClick={() => {
-                        
-                        setFormData(prev => ({ ...prev, skillLevel: level.key }));
+                        setFormData((prev) => ({
+                          ...prev,
+                          skillLevel: level.key,
+                        }));
                       }}
                       className={`group flex flex-col items-center gap-2 p-3 border-2 rounded-xl transition-all text-center active:scale-95 ${
                         active
@@ -609,7 +613,10 @@ export default function RegisterPage() {
           {/* Login link */}
           <p className="text-center text-sm text-gray-600">
             Already have an account?{" "}
-            <Link href="/login" className="text-indigo-600 hover:underline font-medium">
+            <Link
+              href="/login"
+              className="text-indigo-600 hover:underline font-medium"
+            >
               Login
             </Link>
           </p>

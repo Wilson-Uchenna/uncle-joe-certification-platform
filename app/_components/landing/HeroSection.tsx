@@ -6,7 +6,7 @@ export default function HeroSection() {
     <section className="relative min-h-[40vh] flex items-center overflow-hidden text-center justify-between mt-1 pt-20">
       <div className="max-w-[1040px] mx-auto px-4 md:px-22 w-full items-center py-12 md:py-4 md:mt-4">
         <div className="">
-          <h1 className="text-6xl md:text-[4rem] font-[400] text-primary leading-tight">
+          <h1 className="text-2xl lg:text-4xl xl:text-6xl md:text-[4rem] font-[400] text-primary leading-tight">
             Build Skills. Earn Certifications. Get Hired.
           </h1>
         </div>

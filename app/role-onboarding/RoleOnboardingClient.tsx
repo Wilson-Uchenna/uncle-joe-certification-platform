@@ -1,6 +1,7 @@
 "use client";
 
 import { MoveLeft, Check, ChevronRight, Clock, Target } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -133,11 +134,14 @@ export default function RoleOnboardingPage() {
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-12">
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
+          <Link href="/" className="flex items-center gap-2">
           <img
             src={"/skillora-3.png"}
             alt="Skillora Logo"
             className="w-28 h-10"
           />
+          </Link>
+          
         </div>
 
         {/* Header */}
