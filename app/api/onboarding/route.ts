@@ -24,11 +24,6 @@ export async function GET(req: NextRequest) {
     const levelFromQuery = req.nextUrl.searchParams.get("level");
     const skillLevel = levelFromQuery || session.user.skillLevel;
 
-     console.log("=== DEBUG ===");
-    console.log("User skillLevel from session:", session.user.skillLevel);
-    console.log("Final skillLevel used for query:", skillLevel);
-    console.log("User object:", JSON.stringify(session.user, null, 2));
-
     const categories = await Category.find({
       skillLevel,
       isActive: true,
@@ -38,9 +33,6 @@ export async function GET(req: NextRequest) {
       )
       .sort({ name: 1 })
       .lean();
-
-       console.log("Categories found:", categories.length);
-    console.log("Categories:", JSON.stringify(categories, null, 2));
 
     return NextResponse.json({
       success: true,
@@ -128,6 +120,18 @@ export async function POST(req: NextRequest) {
         },
       },
     );
+
+    // Refresh the session so middleware sees the updated onboardingComplete
+    await auth.api.updateUser({
+      headers: await headers(),
+      body: {
+        onboardingComplete: true,
+        selectedCategoryId: categoryId,
+        selectedCategoryName: category.name,
+        selectedCategorySlug: category.slug,
+        selectedRole,
+      } as any,
+    });
 
     return NextResponse.json({
       success: true,

@@ -39,4 +39,6 @@ const TrainingMaterialSchema = new Schema<ITrainingMaterial>({
   purchaseCount: { type: Number, default: 0 },
 }, { timestamps: true });
 
-export default mongoose.models.TrainingMaterial || mongoose.model<ITrainingMaterial>('TrainingMaterial', TrainingMaterialSchema);
+export const TrainingMaterial =
+  mongoose.models.TrainingMaterial || mongoose.model<ITrainingMaterial>('TrainingMaterial', TrainingMaterialSchema);
+export default TrainingMaterial;

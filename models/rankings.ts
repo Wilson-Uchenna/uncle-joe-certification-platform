@@ -63,4 +63,6 @@ RankingSchema.index({ categoryId: 1, rankingType: 1, rank: 1 });
 RankingSchema.index({ period: 1, rankingType: 1, rank: 1 });
 RankingSchema.index({ betterAuthUserId: 1, rankingType: 1 });
 
-export default mongoose.models.Ranking || mongoose.model<IRanking>('Ranking', RankingSchema);
+export const Ranking =
+  mongoose.models.Ranking || mongoose.model<IRanking>('Ranking', RankingSchema);
+export default Ranking;

@@ -91,4 +91,6 @@ NotificationSchema.index({ betterAuthUserId: 1, isRead: 1, createdAt: -1 });
 NotificationSchema.index({ type: 1, emailSent: 1, scheduledFor: 1 });
 NotificationSchema.index({ emailSent: 1, sentAt: 1 });
 
-export default mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
+export const Notification =
+  mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
+export default Notification;

@@ -73,4 +73,6 @@ const PaymentSchema = new Schema<IPayment>({
 PaymentSchema.index({ status: 1, createdAt: -1 });
 PaymentSchema.index({ provider: 1, status: 1 });
 
-export default mongoose.models.Payment || mongoose.model<IPayment>('Payment', PaymentSchema);
+export const Payment =
+  mongoose.models.Payment || mongoose.model<IPayment>('Payment', PaymentSchema);
+export default Payment;

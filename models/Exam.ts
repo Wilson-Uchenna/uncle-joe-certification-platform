@@ -121,5 +121,7 @@ ExamSchema.index({
   qualifiesForFinals: 1,
 });
 
-export default mongoose.models.Exam ||
-  mongoose.model<IExam>("Exam", ExamSchema);
+export const Exam =
+  mongoose.models.Exam || mongoose.model<IExam>("Exam", ExamSchema);
+
+export default Exam;

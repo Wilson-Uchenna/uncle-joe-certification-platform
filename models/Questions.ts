@@ -35,4 +35,6 @@ const QuestionSchema = new Schema<IQuestion>({
 // Critical index for exam generation
 QuestionSchema.index({ categoryId: 1, isFinalStage: 1, isActive: 1 });
 
-export default mongoose.models.Question || mongoose.model<IQuestion>('Question', QuestionSchema);
+export const Question =
+  mongoose.models.Question || mongoose.model<IQuestion>('Question', QuestionSchema);
+export default Question;;

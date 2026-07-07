@@ -27,7 +27,6 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-    
   },
   user: {
     additionalFields: {
@@ -60,6 +59,10 @@ export const auth = betterAuth({
         input: false, // don't allow user to set role
       },
       onboardingComplete: { type: "boolean", defaultValue: false },
+      selectedCategoryId: { type: "string", defaultValue: null, input: true },
+      selectedCategoryName: { type: "string", defaultValue: null, input: true },
+      selectedCategorySlug: { type: "string", defaultValue: null, input: true },
+      selectedRole: { type: "string", defaultValue: null, input: true },
     },
   },
   databaseHooks: {
@@ -86,7 +89,6 @@ export const auth = betterAuth({
             body: JSON.stringify({
               to: email,
               otp,
-              
             }),
           });
           // Send the OTP for email verification
