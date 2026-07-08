@@ -7,7 +7,8 @@ export interface IQuestion extends Document {
   correctAnswer: number;           // Index 0-3
   explanation?: string;              // For training materials
   difficulty: number;              // 1-5
-  isFinalStage: boolean;           // Only for final exam
+  isFinalStage: boolean; // Only for final exam
+  role?: string; // Optional sub-role assignment
   timesUsed: number;               // Analytics
   timesCorrect: number;            // Analytics (for difficulty adjustment)
   isActive: boolean;
@@ -27,13 +28,14 @@ const QuestionSchema = new Schema<IQuestion>({
   explanation: String,
   difficulty: { type: Number, min: 1, max: 5, default: 3 },
   isFinalStage: { type: Boolean, default: false, index: true },
+  role: { type: String, default: null, index: true }, // NEW
   timesUsed: { type: Number, default: 0 },
   timesCorrect: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
 // Critical index for exam generation
-QuestionSchema.index({ categoryId: 1, isFinalStage: 1, isActive: 1 });
+QuestionSchema.index({ categoryId: 1, role: 1, isFinalStage: 1, isActive: 1 });
 
 export const Question =
   mongoose.models.Question || mongoose.model<IQuestion>('Question', QuestionSchema);

@@ -36,8 +36,16 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      userSkillLevel: session.user.skillLevel,
-      categories,
+      categories: categories.map((c) => ({
+        id: c._id.toString(),
+        name: c.name,
+        slug: c.slug,
+        skillLevel: c.skillLevel,
+        description: c.description,
+        examTimeLimit: c.examTimeLimit,
+        passThreshold: c.passThreshold,
+        roles: c.roles,
+      })),
     });
   } catch (error) {
     console.error("Onboarding GET error:", error);

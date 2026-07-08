@@ -51,6 +51,7 @@ export function Step3Exam({ category, selectedRole, onSubmit }: Step3ExamProps) 
         body: JSON.stringify({
           categoryId: category._id,
           selectedRole,
+          isFinalStage: false, // TODO: determine if final stage based on user progress
         }),
       });
 

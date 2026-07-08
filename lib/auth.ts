@@ -1,8 +1,9 @@
-import { betterAuth } from "better-auth/minimal";
+import { betterAuth, BetterAuthOptions } from "better-auth/minimal";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "@/lib/db";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import { emailOTP } from "better-auth/plugins";
+import { admin, emailOTP, customSession } from "better-auth/plugins";
+import { ObjectId } from "mongodb";
 
 const mongodb_uri = process.env.MONGODB_URI;
 
@@ -13,11 +14,11 @@ export interface ProfileInput {
   school?: string;
   state?: string;
   country?: string;
-  // Collected later in the flow, not at registration.
   skill_level?: "entry" | "mid" | "advanced";
 }
 
-export const auth = betterAuth({
+// Define auth options separately for type inference
+const authOptions = {
   secret: process.env.BETTER_AUTH_SECRET,
   database: mongodbAdapter(db),
   emailAndPassword: {
@@ -33,7 +34,7 @@ export const auth = betterAuth({
       fullName: {
         type: "string",
         required: false,
-        input: true, // Allow during registration
+        input: true,
       },
       phone: { type: "string", input: true },
       skillLevel: {
@@ -53,10 +54,10 @@ export const auth = betterAuth({
         input: true,
       },
       role: {
-        type: ["user", "admin"],
+        type: "string",
         required: false,
         defaultValue: "user",
-        input: false, // don't allow user to set role
+        input: false,
       },
       onboardingComplete: { type: "boolean", defaultValue: false },
       selectedCategoryId: { type: "string", defaultValue: null, input: true },
@@ -68,11 +69,10 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        before: async (user) => {
+        before: async (user: any) => {
           if (!user.fullName && user.name) {
             user.fullName = user.name;
           }
-          // Also copy other fields if passed
           return { data: user };
         },
       },
@@ -81,23 +81,60 @@ export const auth = betterAuth({
   plugins: [
     emailOTP({
       async sendVerificationOTP({ email, otp, type }) {
+        let endpoint;
         if (type === "sign-in") {
-          // Send the OTP for sign in
+          endpoint = "signin";
         } else if (type === "email-verification") {
-          await fetch(`${process.env.BETTER_AUTH_URL}/api/email/send`, {
-            method: "POST",
-            body: JSON.stringify({
-              to: email,
-              otp,
-            }),
-          });
-          // Send the OTP for email verification
+          endpoint = "verification";
         } else {
-          // Send the OTP for password reset
+          endpoint = "reset-password";
+        }
+
+        const res = await fetch(
+          `${process.env.BETTER_AUTH_URL}/api/email/send/${endpoint}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ to: email, otp }),
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Failed to send OTP email: ${res.status}`);
         }
       },
-      disableSignUp: true, // Allow sign up with OTP
+      disableSignUp: false,
+    }),
+    admin({
+      defaultRole: "user",
+      adminRoles: ["admin"],
     }),
     nextCookies(),
+  ],
+} satisfies BetterAuthOptions;
+
+export const auth = betterAuth({
+  ...authOptions,
+  plugins: [
+    ...(authOptions.plugins ?? []),
+    customSession(async ({ user, session }) => {
+      // Fetch additional user data from DB
+      const userDoc = await db
+        .collection("user")
+        .findOne(
+          { _id: new ObjectId(user.id) },
+          { projection: { role: 1, skillLevel: 1, onboardingComplete: 1 } }
+        );
+
+      return {
+        user: {
+          ...user,
+          role: (userDoc?.role as "user" | "admin") || "user",
+          skillLevel: userDoc?.skillLevel as "entry" | "mid" | "advanced" | undefined,
+          onboardingComplete: userDoc?.onboardingComplete as boolean | undefined,
+        },
+        session,
+      };
+    }, authOptions),
   ],
 });

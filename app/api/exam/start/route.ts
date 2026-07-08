@@ -7,12 +7,14 @@ import { Question } from "@/models/Questions";
 import { Exam } from "@/models/Exam";
 import { headers } from "next/headers";
 
+const TOTAL_QUESTIONS = 20;
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(), // ← Added headers
+      headers: await headers(),
     });
+
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
@@ -25,15 +27,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { categoryId, selectedRole, isFinalStage = false } = body;
 
-    // Validate
+    // ─── Validation ───
     if (!categoryId || !selectedRole) {
       return NextResponse.json(
-        { success: false, error: "categoryId and selectedRole required" },
+        { success: false, error: "categoryId and selectedRole are required" },
         { status: 400 },
       );
     }
 
-    // Check for ongoing exam
+    // ─── Check ongoing exam ───
     const existingExam = await Exam.findOne({
       userId: session.user.id,
       status: "in_progress",
@@ -48,11 +50,25 @@ export async function POST(req: NextRequest) {
         },
         { status: 400 },
       );
-
-      
     }
 
-    // Get category
+    // In start exam, after ongoing check:
+    const recentExams = await Exam.countDocuments({
+      userId: session.user.id,
+      createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }, // Last hour
+    });
+
+    if (recentExams >= 1) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Too many exams started recently. Please wait.",
+        },
+        { status: 429 },
+      );
+    }
+
+    // ─── Get category ───
     const category = await Category.findById(categoryId);
     if (!category) {
       return NextResponse.json(
@@ -61,7 +77,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate role exists in category
+    // ─── Validate role exists in category ───
     if (!category.roles.includes(selectedRole)) {
       return NextResponse.json(
         { success: false, error: "Invalid role for this category" },
@@ -69,7 +85,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // For final stage, check qualification
+    // ─── Final stage qualification check ───
     if (isFinalStage) {
       const passedExam = await Exam.findOne({
         userId: session.user.id,
@@ -86,48 +102,54 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Get random questions
-    const questionCount = 20;
+    // ─── 🔥 FIX: Filter by selectedRole ───
     const timeLimit = isFinalStage ? 8 : category.examTimeLimit;
 
     const questions = await Question.aggregate([
       {
         $match: {
           categoryId: new mongoose.Types.ObjectId(categoryId),
+          role: selectedRole, // ← ONLY questions for this sub-role
           isFinalStage,
           isActive: true,
         },
       },
-      { $sample: { size: questionCount } },
+      { $sample: { size: TOTAL_QUESTIONS } },
     ]);
 
-    if (questions.length < questionCount) {
+    if (questions.length < TOTAL_QUESTIONS) {
       return NextResponse.json(
-        { success: false, error: "Not enough questions available" },
+        {
+          success: false,
+          error: `Not enough questions available for "${selectedRole}". Found ${questions.length}, need ${TOTAL_QUESTIONS}.`,
+        },
         { status: 400 },
       );
     }
 
-    // Create exam
+    // ─── Create exam ───
     const exam = await Exam.create({
       userId: session.user.id,
       userName: session.user.name,
       categoryId,
       categoryName: category.name,
       skillLevel: category.skillLevel,
-      selectedRole,
+      selectedRole, // ← Store the role on the exam
+      passThreshold: category.passThreshold || 60, // ← ADD
       questions: questions.map((q) => ({
         questionId: q._id,
         questionText: q.question,
         options: q.options,
+        correctAnswer: q.correctAnswer,
       })),
-      totalQuestions: questionCount,
+      totalQuestions: TOTAL_QUESTIONS,
       timeLimit,
       isFinalStage,
       status: "in_progress",
       startedAt: new Date(),
     });
 
+    // ─── Return (no correct answers!) ───
     return NextResponse.json({
       success: true,
       examId: exam._id,
@@ -137,7 +159,8 @@ export async function POST(req: NextRequest) {
         options: q.options,
       })),
       timeLimit,
-      totalQuestions: questionCount,
+      totalQuestions: TOTAL_QUESTIONS,
+      selectedRole,
     });
   } catch (error) {
     console.error("Exam start error:", error);

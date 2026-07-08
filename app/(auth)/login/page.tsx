@@ -7,7 +7,6 @@ import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,15 +16,7 @@ export default function LoginPage() {
   });
   const [step, setStep] = useState<"email" | "otp">("email");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
   const validateStep1 = () => {
-    console.log("DEBUG formData:", formData);
     if (!formData.email || !formData.password) {
       setError("Please fill in all required fields");
       return false;
@@ -38,43 +29,55 @@ export default function LoginPage() {
     return true;
   };
 
+  // Step 1: Request OTP
+  const handleSendOtp = async () => {
+    setError(null);
+    if (!validateStep1()) return;
 
+    setIsLoading(true);
+    const res = await authClient.emailOtp.sendVerificationOtp({
+      email: formData.email,
+      type: "sign-in",
+    });
 
-    // Step 1: Request OTP
-    const handleSendOtp = async () => {
-      if (!validateStep1()) return;
-
-      setIsLoading(true);
-      const res = await authClient.emailOtp.sendVerificationOtp({
-        email: formData.email,
-        type: "sign-in",
-      });
-
-      if (res.error) {
-        setError(res.error.message ?? "Failed to send OTP");
-        setIsLoading(false);
-        return;
-      }
-
-      setStep("otp"); // ← switch to OTP input view
+    if (res.error) {
+      setError(res.error.message ?? "Failed to send OTP");
       setIsLoading(false);
-    };
+      return;
+    }
 
-    // Step 2: Verify with code from email
-    const handleVerifyOtp = async () => {
-      setIsLoading(true);
-      const res = await authClient.signIn.emailOtp({
-        email: formData.email,
-        otp: formData.otp, // ← user types this from their email
-      });
+    setStep("otp"); // ← switch to OTP input view
+    setIsLoading(false);
+  };
 
-      if (res.error) {
-        setError(res.error.message ?? "Invalid OTP");
-        setIsLoading(false);
-        return;
-      }
-    };
-  
+  // Step 2: Verify with code from email
+  const handleVerifyOtp = async () => {
+    setError(null);
+    setIsLoading(true);
+    const res = await authClient.signIn.emailOtp({
+      email: formData.email,
+      otp: formData.otp, // ← user types this from their email
+    });
+
+    if (res.error) {
+      setError(res.error.message ?? "Invalid OTP");
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(false);
+    // TODO: redirect on success, e.g. router.push("/dashboard")
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (step === "otp") {
+      handleVerifyOtp();
+    } else {
+      handleSendOtp();
+    }
+  };
+
   return (
     <div className="min-h-[50vh] flex justify-between items-center max-w-[1650px] mx-auto my-10 px-4 sm:px-6 lg:px-8">
       {/* Left side — Form */}
@@ -109,8 +112,15 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-6">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
           {/* Email */}
           <div>
             <label
@@ -125,10 +135,12 @@ export default function LoginPage() {
                 type="email"
                 id="email"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 placeholder="John@email.com"
-                disabled={otpSent}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                disabled={step === "otp"}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
               />
             </div>
           </div>
@@ -147,9 +159,12 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 placeholder="*************"
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                disabled={step === "otp"}
+                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
               />
               <button
                 type="button"
@@ -165,7 +180,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          { otpSent && (
+          {/* OTP field — only shown once code has been sent */}
+          {step === "otp" && (
             <div>
               <label
                 htmlFor="otp"
@@ -176,16 +192,19 @@ export default function LoginPage() {
               <div className="relative">
                 <EyeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-        type="text"
-        value={formData.otp}        // ← new field, not password
-        onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-        placeholder="Enter code from email"
-        maxLength={6}
-        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-      />
-    </div>
-  </div>
-)}
+                  type="text"
+                  id="otp"
+                  value={formData.otp}
+                  onChange={(e) =>
+                    setFormData({ ...formData, otp: e.target.value })
+                  }
+                  placeholder="Enter code from email"
+                  maxLength={6}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Remember me & Forgot password */}
           <div className="flex items-center justify-between">
@@ -210,11 +229,27 @@ export default function LoginPage() {
           {/* Submit button */}
           <button
             type="submit"
-            className="w-96 mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors"
-            onClick={otpSent ? handleVerifyOtp : handleSendOtp}
+            disabled={isLoading}
+            className="w-96 mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {otpSent ? "Verify" : "Send Code"}
+            {isLoading
+              ? step === "otp"
+                ? "Verifying..."
+                : "Sending..."
+              : step === "otp"
+              ? "Verify"
+              : "Send Code"}
           </button>
+
+           {/* Admin Login Link */}
+          <div className="text-center">
+            <Link
+              href="/admin/login"
+              className="text-sm text-gray-500 hover:text-indigo-600 transition-colors"
+            >
+              Sign in as Admin →
+            </Link>
+          </div>
 
           {/* Divider */}
           <div className="relative flex items-center gap-4 py-2">

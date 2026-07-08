@@ -10,35 +10,33 @@ export interface IResultBreakdown {
 export interface IResult extends Document {
   examId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  userName: String;
-
-  // Display data
+  userName: string;
   categoryName: string;
   skillLevel: string;
-
-  // Scores
+  selectedRole: string;
   score: number;
   correctCount: number;
   totalQuestions: number;
   passed: boolean;
-
-  // Breakdown (for detailed view)
   breakdown: IResultBreakdown[];
-
-  // Rankings at time of result
   categoryRank?: number;
   overallRank?: number;
   stateRank?: number;
-
-  // Certificate
   certificateAvailable: boolean;
   certificateDownloaded: boolean;
-
-  // Sharing
+  certificateStatus: {
+    type: String;
+    enum: ["pending", "approved", "rejected"];
+    default: "pending";
+    index: true;
+  };
+  certificateApprovedAt: Date;
+  certificateApprovedBy: String; // admin user id
+  certificateRejectedAt: Date;
+  certificateRejectedBy: String; // admin user id
   shareUrl?: string;
   isPublic: boolean;
-  resultsAvailableAt: Date; // When the results become available to the user (embargo)
-
+  resultsAvailableAt: Date;
   createdAt: Date;
 }
 
@@ -54,6 +52,7 @@ const ResultSchema = new Schema<IResult>(
     userName: String,
     categoryName: { type: String, required: true },
     skillLevel: { type: String, required: true },
+    selectedRole: { type: String, required: true, index: true },
 
     score: { type: Number, required: true },
     correctCount: { type: Number, required: true },
@@ -75,6 +74,16 @@ const ResultSchema = new Schema<IResult>(
 
     certificateAvailable: { type: Boolean, default: false },
     certificateDownloaded: { type: Boolean, default: false },
+    certificateStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      index: true,
+    },
+    certificateApprovedAt: Date,
+    certificateApprovedBy: String, // admin user id
+    certificateRejectedAt: Date,
+    certificateRejectedBy: String, // admin user id
     resultsAvailableAt: { type: Date, required: true },
 
     shareUrl: String,
@@ -83,10 +92,14 @@ const ResultSchema = new Schema<IResult>(
   { timestamps: true },
 );
 
-// Fast lookups
-ResultSchema.index({ betterAuthUserId: 1, createdAt: -1 });
+// All indexes defined here only
+ResultSchema.index({ userId: 1, createdAt: -1 });
 ResultSchema.index({ examId: 1 });
-ResultSchema.index({ passed: 1, certificateAvailable: 1 });
+ResultSchema.index({
+  certificateAvailable: 1,
+  certificateStatus: 1,
+  createdAt: -1,
+});
 
 export const Result =
   mongoose.models.Result || mongoose.model<IResult>("Result", ResultSchema);

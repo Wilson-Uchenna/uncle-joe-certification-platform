@@ -1,303 +1,303 @@
-// import { NextRequest, NextResponse } from "next/server";
-// import { auth } from "@/lib/auth";
-// import connectDB from "@/lib/db";
-// import { Result } from "@/models/Result";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import connectDB from "@/lib/db";
+import { Result } from "@/models/Result";
 
-// export async function GET(
-//   req: NextRequest,
-//   { params }: { params: { examId: string } }
-// ) {
-//   try {
-//     const session = await auth();
-//     if (!session?.user) {
-//       return NextResponse.json(
-//         { success: false, error: "Unauthorized" },
-//         { status: 401 }
-//       );
-//     }
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { examId: string } }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
     
-//     await connectDB();
+    await connectDB();
     
-//     const result = await Result.findOne({
-//       examId: params.examId,
-//       userId: session.user.id
-//     }).lean();
+    const result = await Result.findOne({
+      examId: params.examId,
+      userId: session.user.id
+    }).lean();
     
-//     if (!result) {
-//       return NextResponse.json(
-//         { success: false, error: "Result not found" },
-//         { status: 404 }
-//       );
-//     }
+    if (!result) {
+      return NextResponse.json(
+        { success: false, error: "Result not found" },
+        { status: 404 }
+      );
+    }
     
-//     return NextResponse.json({ success: true, result });
+    return NextResponse.json({ success: true, result });
     
-//   } catch (error) {
-//     console.error("Result GET error:", error);
-//     return NextResponse.json(
-//       { success: false, error: "Failed to fetch result" },
-//       { status: 500 }
-//     );
-//   }
-// }
+  } catch (error) {
+    console.error("Result GET error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch result" },
+      { status: 500 }
+    );
+  }
+}
 
-// import { NextRequest, NextResponse } from "next/server";
-// import { auth } from "@/lib/auth";
-// import connectDB from "@/lib/db";
-// import { Exam } from "@/models/Exam";
-// import { Payment } from "@/models/Payment";
-// import Paystack from "paystack-sdk";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import connectDB from "@/lib/db";
+import { Exam } from "@/models/Exam";
+import { Payment } from "@/models/Payment";
+import Paystack from "paystack-sdk";
 
-// const paystack = new Paystack(process.env.PAYSTACK_SECRET_KEY!);
+const paystack = new Paystack(process.env.PAYSTACK_SECRET_KEY!);
 
-// export async function POST(req: NextRequest) {
-//   try {
-//     const session = await auth();
-//     if (!session?.user) {
-//       return NextResponse.json(
-//         { success: false, error: "Unauthorized" },
-//         { status: 401 }
-//       );
-//     }
+export async function POST(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
     
-//     await connectDB();
+    await connectDB();
     
-//     const { examId, amount, type } = await req.json();
+    const { examId, amount, type } = await req.json();
     
-//     // Validate exam
-//     const exam = await Exam.findOne({
-//       _id: examId,
-//       userId: session.user.id,
-//       passed: true
-//     });
+    // Validate exam
+    const exam = await Exam.findOne({
+      _id: examId,
+      userId: session.user.id,
+      passed: true
+    });
     
-//     if (!exam) {
-//       return NextResponse.json(
-//         { success: false, error: "Exam not found or not passed" },
-//         { status: 404 }
-//       );
-//     }
+    if (!exam) {
+      return NextResponse.json(
+        { success: false, error: "Exam not found or not passed" },
+        { status: 404 }
+      );
+    }
     
-//     // Generate reference
-//     const reference = `UJ-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate reference
+    const reference = `UJ-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-//     // Create payment record
-//     await Payment.create({
-//       userId: session.user.id,
-//       examId,
-//       type,
-//       amount,
-//       currency: "NGN",
-//       provider: "paystack",
-//       providerReference: reference,
-//       status: "pending"
-//     });
+    // Create payment record
+    await Payment.create({
+      userId: session.user.id,
+      examId,
+      type,
+      amount,
+      currency: "NGN",
+      provider: "paystack",
+      providerReference: reference,
+      status: "pending"
+    });
     
-//     // Initialize Paystack
-//     const response = await paystack.transaction.initialize({
-//       email: session.user.email!,
-//       amount: amount * 100, // kobo
-//       reference,
-//       callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/verify`,
-//       metadata: {
-//         examId,
-//         userId: session.user.id,
-//         type
-//       }
-//     });
+    // Initialize Paystack
+    const response = await paystack.transaction.initialize({
+      email: session.user.email!,
+      amount: amount * 100, // kobo
+      reference,
+      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/verify`,
+      metadata: {
+        examId,
+        userId: session.user.id,
+        type
+      }
+    });
     
-//     return NextResponse.json({
-//       success: true,
-//       authorization_url: response.data.authorization_url,
-//       reference
-//     });
+    return NextResponse.json({
+      success: true,
+      authorization_url: response.data.authorization_url,
+      reference
+    });
     
-//   } catch (error) {
-//     console.error("Payment initialize error:", error);
-//     return NextResponse.json(
-//       { success: false, error: "Failed to initialize payment" },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-
-// import { NextRequest, NextResponse } from "next/server";
-// import connectDB from "@/lib/db";
-// import { Payment } from "@/models/Payment";
-// import { Exam } from "@/models/Exam";
-// import Paystack from "paystack-sdk";
-
-// const paystack = new Paystack(process.env.PAYSTACK_SECRET_KEY!);
-
-// export async function POST(req: NextRequest) {
-//   try {
-//     const body = await req.json();
-//     const signature = req.headers.get("x-paystack-signature");
-    
-//     // Verify signature (implement your verification logic)
-//     // ...
-    
-//     const { event, data } = body;
-    
-//     if (event !== "charge.success") {
-//       return NextResponse.json({ received: true });
-//     }
-    
-//     await connectDB();
-    
-//     const { reference, status, amount, customer } = data;
-    
-//     // Find payment
-//     const payment = await Payment.findOne({ providerReference: reference });
-//     if (!payment) {
-//       return NextResponse.json(
-//         { error: "Payment not found" },
-//         { status: 404 }
-//       );
-//     }
-    
-//     // Update payment
-//     payment.status = "success";
-//     payment.paidAt = new Date();
-//     payment.providerTransactionId = data.id;
-//     await payment.save();
-    
-//     // Unlock certificate
-//     if (payment.type === "certificate" && payment.examId) {
-//       await Exam.findByIdAndUpdate(payment.examId, {
-//         certificateDownloaded: true,
-//         certificatePaidAt: new Date()
-//       });
-//     }
-    
-//     return NextResponse.json({ success: true });
-    
-//   } catch (error) {
-//     console.error("Paystack webhook error:", error);
-//     return NextResponse.json(
-//       { error: "Webhook processing failed" },
-//       { status: 500 }
-//     );
-//   }
-// }
+  } catch (error) {
+    console.error("Payment initialize error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to initialize payment" },
+      { status: 500 }
+    );
+  }
+}
 
 
-// import { NextRequest, NextResponse } from "next/server";
-// import connectDB from "@/lib/db";
-// import { Ranking } from "@/models/Ranking";
+import { NextRequest, NextResponse } from "next/server";
+import connectDB from "@/lib/db";
+import { Payment } from "@/models/Payment";
+import { Exam } from "@/models/Exam";
+import Paystack from "paystack-sdk";
 
-// export async function GET(req: NextRequest) {
-//   try {
-//     await connectDB();
-    
-//     const { searchParams } = new URL(req.url);
-//     const type = searchParams.get("type") || "overall";
-//     const categoryId = searchParams.get("categoryId");
-//     const state = searchParams.get("state");
-//     const period = searchParams.get("period");
-//     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
-    
-//     const query: any = { isActive: true };
-    
-//     if (type === "category" && categoryId) {
-//       query.categoryId = categoryId;
-//     } else if (type === "state" && state) {
-//       query.state = state;
-//     } else if (type === "monthly" && period) {
-//       query.period = period;
-//     }
-    
-//     query.rankingType = type;
-    
-//     const rankings = await Ranking.find(query)
-//       .sort({ rank: 1 })
-//       .limit(limit)
-//       .lean();
-    
-//     return NextResponse.json({
-//       success: true,
-//       type,
-//       count: rankings.length,
-//       rankings
-//     });
-    
-//   } catch (error) {
-//     console.error("Leaderboard error:", error);
-//     return NextResponse.json(
-//       { success: false, error: "Failed to fetch leaderboard" },
-//       { status: 500 }
-//     );
-//   }
-// }
+const paystack = new Paystack(process.env.PAYSTACK_SECRET_KEY!);
 
-// import { NextRequest, NextResponse } from "next/server";
-// import { auth } from "@/lib/auth";
-// import connectDB from "@/lib/db";
-// import { User } from "@/models/User";
-// import { Exam } from "@/models/Exam";
-// import { Payment } from "@/models/Payment";
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const signature = req.headers.get("x-paystack-signature");
+    
+    // Verify signature (implement your verification logic)
+    // ...
+    
+    const { event, data } = body;
+    
+    if (event !== "charge.success") {
+      return NextResponse.json({ received: true });
+    }
+    
+    await connectDB();
+    
+    const { reference, status, amount, customer } = data;
+    
+    // Find payment
+    const payment = await Payment.findOne({ providerReference: reference });
+    if (!payment) {
+      return NextResponse.json(
+        { error: "Payment not found" },
+        { status: 404 }
+      );
+    }
+    
+    // Update payment
+    payment.status = "success";
+    payment.paidAt = new Date();
+    payment.providerTransactionId = data.id;
+    await payment.save();
+    
+    // Unlock certificate
+    if (payment.type === "certificate" && payment.examId) {
+      await Exam.findByIdAndUpdate(payment.examId, {
+        certificateDownloaded: true,
+        certificatePaidAt: new Date()
+      });
+    }
+    
+    return NextResponse.json({ success: true });
+    
+  } catch (error) {
+    console.error("Paystack webhook error:", error);
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 }
+    );
+  }
+}
 
-// export async function GET(req: NextRequest) {
-//   try {
-//     const session = await auth();
-//     if (!session?.user || session.user.role !== "admin") {
-//       return NextResponse.json(
-//         { success: false, error: "Forbidden" },
-//         { status: 403 }
-//       );
-//     }
+
+import { NextRequest, NextResponse } from "next/server";
+import connectDB from "@/lib/db";
+import { Ranking } from "@/models/Ranking";
+
+export async function GET(req: NextRequest) {
+  try {
+    await connectDB();
     
-//     await connectDB();
+    const { searchParams } = new URL(req.url);
+    const type = searchParams.get("type") || "overall";
+    const categoryId = searchParams.get("categoryId");
+    const state = searchParams.get("state");
+    const period = searchParams.get("period");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
     
-//     const [
-//       totalRegistrations,
-//       totalExamsTaken,
-//       completedExams,
-//       viewedResults,
-//       paidCertificates,
-//       totalRevenue
-//     ] = await Promise.all([
-//       User.countDocuments(),
-//       Exam.countDocuments(),
-//       Exam.countDocuments({ status: "completed" }),
-//       Exam.countDocuments({ status: { $in: ["completed", "timed_out"] } }),
-//       Exam.countDocuments({ certificateDownloaded: true }),
-//       Payment.aggregate([
-//         { $match: { status: "success" } },
-//         { $group: { _id: null, total: { $sum: "$amount" } } }
-//       ])
-//     ]);
+    const query: any = { isActive: true };
     
-//     const revenue = totalRevenue[0]?.total || 0;
+    if (type === "category" && categoryId) {
+      query.categoryId = categoryId;
+    } else if (type === "state" && state) {
+      query.state = state;
+    } else if (type === "monthly" && period) {
+      query.period = period;
+    }
     
-//     return NextResponse.json({
-//       success: true,
-//       analytics: {
-//         totalRegistrations,
-//         totalExamsTaken,
-//         examCompletionRate: totalExamsTaken > 0 
-//           ? Math.round((completedExams / totalExamsTaken) * 100) 
-//           : 0,
-//         certificateDownloadRate: completedExams > 0 
-//           ? Math.round((paidCertificates / completedExams) * 100) 
-//           : 0,
-//         revenueGenerated: revenue,
-//         conversionFunnel: {
-//           registered: totalRegistrations,
-//           startedExam: totalExamsTaken,
-//           completedExam: completedExams,
-//           viewedResult: completedExams, // All completed have results
-//           paidForCertificate: paidCertificates
-//         }
-//       }
-//     });
+    query.rankingType = type;
     
-//   } catch (error) {
-//     console.error("Admin analytics error:", error);
-//     return NextResponse.json(
-//       { success: false, error: "Failed to fetch analytics" },
-//       { status: 500 }
-//     );
-//   }
-// }
+    const rankings = await Ranking.find(query)
+      .sort({ rank: 1 })
+      .limit(limit)
+      .lean();
+    
+    return NextResponse.json({
+      success: true,
+      type,
+      count: rankings.length,
+      rankings
+    });
+    
+  } catch (error) {
+    console.error("Leaderboard error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch leaderboard" },
+      { status: 500 }
+    );
+  }
+}
+
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import connectDB from "@/lib/db";
+import { User } from "@/models/User";
+import { Exam } from "@/models/Exam";
+import { Payment } from "@/models/Payment";
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+    
+    await connectDB();
+    
+    const [
+      totalRegistrations,
+      totalExamsTaken,
+      completedExams,
+      viewedResults,
+      paidCertificates,
+      totalRevenue
+    ] = await Promise.all([
+      User.countDocuments(),
+      Exam.countDocuments(),
+      Exam.countDocuments({ status: "completed" }),
+      Exam.countDocuments({ status: { $in: ["completed", "timed_out"] } }),
+      Exam.countDocuments({ certificateDownloaded: true }),
+      Payment.aggregate([
+        { $match: { status: "success" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ])
+    ]);
+    
+    const revenue = totalRevenue[0]?.total || 0;
+    
+    return NextResponse.json({
+      success: true,
+      analytics: {
+        totalRegistrations,
+        totalExamsTaken,
+        examCompletionRate: totalExamsTaken > 0 
+          ? Math.round((completedExams / totalExamsTaken) * 100) 
+          : 0,
+        certificateDownloadRate: completedExams > 0 
+          ? Math.round((paidCertificates / completedExams) * 100) 
+          : 0,
+        revenueGenerated: revenue,
+        conversionFunnel: {
+          registered: totalRegistrations,
+          startedExam: totalExamsTaken,
+          completedExam: completedExams,
+          viewedResult: completedExams, // All completed have results
+          paidForCertificate: paidCertificates
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error("Admin analytics error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch analytics" },
+      { status: 500 }
+    );
+  }
+}

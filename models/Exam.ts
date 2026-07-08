@@ -2,11 +2,11 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IExamQuestion {
   questionId: mongoose.Types.ObjectId;
-  questionText: string; // Snapshot at exam time
-  options: string[]; // Snapshot at exam time
+  questionText: string;
+  options: string[];
   selectedAnswer?: number;
   isCorrect?: boolean;
-  timeSpent?: number; // Seconds on this question
+  timeSpent?: number;
 }
 
 export type ExamStatus =
@@ -17,36 +17,26 @@ export type ExamStatus =
 
 export interface IExam extends Document {
   userId: string;
-  userName: string; // Synced from Better Auth
+  userName: string;
   categoryId: mongoose.Types.ObjectId;
-  categoryName: string; // Snapshot
+  categoryName: string;
   skillLevel: "entry" | "mid" | "advanced";
   isFinalStage: boolean;
-
-  // Questions
+  selectedRole: string;
   questions: IExamQuestion[];
   totalQuestions: number;
   correctCount: number;
-  score: number; // Percentage
-
-  // Timing
-  timeLimit: number; // Minutes
-  timeUsed: number; // Seconds
+  score: number;
+  timeLimit: number;
+  timeUsed: number;
   startedAt: Date;
   completedAt?: Date;
-
-  // Status & Results
   status: ExamStatus;
   passed: boolean;
-
-  // Certificate
   certificateDownloaded: boolean;
   certificateUrl?: string;
   certificatePaidAt?: Date;
-
-  // Final stage qualification
   qualifiesForFinals: boolean;
-
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,13 +59,12 @@ const ExamQuestionSchema = new Schema<IExamQuestion>(
 
 const ExamSchema = new Schema<IExam>(
   {
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, required: true },
     userName: String,
     categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,
-      index: true,
     },
     categoryName: { type: String, required: true },
     skillLevel: {
@@ -83,7 +72,8 @@ const ExamSchema = new Schema<IExam>(
       enum: ["entry", "mid", "advanced"],
       required: true,
     },
-    isFinalStage: { type: Boolean, default: false, index: true },
+    isFinalStage: { type: Boolean, default: false },
+    selectedRole: { type: String, required: true, index: true },
 
     questions: [ExamQuestionSchema],
     totalQuestions: { type: Number, required: true },
@@ -99,7 +89,6 @@ const ExamSchema = new Schema<IExam>(
       type: String,
       enum: ["in_progress", "completed", "timed_out", "abandoned"],
       default: "in_progress",
-      index: true,
     },
     passed: { type: Boolean, default: false },
 
@@ -112,9 +101,13 @@ const ExamSchema = new Schema<IExam>(
   { timestamps: true },
 );
 
-// Leaderboard & analytics indexes
+// All indexes defined here only — no inline index: true above
+ExamSchema.index({ userId: 1 });
+ExamSchema.index({ categoryId: 1 });
+ExamSchema.index({ isFinalStage: 1 });
+ExamSchema.index({ status: 1 });
 ExamSchema.index({ categoryId: 1, score: -1, timeUsed: 1 });
-ExamSchema.index({ betterAuthUserId: 1, categoryId: 1, status: 1 });
+ExamSchema.index({ userId: 1, categoryId: 1, status: 1 });
 ExamSchema.index({
   passed: 1,
   certificateDownloaded: 1,
@@ -123,5 +116,4 @@ ExamSchema.index({
 
 export const Exam =
   mongoose.models.Exam || mongoose.model<IExam>("Exam", ExamSchema);
-
 export default Exam;
