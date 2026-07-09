@@ -12,6 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cert
   const { certId } = await params;
 
   const session = await auth.api.getSession({ headers: await headers() });
+  console.log("Session:", session);
   if (!session?.user) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
