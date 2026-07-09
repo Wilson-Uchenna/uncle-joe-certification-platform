@@ -62,8 +62,8 @@ export default function CertificatesPage() {
     }
   };
 
-  const handleDownload = (certId: string) => {
-    window.open(`/api/certificates/${certId}/download`, "_blank");
+  const handleDownload = (certid: string) => {
+    window.open(`/api/certificates/${certid}/download`, "_blank");
   };
 
   if (loading) {

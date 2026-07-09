@@ -7,9 +7,9 @@ import { Exam } from "@/models/Exam";
 import mongoose from "mongoose";
 import { generateCertificatePDF } from "@/lib/pdfGenerator";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ certId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ certid: string }> }) {
   await connectDB();
-  const { certId } = await params;
+  const { certid } = await params;
 
   const session = await auth.api.getSession({ headers: await headers() });
   console.log("Session:", session);
@@ -17,11 +17,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cert
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!mongoose.Types.ObjectId.isValid(certId)) {
+  if (!mongoose.Types.ObjectId.isValid(certid)) {
     return NextResponse.json({ success: false, error: "Invalid certificate ID" }, { status: 400 });
   }
 
-  const result = await Result.findById(certId).lean();
+  const result = await Result.findById(certid).lean();
   if (!result) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cert
     verificationCode: result._id.toString(),
   });
 
-  await Result.findByIdAndUpdate(certId, { $set: { certificateDownloaded: true } });
+  await Result.findByIdAndUpdate(certid, { $set: { certificateDownloaded: true } });
 
   return new NextResponse(Buffer.from(pdfBuffer), {
     status: 200,
