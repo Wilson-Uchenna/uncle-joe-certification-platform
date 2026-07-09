@@ -81,11 +81,14 @@ export default function RoleOnboardingPage() {
     setSaveError("");
 
     try {
+      console.log("selectedCategory:", selectedCategory);
+      console.log("selectedCategory._id:", selectedCategory?._id);
+      console.log("selectedRole:", selectedRole);
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          categoryId: selectedCategory._id,
+          categoryId: selectedCategory?._id,
           selectedRole,
         }),
       });
@@ -135,13 +138,12 @@ export default function RoleOnboardingPage() {
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
           <Link href="/" className="flex items-center gap-2">
-          <img
-            src={"/skillora-3.png"}
-            alt="Skillora Logo"
-            className="w-28 h-10"
-          />
+            <img
+              src={"/skillora-3.png"}
+              alt="Skillora Logo"
+              className="w-28 h-10"
+            />
           </Link>
-          
         </div>
 
         {/* Header */}

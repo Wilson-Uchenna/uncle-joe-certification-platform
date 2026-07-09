@@ -55,5 +55,4 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ cert
       "Content-Disposition": `attachment; filename="certificate-${result._id}.pdf"`,
     },
   });
-  console.log("Certificate downloaded:", certId, "by user:", session.user.id);
 }

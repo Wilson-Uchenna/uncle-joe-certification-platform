@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       categories: categories.map((c) => ({
-        id: c._id.toString(),
+        _id: c._id.toString(),
         name: c.name,
         slug: c.slug,
         skillLevel: c.skillLevel,
@@ -57,12 +57,10 @@ export async function GET(req: NextRequest) {
 }
 
 // POST: Save onboarding selection
+
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(), // ← Added headers
-    });
-
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
@@ -70,31 +68,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const { categoryId, selectedRole } = body;
-
-    if (!categoryId || !selectedRole) {
+    // Read body safely
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
       return NextResponse.json(
-        { success: false, error: "categoryId and selectedRole required" },
+        { success: false, error: "Invalid JSON body" },
         { status: 400 },
       );
     }
 
-    // Validate categoryId is a valid ObjectId
+    const { categoryId, selectedRole } = body;
+
+    // Detailed validation
+    const missing: string[] = [];
+    if (!categoryId) missing.push("categoryId");
+    if (!selectedRole) missing.push("selectedRole");
+
+    if (missing.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Missing fields: ${missing.join(", ")}`,
+          received: body,
+        },
+        { status: 400 },
+      );
+    }
+
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
       return NextResponse.json(
-        { success: false, error: "Invalid category ID" },
+        { success: false, error: "Invalid categoryId format" },
         { status: 400 },
       );
     }
 
     await connectDB();
 
-    // Convert string to ObjectId
-    const category = await Category.findById(
-      new mongoose.Types.ObjectId(categoryId),
-    );
-
+    const category = await Category.findById(categoryId);
     if (!category) {
       return NextResponse.json(
         { success: false, error: "Category not found" },
@@ -102,25 +114,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!category.roles.includes(selectedRole)) {
+    if (!category.roles?.includes(selectedRole)) {
       return NextResponse.json(
-        { success: false, error: "Invalid role for this category" },
+        {
+          success: false,
+          error: "Invalid role for category",
+          available: category.roles,
+        },
         { status: 400 },
       );
     }
 
-    // Update user in Better Auth's collection
-    const { db } = await import("@/lib/db");
-    const usersCollection = db.collection("users");
-
-    const { ObjectId } = await import("mongodb");
+    // Update user
+    const usersCollection = mongoose.connection.collection("user");
 
     await usersCollection.updateOne(
-      { _id: new ObjectId(session.user.id) },
+      { _id: new mongoose.Types.ObjectId(session.user.id) },
       {
         $set: {
           onboardingComplete: true,
-          selectedCategoryId: categoryId,
+          selectedCategoryId: new mongoose.Types.ObjectId(categoryId),
           selectedCategoryName: category.name,
           selectedCategorySlug: category.slug,
           selectedRole,
@@ -128,18 +141,6 @@ export async function POST(req: NextRequest) {
         },
       },
     );
-
-    // Refresh the session so middleware sees the updated onboardingComplete
-    await auth.api.updateUser({
-      headers: await headers(),
-      body: {
-        onboardingComplete: true,
-        selectedCategoryId: categoryId,
-        selectedCategoryName: category.name,
-        selectedCategorySlug: category.slug,
-        selectedRole,
-      } as any,
-    });
 
     return NextResponse.json({
       success: true,
@@ -150,10 +151,10 @@ export async function POST(req: NextRequest) {
         role: selectedRole,
       },
     });
-  } catch (error) {
-    console.error("Onboarding POST error:", error);
+  } catch (error: any) {
+    console.error("Onboarding error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to save onboarding" },
+      { success: false, error: error.message || "Server error" },
       { status: 500 },
     );
   }

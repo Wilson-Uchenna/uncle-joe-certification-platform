@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, Check, EyeIcon } from "lucide-react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -66,7 +68,7 @@ export default function LoginPage() {
     }
 
     setIsLoading(false);
-    // TODO: redirect on success, e.g. router.push("/dashboard")
+    router.push("/dashboard")
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

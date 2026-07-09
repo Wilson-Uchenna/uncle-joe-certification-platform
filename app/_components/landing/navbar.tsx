@@ -57,7 +57,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2 hidden min-[1024px]:flex">
           {loggedIn ? (
             <Link
-              href="/profile"
+              href="/dashboard"
               className="hidden md:block px-6 py-2 bg-opportunity-gold text-white rounded-full font-bold shadow-md hover:shadow-lg active:scale-95 transition-all"
             >
               Dashboard
@@ -119,7 +119,7 @@ export default function Navbar() {
           <div className="flex flex-col gap-3 pt-4">
             {loggedIn ? (
               <Link
-                href="/profile"
+                href="/dashboard"
                 onClick={() => setOpen(false)}
                 className="text-center text-sm font-bold text-white bg-opportunity-gold py-3 rounded-full hover:shadow-lg transition-all"
               >
