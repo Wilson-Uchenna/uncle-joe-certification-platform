@@ -7,6 +7,7 @@ import { Category } from "@/types/exam";
 interface ExamHeaderProps {
   category: Category;
   selectedRole: string;
+  skillLevel: "entry" | "mid" | "advanced";
   currentQuestion: number;
   totalQuestions: number;
   timeRemaining: number;
@@ -16,12 +17,19 @@ interface ExamHeaderProps {
 export function ExamHeader({
   category,
   selectedRole,
+  skillLevel,
   currentQuestion,
   totalQuestions,
   timeRemaining,
   saving = false,
 }: ExamHeaderProps) {
   const progress = ((currentQuestion + 1) / totalQuestions) * 100;
+
+  const levelColors = {
+    entry: "bg-emerald-100 text-emerald-700",
+    mid: "bg-amber-100 text-amber-700",
+    advanced: "bg-rose-100 text-rose-700",
+  };
 
   return (
     <div className="bg-white rounded-2xl p-4 mb-4 border border-slate-200">
@@ -35,6 +43,11 @@ export function ExamHeader({
             <span className="text-xs font-medium text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
               {selectedRole}
             </span>
+            <span
+            className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${levelColors[skillLevel]}`}
+          >
+            {skillLevel}
+          </span>
           </div>
           <p className="text-xs text-slate-500">
             Question {currentQuestion + 1} of {totalQuestions}

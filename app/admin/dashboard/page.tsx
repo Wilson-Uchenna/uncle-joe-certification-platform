@@ -12,6 +12,7 @@ import {
   TrendingUp,
   TrendingDown,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
@@ -64,12 +65,14 @@ export default function AdminDashboard() {
 
   // Show loading while checking session
   if (sessionLoading || loading || !analytics) {
+    
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-lg">Loading dashboard...</div>
+      <div className="min-h-screen w-full mx-auto flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
       </div>
-    );
+    )
   }
+  
 
   // Should not reach here if not admin (redirected above)
   if (!session?.user) return null;

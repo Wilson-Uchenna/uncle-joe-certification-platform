@@ -1,6 +1,6 @@
 "use client";
 
-import { MoveLeft, Check, ChevronRight, Clock, Target } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,11 +18,10 @@ type Category = {
 export default function RoleOnboardingPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [userSkillLevel, setUserSkillLevel] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
 
-  const [step, setStep] = useState<"categories" | "roles">("categories");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
@@ -53,7 +52,6 @@ export default function RoleOnboardingPage() {
 
       const data = await res.json();
       setCategories(data.categories);
-      setUserSkillLevel(data.userSkillLevel);
     } catch (err: any) {
       setFetchError(err.message);
     } finally {
@@ -62,14 +60,13 @@ export default function RoleOnboardingPage() {
   };
 
   const handleCategorySelect = (category: Category) => {
+    // Clicking the already-selected tag collapses it again
+    if (selectedCategory?._id === category._id) {
+      setSelectedCategory(null);
+      setSelectedRole("");
+      return;
+    }
     setSelectedCategory(category);
-    setSelectedRole("");
-    setStep("roles");
-  };
-
-  const handleBack = () => {
-    setStep("categories");
-    setSelectedCategory(null);
     setSelectedRole("");
     setSaveError("");
   };
@@ -81,9 +78,6 @@ export default function RoleOnboardingPage() {
     setSaveError("");
 
     try {
-      console.log("selectedCategory:", selectedCategory);
-      console.log("selectedCategory._id:", selectedCategory?._id);
-      console.log("selectedRole:", selectedRole);
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,21 +142,11 @@ export default function RoleOnboardingPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <p className="text-sm text-gray-500 mb-1">
-            Your skill level:{" "}
-            <span className="font-medium capitalize text-gray-700">
-              {userSkillLevel}
-            </span>
-          </p>
           <h1 className="text-2xl font-bold text-gray-900">
-            {step === "categories"
-              ? "Select Your Certification"
-              : "Select Your Role"}
+            Select Your Certification
           </h1>
           <p className="text-gray-500 mt-1">
-            {step === "categories"
-              ? "Choose a category that matches your expertise"
-              : `Within ${selectedCategory?.name}`}
+            Choose a category, then pick the role that matches your expertise
           </p>
         </div>
 
@@ -173,61 +157,37 @@ export default function RoleOnboardingPage() {
           </div>
         )}
 
-        {/* Step 1: Categories */}
-        {step === "categories" && (
-          <div className="space-y-3">
-            {categories.map((cat) => (
+        {/* Category tags */}
+        <div className="flex flex-wrap gap-2 mb-2">
+          {categories.map((cat) => {
+            const isSelected = selectedCategory?._id === cat._id;
+            return (
               <button
                 key={cat._id}
                 onClick={() => handleCategorySelect(cat)}
-                className="w-full text-left p-4 border rounded-xl hover:border-blue-500 hover:shadow-md transition group"
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border transition ${
+                  isSelected
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "bg-white border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-600"
+                }`}
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600">
-                      {cat.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                      {cat.description}
-                    </p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-blue-500" />
-                </div>
-                <div className="flex gap-4 mt-3 text-xs text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {cat.examTimeLimit} min
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Target className="w-3 h-3" />
-                    {cat.passThreshold}% to pass
-                  </span>
-                  <span>{cat.roles.length} roles</span>
-                </div>
+                {cat.name}
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${
+                    isSelected ? "rotate-180" : ""
+                  }`}
+                />
               </button>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
 
-        {/* Step 2: Roles */}
-        {step === "roles" && selectedCategory && (
-          <div>
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
-            >
-              <MoveLeft className="w-4 h-4" />
-              Back to categories
-            </button>
-
-            <div className="bg-blue-50 p-4 rounded-xl mb-6">
-              <h3 className="font-semibold text-blue-900">
-                {selectedCategory.name}
-              </h3>
-              <p className="text-sm text-blue-700 mt-1">
-                {selectedCategory.description}
-              </p>
-            </div>
+        {/* Roles dropdown panel — appears under the tags when a category is selected */}
+        {selectedCategory && (
+          <div className="mt-4 border border-gray-200 rounded-xl p-5 bg-gray-50/50">
+            <p className="text-sm text-gray-500 mb-4">
+              {selectedCategory.description}
+            </p>
 
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select your exact role:
@@ -241,7 +201,7 @@ export default function RoleOnboardingPage() {
                   className={`w-full text-left p-3 rounded-lg border transition ${
                     selectedRole === role
                       ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 hover:border-gray-300"
+                      : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">

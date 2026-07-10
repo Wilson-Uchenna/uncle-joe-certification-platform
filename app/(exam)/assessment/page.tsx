@@ -15,6 +15,7 @@ export default function ExamPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
+  const [selectedSkillLevel, setSelectedSkillLevel] = useState<"entry" | "mid" | "advanced" | null>(null);
   const [examResult, setExamResult] = useState<ExamSubmitResponse | null>(null);
 
   // API state
@@ -67,6 +68,11 @@ export default function ExamPage() {
     setSelectedRole(role);
   };
 
+  const handleSkillLevelSelect = (level: "entry" | "mid" | "advanced") => {
+    setSelectedSkillLevel(level);
+    setCurrentStep(4);
+  };
+
   const handleExamSubmit = (result: ExamSubmitResponse) => {
     setExamResult(result);
   };
@@ -75,6 +81,7 @@ export default function ExamPage() {
     setCurrentStep(1);
     setSelectedCategory(null);
     setSelectedRole("");
+    setSelectedSkillLevel(null);
     setExamResult(null);
     fetchCategories();
   };
@@ -162,19 +169,20 @@ export default function ExamPage() {
             selectedCategory={selectedCategory}
             selectedRole={selectedRole}
             onBack={() => setCurrentStep(2)}
-            onContinue={() => setCurrentStep(4)}
+            onContinue={handleSkillLevelSelect}
           />
         )}
 
-        {currentStep === 4 && selectedCategory && selectedRole && !examResult && (
+        {currentStep === 4 && selectedCategory && selectedRole && selectedSkillLevel && !examResult && (
           <Step3Exam
             category={selectedCategory}
             selectedRole={selectedRole}
+            skillLevel={selectedSkillLevel}
             onSubmit={handleExamSubmit}
           />
         )}
 
-        {currentStep === 4 && selectedCategory && selectedRole && examResult && (
+        {currentStep === 4 && selectedCategory && selectedRole && selectedSkillLevel && examResult && (
           <Step3Complete
             category={selectedCategory}
             selectedRole={selectedRole}

@@ -1,16 +1,15 @@
-"use client";
-
 import { Flag } from "lucide-react";
 
 interface QuestionCardProps {
   question: {
-    id: string;
     question: string;
     options: string[];
+    codeSnippet?: string;
+    language?: string;
   };
   selectedOptionIndex?: number;
   isFlagged: boolean;
-  onSelectOption: (optionIndex: number) => void;
+  onSelectOption: (index: number) => void;
   onToggleFlag: () => void;
 }
 
@@ -22,52 +21,49 @@ export function QuestionCard({
   onToggleFlag,
 }: QuestionCardProps) {
   return (
-    <div className="bg-white rounded-2xl p-6 mb-4 border border-slate-200">
+    <div className="bg-white rounded-xl p-6 border border-slate-200 mb-4">
+      {/* Question Text */}
       <div className="flex items-start justify-between mb-4">
-        <h3 className="text-[15px] font-semibold text-slate-900 leading-relaxed pr-4">
+        <p className="text-slate-800 font-medium leading-relaxed flex-1">
           {question.question}
-        </h3>
+        </p>
         <button
           onClick={onToggleFlag}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex-shrink-0 ${
-            isFlagged
-              ? "bg-amber-50 text-amber-700 border border-amber-200"
-              : "bg-slate-50 text-slate-500 border border-slate-200 hover:bg-amber-50 hover:text-amber-700"
+          className={`ml-3 p-2 rounded-lg transition-colors ${
+            isFlagged ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-400 hover:text-slate-600"
           }`}
         >
-          <Flag className="w-3.5 h-3.5" />
-          {isFlagged ? "Flagged" : "Flag"}
+          <Flag className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="flex flex-col gap-2.5">
-        {question.options.map((option, index) => {
-          const isSelected = selectedOptionIndex === index;
-          return (
-            <button
-              key={index}
-              onClick={() => onSelectOption(index)}
-              className={`text-left p-4 rounded-xl border-2 transition-all duration-150 text-[13.5px] ${
-                isSelected
-                  ? "border-violet-600 bg-violet-50 text-violet-900"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50/50"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                    isSelected
-                      ? "border-violet-600 bg-violet-600"
-                      : "border-slate-300"
-                  }`}
-                >
-                  {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
-                </div>
-                <span>{option}</span>
-              </div>
-            </button>
-          );
-        })}
+      {/* Code Snippet (from Question model, passed through API) */}
+      {question.codeSnippet && (
+        <pre className="bg-slate-900 text-slate-100 rounded-lg p-4 mb-4 overflow-x-auto">
+          <code className={`language-${question.language || "javascript"} text-sm font-mono`}>
+            {question.codeSnippet}
+          </code>
+        </pre>
+      )}
+
+      {/* Options */}
+      <div className="space-y-2">
+        {question.options.map((option, index) => (
+          <button
+            key={index}
+            onClick={() => onSelectOption(index)}
+            className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
+              selectedOptionIndex === index
+                ? "border-violet-500 bg-violet-50 text-violet-900"
+                : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+            }`}
+          >
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold mr-3">
+              {String.fromCharCode(65 + index)}
+            </span>
+            {option}
+          </button>
+        ))}
       </div>
     </div>
   );

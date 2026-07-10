@@ -14,7 +14,6 @@ export interface ProfileInput {
   school?: string;
   state?: string;
   country?: string;
-  skill_level?: "entry" | "mid" | "advanced";
 }
 
 // Define auth options separately for type inference
@@ -37,11 +36,7 @@ const authOptions = {
         input: true,
       },
       phone: { type: "string", input: true },
-      skillLevel: {
-        type: "string",
-        required: false,
-        input: true,
-      },
+
       employer: { type: "string" },
       state: {
         type: "string",
@@ -96,7 +91,7 @@ const authOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ to: email, otp }),
-          }
+          },
         );
 
         if (!res.ok) {
@@ -109,7 +104,6 @@ const authOptions = {
       defaultRole: "user",
       adminRoles: ["admin"],
     }),
-    nextCookies(),
   ],
 } satisfies BetterAuthOptions;
 
@@ -123,18 +117,21 @@ export const auth = betterAuth({
         .collection("user")
         .findOne(
           { _id: new ObjectId(user.id) },
-          { projection: { role: 1, skillLevel: 1, onboardingComplete: 1 } }
+          { projection: { role: 1, onboardingComplete: 1 } },
         );
 
       return {
         user: {
           ...user,
           role: (userDoc?.role as "user" | "admin") || "user",
-          skillLevel: userDoc?.skillLevel as "entry" | "mid" | "advanced" | undefined,
-          onboardingComplete: userDoc?.onboardingComplete as boolean | undefined,
+
+          onboardingComplete: userDoc?.onboardingComplete as
+            | boolean
+            | undefined,
         },
         session,
       };
     }, authOptions),
+    nextCookies(),
   ],
 });

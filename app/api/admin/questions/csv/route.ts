@@ -2,38 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAdmin } from "@/lib/api-utils";
 import { Question } from "@/models/Questions";
 import mongoose from "mongoose";
+import Papa from "papaparse";
 
 function parseCSV(text: string): Record<string, string>[] {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim());
-  if (lines.length < 2) return [];
-
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
-  const rows: Record<string, string>[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    // Handle quoted values with commas inside
-    const values: string[] = [];
-    let current = "";
-    let inQuotes = false;
-    for (const char of lines[i]) {
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === "," && !inQuotes) {
-        values.push(current.trim());
-        current = "";
-      } else {
-        current += char;
-      }
-    }
-    values.push(current.trim());
-
-    const row: Record<string, string> = {};
-    headers.forEach((h, idx) => {
-      row[h] = values[idx]?.replace(/^"|"$/g, "") || "";
-    });
-    rows.push(row);
-  }
-  return rows;
+  const result = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    transform: (value: string) => value.trim(),
+  });
+  return result.data as Record<string, string>[];
 }
 
 export const POST = withAdmin(async (req: NextRequest) => {
@@ -72,15 +49,23 @@ export const POST = withAdmin(async (req: NextRequest) => {
           return null;
         }
 
+        // Validate skillLevel
+        const skillLevel = row.skillLevel?.trim().toLowerCase();
+        if (!skillLevel || !["entry", "mid", "advanced"].includes(skillLevel)) {
+          return null;
+        }
+
         return {
           categoryId: new mongoose.Types.ObjectId(categoryId),
           question: row.question?.trim(),
           options,
           correctAnswer,
           explanation: row.explanation?.trim() || "",
-          difficulty: Math.min(5, Math.max(1, parseInt(row.difficulty) || 3)),
+          skillLevel, // ← FIXED: was `difficulty`
           isFinalStage: row.isFinalStage?.toLowerCase() === "true",
-          role: row.role?.trim() || null, // NEW: sub-role from CSV
+          role: row.role?.trim() || null,
+          codeSnippet: row.codeSnippet?.trim() || undefined,
+          language: row.language?.trim() || undefined,
           isActive: true,
           timesUsed: 0,
           timesCorrect: 0,
@@ -90,7 +75,7 @@ export const POST = withAdmin(async (req: NextRequest) => {
 
     if (questions.length === 0) {
       return NextResponse.json(
-        { success: false, error: "No valid questions found in CSV" },
+        { success: false, error: "No valid questions found in CSV. Ensure skillLevel is entry, mid, or advanced." },
         { status: 400 }
       );
     }

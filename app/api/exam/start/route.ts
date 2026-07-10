@@ -9,6 +9,14 @@ import { headers } from "next/headers";
 
 const TOTAL_QUESTIONS = 20;
 
+type SkillLevel = "entry" | "mid" | "advanced";
+
+const SKILL_LEVEL_TIME_LIMITS: Record<SkillLevel, number> = {
+  entry: 25,
+  mid: 30,
+  advanced: 45,
+};
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -24,16 +32,51 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    const body = await req.json();
-    const { categoryId, selectedRole, isFinalStage = false } = body;
+    const body = (await req.json()) as {
+      categoryId: string;
+      selectedRole: string;
+      skillLevel: SkillLevel;
+      isFinalStage?: boolean;
+    };
+    const { categoryId, selectedRole, skillLevel, isFinalStage = false } = body;
 
-    // ─── Validation ───
-    if (!categoryId || !selectedRole) {
+    if (!categoryId || !selectedRole || !skillLevel) {
       return NextResponse.json(
-        { success: false, error: "categoryId and selectedRole are required" },
+        {
+          success: false,
+          error: "categoryId, selectedRole, and skillLevel are required",
+        },
         { status: 400 },
       );
     }
+
+    if (!["entry", "mid", "advanced"].includes(skillLevel)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid skillLevel. Must be entry, mid, or advanced.",
+        },
+        { status: 400 },
+      );
+    }
+
+    // ─── Auto-abandon stale exams (> 2 hours old) ───
+    const staleThreshold = new Date(Date.now() - 5 * 60 * 1000);
+
+    await Exam.updateMany(
+      {
+        userId: session.user.id,
+        status: "in_progress",
+        startedAt: { $lt: staleThreshold },
+      },
+      {
+        $set: {
+          status: "abandoned",
+          passed: false,
+          completedAt: new Date(),
+        },
+      },
+    );
 
     // ─── Check ongoing exam ───
     const existingExam = await Exam.findOne({
@@ -52,13 +95,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // In start exam, after ongoing check:
+    // Rate limit
     const recentExams = await Exam.countDocuments({
       userId: session.user.id,
-      createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }, // Last hour
+      createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) },
     });
 
-    if (recentExams >= 1) {
+    if (recentExams >= 3) {
       return NextResponse.json(
         {
           success: false,
@@ -77,7 +120,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ─── Validate role exists in category ───
     if (!category.roles.includes(selectedRole)) {
       return NextResponse.json(
         { success: false, error: "Invalid role for this category" },
@@ -85,7 +127,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ─── Final stage qualification check ───
+    // ─── Final stage check ───
     if (isFinalStage) {
       const passedExam = await Exam.findOne({
         userId: session.user.id,
@@ -93,7 +135,6 @@ export async function POST(req: NextRequest) {
         passed: true,
         certificateDownloaded: true,
       });
-
       if (!passedExam) {
         return NextResponse.json(
           { success: false, error: "Not qualified for final stage" },
@@ -102,14 +143,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ─── 🔥 FIX: Filter by selectedRole ───
-    const timeLimit = isFinalStage ? 8 : category.examTimeLimit;
-
+    // ─── Fetch questions ───
     const questions = await Question.aggregate([
       {
         $match: {
           categoryId: new mongoose.Types.ObjectId(categoryId),
-          role: selectedRole, // ← ONLY questions for this sub-role
+          role: selectedRole,
+          skillLevel,
           isFinalStage,
           isActive: true,
         },
@@ -121,11 +161,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Not enough questions available for "${selectedRole}". Found ${questions.length}, need ${TOTAL_QUESTIONS}.`,
+          error: `Not enough questions available for "${selectedRole}" at ${skillLevel} level. Found ${questions.length}, need ${TOTAL_QUESTIONS}.`,
         },
         { status: 400 },
       );
     }
+
+    const timeLimit = SKILL_LEVEL_TIME_LIMITS[skillLevel];
 
     // ─── Create exam ───
     const exam = await Exam.create({
@@ -133,14 +175,12 @@ export async function POST(req: NextRequest) {
       userName: session.user.name,
       categoryId,
       categoryName: category.name,
-      skillLevel: category.skillLevel,
-      selectedRole, // ← Store the role on the exam
-      passThreshold: category.passThreshold || 60, // ← ADD
+      skillLevel,
+      selectedRole,
       questions: questions.map((q) => ({
         questionId: q._id,
         questionText: q.question,
         options: q.options,
-        correctAnswer: q.correctAnswer,
       })),
       totalQuestions: TOTAL_QUESTIONS,
       timeLimit,
@@ -149,7 +189,7 @@ export async function POST(req: NextRequest) {
       startedAt: new Date(),
     });
 
-    // ─── Return (no correct answers!) ───
+    // ─── Return ───
     return NextResponse.json({
       success: true,
       examId: exam._id,
@@ -157,10 +197,13 @@ export async function POST(req: NextRequest) {
         id: q._id,
         question: q.question,
         options: q.options,
+        codeSnippet: q.codeSnippet,
+        language: q.language,
       })),
       timeLimit,
       totalQuestions: TOTAL_QUESTIONS,
       selectedRole,
+      skillLevel,
     });
   } catch (error) {
     console.error("Exam start error:", error);

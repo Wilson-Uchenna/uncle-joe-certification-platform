@@ -27,7 +27,7 @@ export interface IExam extends Document {
   totalQuestions: number;
   correctCount: number;
   score: number;
-  timeLimit: number;
+  timeLimit: number; // 25 entry | 30 mid | 45 advanced
   timeUsed: number;
   startedAt: Date;
   completedAt?: Date;
@@ -101,7 +101,20 @@ const ExamSchema = new Schema<IExam>(
   { timestamps: true },
 );
 
-// All indexes defined here only — no inline index: true above
+// Auto-set timeLimit based on skillLevel before validation
+ExamSchema.pre<IExam>("validate", function (this: IExam) {
+  const timeLimits: Record<IExam["skillLevel"], number> = {
+    entry: 25,
+    mid: 30,
+    advanced: 45,
+  };
+
+  if (this.skillLevel && timeLimits[this.skillLevel]) {
+    this.timeLimit = timeLimits[this.skillLevel];
+  }
+});
+
+// All indexes defined here only
 ExamSchema.index({ userId: 1 });
 ExamSchema.index({ categoryId: 1 });
 ExamSchema.index({ isFinalStage: 1 });

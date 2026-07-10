@@ -21,16 +21,10 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const levelFromQuery = req.nextUrl.searchParams.get("level");
-    const skillLevel = levelFromQuery || session.user.skillLevel;
-
     const categories = await Category.find({
-      skillLevel,
       isActive: true,
     })
-      .select(
-        "name slug skillLevel description examTimeLimit passThreshold roles",
-      )
+      .select("name slug description roles")
       .sort({ name: 1 })
       .lean();
 

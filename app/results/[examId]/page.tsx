@@ -47,7 +47,7 @@ export default function ResultsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/results/${examId}`, {
+      const res = await fetch(`/api/result/${examId}`, {
         credentials: "include",
       });
 

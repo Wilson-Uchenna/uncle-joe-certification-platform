@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, ListOrdered, Check } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, ArrowRight, ListOrdered, Check, Zap } from "lucide-react";
 import { Category } from "@/types/exam";
 import { MotivationCard } from "@/app/_components/ui/MotivationCard";
 import { GradientButton } from "@/app/_components/ui/GradientButton";
@@ -9,7 +10,7 @@ interface Step3InstructionsProps {
   selectedCategory: Category;
   selectedRole: string;
   onBack: () => void;
-  onContinue: () => void;
+  onContinue: (skillLevel: "entry" | "mid" | "advanced") => void;
 }
 
 const purple = {
@@ -25,12 +26,47 @@ const instructions = [
   "Don't worry if you're unsure — you can explore additional categories later.",
 ];
 
+const skillLevels = [
+  {
+    value: "entry" as const,
+    label: "Entry Level",
+    description: "25 minutes • 20 questions",
+    icon: "🌱",
+    color: "from-emerald-500 to-emerald-700",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    textColor: "text-emerald-700",
+  },
+  {
+    value: "mid" as const,
+    label: "Mid Level",
+    description: "30 minutes • 20 questions",
+    icon: "⚡",
+    color: "from-amber-500 to-amber-700",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+    textColor: "text-amber-700",
+  },
+  {
+    value: "advanced" as const,
+    label: "Advanced",
+    description: "45 minutes • 20 questions",
+    icon: "🔥",
+    color: "from-rose-500 to-rose-700",
+    bgColor: "bg-rose-50",
+    borderColor: "border-rose-200",
+    textColor: "text-rose-700",
+  },
+];
+
 export function Step3Instructions({
   selectedCategory,
   selectedRole,
   onBack,
   onContinue,
 }: Step3InstructionsProps) {
+  const [selectedLevel, setSelectedLevel] = useState<"entry" | "mid" | "advanced" | null>(null);
+
   return (
     <div className="animate-fadeIn">
       {/* Selected State */}
@@ -53,6 +89,65 @@ export function Step3Instructions({
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-100 rounded-full text-xs font-semibold text-violet-800">
             {selectedRole}
           </span>
+        </div>
+      </div>
+
+      {/* Skill Level Selection */}
+      <div className="bg-white rounded-2xl p-6 mb-5 border border-[#e9e4f0]">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-violet-800 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <h2 className="text-[15px] font-bold text-[#1e1b4b] uppercase tracking-wide">
+            Select Your Skill Level
+          </h2>
+        </div>
+        <p className="text-[13px] text-slate-500 mb-4">
+          Choose the difficulty level that matches your current experience. This determines your exam time limit and difficulty.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {skillLevels.map((level) => {
+            const isSelected = selectedLevel === level.value;
+            return (
+              <button
+                key={level.value}
+                onClick={() => setSelectedLevel(level.value)}
+                className={`relative rounded-xl border-2 p-4 text-left transition-all duration-200 ${
+                  isSelected
+                    ? `${level.borderColor} ${level.bgColor} ring-2 ring-offset-1 ring-${level.textColor.split("-")[1]}-400`
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xl">{level.icon}</span>
+                  <span
+                    className={`text-sm font-bold ${
+                      isSelected ? level.textColor : "text-slate-700"
+                    }`}
+                  >
+                    {level.label}
+                  </span>
+                </div>
+                <p
+                  className={`text-xs ${
+                    isSelected ? level.textColor : "text-slate-500"
+                  }`}
+                >
+                  {level.description}
+                </p>
+                {isSelected && (
+                  <div className="absolute top-2 right-2">
+                    <div
+                      className={`w-5 h-5 rounded-full bg-gradient-to-br ${level.color} flex items-center justify-center`}
+                    >
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                    </div>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -109,7 +204,10 @@ export function Step3Instructions({
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
-        <GradientButton onClick={onContinue}>
+        <GradientButton
+          onClick={() => selectedLevel && onContinue(selectedLevel)}
+          disabled={!selectedLevel}
+        >
           <ArrowRight className="w-5 h-5" />
           Start Exam
         </GradientButton>

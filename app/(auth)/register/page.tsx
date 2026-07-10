@@ -80,9 +80,7 @@ export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState<
-    ProfileInput["skill_level"] | ""
-  >("");
+
   const [agreed, setAgreed] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -91,7 +89,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     phone: "",
-    skillLevel: "",
+
     employer: "",
     state: "",
     country: "Nigeria",
@@ -124,7 +122,7 @@ export default function RegisterPage() {
   };
 
   const validateStep2 = () => {
-    if (!formData.skillLevel || !formData.state || !formData.country) {
+    if (!formData.state || !formData.country) {
       setError("Please fill in all required fields");
       return false;
     }
@@ -157,7 +155,7 @@ export default function RegisterPage() {
       name: formData.fullName,
       fullName: formData.fullName,
       phone: formData.phone,
-      skillLevel: formData.skillLevel,
+
       employer: formData.employer,
       state: formData.state,
       country: formData.country,
@@ -474,37 +472,6 @@ export default function RegisterPage() {
                     className="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg text-body-md text-on-surface-variant cursor-not-allowed"
                   />
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 md:col-span-2 md:basis-[60vw]">
-              <label className="text-label-caps text-on-surface-variant uppercase">
-                Skill Level
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {SKILL_LEVELS.map((level) => {
-                  const active = formData.skillLevel === level.key; // ← USE formData.skillLevel
-                  return (
-                    <button
-                      key={level.key}
-                      type="button"
-                      onClick={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          skillLevel: level.key,
-                        }));
-                      }}
-                      className={`group flex flex-col items-center gap-2 p-3 border-2 rounded-xl transition-all text-center active:scale-95 ${
-                        active
-                          ? "border-secondary bg-secondary-container/10 ring-2 ring-secondary/20"
-                          : "border-outline-variant hover:border-secondary/50"
-                      }`}
-                    >
-                      <span className="text-body-md font-bold text-on-surface">
-                        {level.label}
-                      </span>
-                    </button>
-                  );
-                })}
               </div>
             </div>
           </div>

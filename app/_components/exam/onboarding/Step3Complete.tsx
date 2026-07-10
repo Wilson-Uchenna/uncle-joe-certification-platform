@@ -136,7 +136,16 @@ export function Step3Complete({
           <ArrowRight className="w-4 h-4" />
           Back to Dashboard
         </Link>
-        <Link href={`/results/${result.examId}`}>View Full Results</Link>
+        <Link
+          href={`/results/${result.examId}`}
+          className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white rounded-lg transition-all hover:-translate-y-0.5"
+          style={{
+            background: `linear-gradient(135deg, ${purple.normal}, ${purple.dark})`,
+            boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)",
+          }}
+        >
+          View Full Results
+        </Link>
       </div>
     </div>
   );
