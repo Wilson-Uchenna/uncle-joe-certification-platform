@@ -28,7 +28,6 @@ export interface IResult extends Document {
     type: String;
     enum: ["pending", "approved", "rejected"];
     default: "pending";
-    index: true;
   };
   certificateApprovedAt: Date;
   certificateApprovedBy: String; // admin user id
@@ -78,7 +77,7 @@ const ResultSchema = new Schema<IResult>(
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
-      index: true,
+      
     },
     certificateApprovedAt: Date,
     certificateApprovedBy: String, // admin user id

@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, AlertTriangle, ShieldAlert } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  ShieldAlert,
+} from "lucide-react";
 import { Category, ExamStartResponse, ExamSubmitResponse } from "@/types/exam";
 import { ExamHeader } from "./ExamHeader";
 import { QuestionCard } from "./QuestionCard";
@@ -17,7 +22,12 @@ interface Step3ExamProps {
   onSubmit: (result: ExamSubmitResponse) => void;
 }
 
-export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step3ExamProps) {
+export function Step3Exam({
+  category,
+  selectedRole,
+  skillLevel,
+  onSubmit,
+}: Step3ExamProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,7 +36,9 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
 
   // Exam data
   const [examId, setExamId] = useState("");
-  const [questions, setQuestions] = useState<ExamStartResponse["questions"]>([]);
+  const [questions, setQuestions] = useState<ExamStartResponse["questions"]>(
+    [],
+  );
   const [timeLimit, setTimeLimit] = useState(0);
 
   // Exam state
@@ -65,7 +77,9 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 400 && data.error === "You have an ongoing exam") {
-          setError("You have an ongoing exam. Please resume from your dashboard.");
+          setError(
+            "You have an ongoing exam. Please resume from your dashboard.",
+          );
           return;
         }
         throw new Error(data.error || "Failed to start exam");
@@ -153,7 +167,8 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
 
   // ===== TIMER =====
   useEffect(() => {
-    if (loading || timeRemaining <= 0 || cheatingDetected || showWarning) return;
+    if (loading || timeRemaining <= 0 || cheatingDetected || showWarning)
+      return;
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -169,12 +184,24 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
 
   // ===== AUTO-SAVE =====
   useEffect(() => {
-    if (loading || !examId || cheatingDetected || showWarning) return;
-    const autoSave = setInterval(() => {
-      saveAnswer(currentQuestion, false);
-    }, 30000);
-    return () => clearInterval(autoSave);
-  }, [currentQuestion, answers, examId, loading, cheatingDetected, showWarning]);
+  if (loading || !examId || cheatingDetected || showWarning) return;
+  
+  const autoSave = setInterval(() => {
+    const currentAnswer = answers[currentQuestion];
+    if (currentAnswer !== undefined) {
+      saveAnswerDirect(currentQuestion, currentAnswer, false);
+    }
+  }, 30000);
+  
+  return () => clearInterval(autoSave);
+}, [
+  currentQuestion,
+  answers,
+  examId,
+  loading,
+  cheatingDetected,
+  showWarning,
+]);
 
   // ===== PREVENT REFRESH =====
   useEffect(() => {
@@ -188,34 +215,51 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
   }, [showWarning]);
 
   // ===== SAVE ANSWER =====
-  const saveAnswer = async (questionIndex: number, showLoading = true) => {
-    if (!examId || answers[questionIndex] === undefined) return;
-    if (showLoading) setSaving(true);
-    try {
-      await fetch("/api/exam/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          examId,
-          questionIndex,
-          answerIndex: answers[questionIndex],
-          timeSpent: 0,
-        }),
-      });
-    } catch (err) {
-      console.error("Auto-save failed:", err);
-    } finally {
-      if (showLoading) setSaving(false);
-    }
-  };
+  
 
   // ===== SELECT ANSWER =====
   const selectAnswer = (optionIndex: number) => {
-    if (cheatingDetected || showWarning) return;
-    setAnswers((prev) => ({ ...prev, [currentQuestion]: optionIndex }));
-    setTimeout(() => saveAnswer(currentQuestion, false), 100);
-  };
+  if (cheatingDetected || showWarning) return;
+  
+  // Update state
+  setAnswers((prev) => ({ ...prev, [currentQuestion]: optionIndex }));
+  
+  // Save directly with the value, don't read from stale state
+  saveAnswerDirect(currentQuestion, optionIndex);
+};
+
+const saveAnswerDirect = async (questionIndex: number, answerIndex: number, showLoading = true) => {
+  if (!examId) {
+    console.log("saveAnswerDirect: no examId");
+    return;
+  }
+
+  if (showLoading) setSaving(true);
+  try {
+    const res = await fetch("/api/exam/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        examId,
+        questionIndex,
+        answerIndex,
+        timeSpent: 0,
+      }),
+    });
+
+    const data = await res.json();
+    console.log("saveAnswerDirect response:", data);
+    
+    if (!res.ok) {
+      console.error("saveAnswerDirect failed:", data.error);
+    }
+  } catch (err) {
+    console.error("saveAnswerDirect error:", err);
+  } finally {
+    if (showLoading) setSaving(false);
+  }
+};
 
   // ===== TOGGLE FLAG =====
   const toggleFlag = () => {
@@ -236,7 +280,8 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
 
   const goNext = () => {
     if (cheatingDetected || showWarning) return;
-    if (currentQuestion < questions.length - 1) setCurrentQuestion((p) => p + 1);
+    if (currentQuestion < questions.length - 1)
+      setCurrentQuestion((p) => p + 1);
   };
 
   const goPrev = () => {
@@ -290,12 +335,15 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
         <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <ShieldAlert className="w-8 h-8 text-red-600" />
-            <h2 className="text-xl font-bold text-red-800">Exam Integrity Policy</h2>
+            <h2 className="text-xl font-bold text-red-800">
+              Exam Integrity Policy
+            </h2>
           </div>
-          
+
           <p className="text-red-700 mb-6 leading-relaxed">
-            This exam is strictly monitored. Any attempt to cheat will result in immediate termination 
-            and a failed grade. By proceeding, you agree to the following rules:
+            This exam is strictly monitored. Any attempt to cheat will result in
+            immediate termination and a failed grade. By proceeding, you agree
+            to the following rules:
           </p>
 
           <div className="space-y-3 mb-8">
@@ -315,10 +363,12 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
           </div>
 
           <div className="bg-white rounded-xl p-4 border border-red-200 mb-6">
-            <p className="text-sm text-red-600 font-semibold mb-1">Zero Tolerance</p>
+            <p className="text-sm text-red-600 font-semibold mb-1">
+              Zero Tolerance
+            </p>
             <p className="text-sm text-red-500">
-              There are no warnings. The first violation will immediately submit your exam 
-              with a failing score. No appeals.
+              There are no warnings. The first violation will immediately submit
+              your exam with a failing score. No appeals.
             </p>
           </div>
 
@@ -377,10 +427,12 @@ export function Step3Exam({ category, selectedRole, skillLevel, onSubmit }: Step
       <div className="flex items-center justify-center py-20">
         <div className="text-center max-w-md px-6">
           <div className="text-6xl mb-4">🚫</div>
-          <h2 className="text-xl font-bold text-red-600 mb-2">Exam Terminated</h2>
+          <h2 className="text-xl font-bold text-red-600 mb-2">
+            Exam Terminated
+          </h2>
           <p className="text-slate-600 mb-4 text-sm">
-            Your exam has been submitted due to a violation of exam integrity rules. 
-            This incident has been recorded.
+            Your exam has been submitted due to a violation of exam integrity
+            rules. This incident has been recorded.
           </p>
           <button
             onClick={() => router.push("/dashboard")}

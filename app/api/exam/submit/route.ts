@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     exam.qualifiesForFinals = passed && !exam.isFinalStage;
 
     await exam.save();
-    const EMBARGO_HOURS = Number(process.env.RESULTS_EMBARGO_HOURS) || 24;
+    const EMBARGO_HOURS = Number(process.env.RESULTS_EMBARGO_HOURS) || 5;
 
     // Create result
     const result = await Result.create({
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       passed,
       certificateAvailable: passed,
       certificateDownloaded: false,
-      resultsAvailableAt: new Date(Date.now() + EMBARGO_HOURS * 60 * 60 * 1000), // 24 hours embargo
+      resultsAvailableAt: new Date(Date.now() + EMBARGO_HOURS * 60 * 1000), // 24 hours embargo
     });
 
     // Update rankings (async, don't block)

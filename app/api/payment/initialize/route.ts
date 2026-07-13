@@ -10,14 +10,20 @@ export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      );
     }
 
     await connectDB();
     const { examId, amount = 5000, type = "certificate" } = await req.json();
 
     if (!examId || amount <= 0) {
-      return NextResponse.json({ success: false, error: "Invalid data" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Invalid data" },
+        { status: 400 },
+      );
     }
 
     const exam = await Exam.findOne({
@@ -29,7 +35,7 @@ export async function POST(req: NextRequest) {
     if (!exam) {
       return NextResponse.json(
         { success: false, error: "Exam not found or not passed" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -43,7 +49,7 @@ export async function POST(req: NextRequest) {
     if (existing) {
       return NextResponse.json(
         { success: false, error: "Already paid for this certificate" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -65,29 +71,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const data = await paystack.transaction.initialize({
-      email: session.user.email!,
-      amount: amount * 100,
-      reference,
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/verify?ref=${reference}`,
-      metadata: {
-        examId: examId.toString(),
-        userId: session.user.id,
-        type,
-      },
-    });
-
     return NextResponse.json({
       success: true,
-      authorization_url: data.authorization_url,
-      access_code: data.access_code,
       reference,
+      email: session.user.email,
+      amount,
     });
   } catch (error: any) {
     console.error("Payment init error:", error);
     return NextResponse.json(
       { success: false, error: error.message || "Failed to initialize" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

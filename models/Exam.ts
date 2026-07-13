@@ -4,6 +4,7 @@ export interface IExamQuestion {
   questionId: mongoose.Types.ObjectId;
   questionText: string;
   options: string[];
+  correctAnswer: number;  // ← ADD THIS
   selectedAnswer?: number;
   isCorrect?: boolean;
   timeSpent?: number;
@@ -13,7 +14,8 @@ export type ExamStatus =
   | "in_progress"
   | "completed"
   | "timed_out"
-  | "abandoned";
+  | "abandoned"
+  | "cheating_detected";  // ← ADD THIS
 
 export interface IExam extends Document {
   userId: string;
@@ -50,6 +52,7 @@ const ExamQuestionSchema = new Schema<IExamQuestion>(
     },
     questionText: { type: String, required: true },
     options: [{ type: String, required: true }],
+    correctAnswer: { type: Number, required: true },  // ← ADD THIS
     selectedAnswer: Number,
     isCorrect: Boolean,
     timeSpent: { type: Number, default: 0 },
@@ -87,7 +90,7 @@ const ExamSchema = new Schema<IExam>(
 
     status: {
       type: String,
-      enum: ["in_progress", "completed", "timed_out", "abandoned"],
+      enum: ["in_progress", "completed", "timed_out", "abandoned", "cheating_detected"],
       default: "in_progress",
     },
     passed: { type: Boolean, default: false },

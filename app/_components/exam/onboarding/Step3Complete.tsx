@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Award, AlertCircle, Check, ArrowRight, Download } from "lucide-react";
 import { Category, ExamSubmitResponse } from "@/types/exam";
+import { useRouter } from "next/navigation";
 
 interface Step3CompleteProps {
   category: Category;
@@ -23,7 +24,10 @@ export function Step3Complete({
   result,
   onRestart,
 }: Step3CompleteProps) {
+  const router = useRouter()
   const passed = result.passed;
+  const examId = result.examId;
+  const score = result.score;
 
   return (
     <div className="animate-fadeIn max-w-[600px] mx-auto">
@@ -109,7 +113,7 @@ export function Step3Complete({
             </div>
             <button
               className="mt-2 inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-violet-700 bg-violet-50 rounded-lg border border-violet-200 hover:bg-violet-100 transition-colors"
-              onClick={() => alert("Download certificate — wire to API")}
+              onClick={() => router.push(`/certificate-payment?examId=${examId}&score=${score}`)}
             >
               <Download className="w-4 h-4" />
               Download Certificate

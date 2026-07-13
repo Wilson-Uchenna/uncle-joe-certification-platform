@@ -1,4 +1,4 @@
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY!;
+const PAYSTACK_SECRET = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY!;
 const PAYSTACK_BASE = "https://api.paystack.co";
 
 async function paystackFetch<T = any>(endpoint: string, options?: RequestInit): Promise<T> {

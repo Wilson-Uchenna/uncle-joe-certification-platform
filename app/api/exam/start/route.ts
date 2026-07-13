@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     // Rate limit
     const recentExams = await Exam.countDocuments({
       userId: session.user.id,
-      createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) },
+      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) },
     });
 
     if (recentExams >= 3) {
@@ -181,6 +181,7 @@ export async function POST(req: NextRequest) {
         questionId: q._id,
         questionText: q.question,
         options: q.options,
+        correctAnswer: q.correctAnswer, // ← ADD THIS
       })),
       totalQuestions: TOTAL_QUESTIONS,
       timeLimit,
@@ -199,6 +200,7 @@ export async function POST(req: NextRequest) {
         options: q.options,
         codeSnippet: q.codeSnippet,
         language: q.language,
+        selectedAnswer: q.selectedAnswer
       })),
       timeLimit,
       totalQuestions: TOTAL_QUESTIONS,

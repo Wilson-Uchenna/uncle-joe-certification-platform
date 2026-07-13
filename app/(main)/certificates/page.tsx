@@ -84,8 +84,12 @@ export default function CertificatesPage() {
       {results.length === 0 && (
         <div className="text-center py-16 bg-gray-50 rounded-xl">
           <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">No certificates yet</h3>
-          <p className="text-gray-500 mt-1">Complete an exam to earn your first certificate.</p>
+          <h3 className="text-lg font-medium text-gray-900">
+            No certificates yet
+          </h3>
+          <p className="text-gray-500 mt-1">
+            Complete an exam to earn your first certificate.
+          </p>
           <button
             onClick={() => router.push("/assessment")}
             className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -118,7 +122,9 @@ export default function CertificatesPage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">{result.categoryName}</h3>
+                  <h3 className="font-medium text-gray-900">
+                    {result.categoryName}
+                  </h3>
                   <p className="text-sm text-gray-500 capitalize">
                     {result.skillLevel} Level • {result.score}% Score
                   </p>
@@ -150,20 +156,12 @@ export default function CertificatesPage() {
                         Verifying...
                       </button>
                     ) : (
-                      <PaystackButton
-                        email={session!.user!.email!}
-                        amount={5000}
-                        reference={`CERT-${result.examId}-${Date.now()}`}
-                        metadata={{
-                          examId: result.examId,
-                          userId: session!.user!.id,
-                        }}
-                        onSuccess={handlePaymentSuccess}
-                        className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+                      <button
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg"
+                        onClick={() => router.push(`/certificates/payments/?examId=${result.examId}&score=${result.score}`)}
                       >
-                        <CreditCard className="w-4 h-4" />
-                        Pay ₦5,000
-                      </PaystackButton>
+                        Continue to payment
+                      </button>
                     )}
                   </>
                 )}

@@ -57,19 +57,20 @@ export default function PaystackButton({
       return;
     }
 
-    const popup = new window.PaystackPop();
-    popup.newTransaction({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+    const params = {
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
       email,
-      amount: amount * 100, // kobo
+      amount: Math.round(amount * 100),
       reference,
       metadata,
-      onSuccess: (transaction: any) => {
-        onSuccess(transaction.reference);
-      },
-      onCancel: () => {
-        onCancel?.();
-      },
+    };
+    console.log("Paystack params:", params); // TEMP — check this in console
+
+    const popup = new window.PaystackPop();
+    popup.newTransaction({
+      ...params,
+      onSuccess: (transaction: any) => onSuccess(transaction.reference),
+      onCancel: () => onCancel?.(),
     });
   };
 

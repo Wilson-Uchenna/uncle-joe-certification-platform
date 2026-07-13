@@ -3,21 +3,27 @@ import connectDB from "@/lib/local-db";
 import { Payment } from "@/models/payment";
 import { Exam } from "@/models/Exam";
 import { paystack } from "@/lib/paystack";
+import { Result} from '@/models/ExamResults'
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    const { searchParams } = new URL(req.url);
-    const reference = searchParams.get("ref") || searchParams.get("reference");
+    const { reference, examId } = await req.json();
 
     if (!reference) {
-      return NextResponse.json({ success: false, error: "No reference" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "No reference" },
+        { status: 400 },
+      );
     }
 
     const payment = await Payment.findOne({ providerReference: reference });
     if (!payment) {
-      return NextResponse.json({ success: false, error: "Payment not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Payment not found" },
+        { status: 404 },
+      );
     }
 
     if (payment.status === "success") {
@@ -41,6 +47,9 @@ export async function GET(req: NextRequest) {
         await Exam.findByIdAndUpdate(payment.examId, {
           certificatePaidAt: new Date(),
         });
+        await Result.findByIdAndUpdate(payment.examId, {
+          
+        })
       }
 
       return NextResponse.json({
@@ -63,7 +72,7 @@ export async function GET(req: NextRequest) {
     console.error("Verify error:", error);
     return NextResponse.json(
       { success: false, error: error.message || "Verification failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
