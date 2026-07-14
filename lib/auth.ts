@@ -19,6 +19,12 @@ export interface ProfileInput {
 // Define auth options separately for type inference
 const authOptions = {
   secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL ?? `https://${process.env.VERCEL_URL}`,
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://uncle-joe-certification-platform.vercel.app",
+    "https://uncle-joe-certification-platform-*.vercel.app",
+  ],
   database: mongodbAdapter(db),
   emailAndPassword: {
     enabled: true,
