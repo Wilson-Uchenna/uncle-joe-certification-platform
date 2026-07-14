@@ -11,7 +11,7 @@ export default function Certification() {
               Certification
             </span>
             <h2 className="text-2xl md:text-3xl font-medium text-gray-900 mb-4">
-              What is a Skillora Certification?
+              What is an African Remote Workers Professional Certification?
             </h2>
             <p className="text-sm text-gray-500 leading-relaxed max-w-2xl mx-auto">
               Official recognition that you've successfully completed a
@@ -61,7 +61,7 @@ export default function Certification() {
               </h3>
 
               <p className="text-sm text-gray-500 mb-4">
-                A Skillora Certification helps you:
+                an African Remote Workers Professional Certification helps you:
               </p>
 
               <div className="space-y-3">

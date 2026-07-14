@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function TopNav() {
   return (
-    <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0">
+    <header className="h-14 bg-white border-b border-slate-200 hidden lg:flex items-center justify-between px-6 flex-shrink-0">
       {/* Left: Progress Steps */}
       <div className="flex items-center gap-2 text-xs font-medium">
         <span className="flex items-center gap-1.5 text-emerald-600">

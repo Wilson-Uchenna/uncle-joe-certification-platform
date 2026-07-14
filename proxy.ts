@@ -11,7 +11,7 @@ export async function proxy(request: NextRequest) {
   const isLoggedIn = !!session?.user;
 
   // Public paths that don't need auth
-  const publicPaths = ["/", "/login", "/register", "/verify-email", "/admin/login", "/admin/register"];
+  const publicPaths = ["/", "/login", "/register", "/verify-email", "/admin/login", "/admin/register", "/forgot-password"];
   const isPublic = publicPaths.includes(pathname);
 
   if (isLoggedIn && session.user.role === "admin") {

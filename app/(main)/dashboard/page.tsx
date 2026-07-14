@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   return (
     <>
       {/* Welcome Header */}
-      <div className="flex justify-between items-start mb-5">
+      <div className="flex flex-col md:flex-row justify-between items-start mb-5">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             Welcome back, {session.user.name} 👋
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
           Quick Actions
         </h2>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button className="px-5 py-2.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg hover:bg-slate-800 transition">
             Start a New Course
           </button>

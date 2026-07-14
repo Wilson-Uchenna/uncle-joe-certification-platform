@@ -68,7 +68,7 @@ export default function LoginPage() {
     }
 
     setIsLoading(false);
-    router.push("/dashboard")
+    router.push("/dashboard");
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -220,30 +220,30 @@ export default function LoginPage() {
                 Remember me
               </label>
             </div>
-            <a
-              href="#"
+            <Link
+              href="/forgot-password"
               className="text-sm text-indigo-600 hover:underline font-medium"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           {/* Submit button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-96 mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full max-w-96 mx-auto block bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLoading
               ? step === "otp"
                 ? "Verifying..."
                 : "Sending..."
               : step === "otp"
-              ? "Verify"
-              : "Send Code"}
+                ? "Verify"
+                : "Send Code"}
           </button>
 
-           {/* Admin Login Link */}
+          {/* Admin Login Link */}
           <div className="text-center">
             <Link
               href="/admin/login"

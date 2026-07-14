@@ -57,7 +57,7 @@ export default function CertificationUse() {
           </h3>
 
           <p className="text-sm text-gray-300 leading-relaxed mb-8">
-            Every Skillora Certification includes a secure verification code
+            Every African Remote Workers Professional Certification includes a secure verification code
             that allows employers and institutions to confirm its authenticity —
             ensuring trust, credibility, and recognition for every learner's
             achievement.

@@ -35,21 +35,30 @@ export async function GET(
     }
 
     return NextResponse.json({
-      success: true,
-      result: {
-        _id: result._id,
-        examId,
-        userId: result.userId,
-        userName: result.userName,
-        categoryName: result.categoryName,
-        skillLevel: result.skillLevel,
-        selectedRole: result.selectedRole,
-        score: result.score,
-        passed: result.passed,
-        certificatePaidAt: result.certificatePaidAt,
-        certificateDownloaded: result.certificateDownloaded,
-      },
-    });
+  success: true,
+  result: {
+    _id: result._id,
+    examId,
+    userId: result.userId,
+    userName: result.userName,
+    categoryName: result.categoryName,
+    skillLevel: result.skillLevel,
+    selectedRole: result.selectedRole,
+    score: result.score,
+    correctCount: result.correctCount,
+    totalQuestions: result.totalQuestions,
+    passed: result.passed,
+    certificateAvailable: result.certificateAvailable,
+    certificatePaidAt: result.certificatePaidAt,
+    certificateDownloaded: result.certificateDownloaded,
+    resultsAvailableAt: result.resultsAvailableAt,
+    breakdown: result.breakdown,
+    categoryRank: result.categoryRank,
+    overallRank: result.overallRank,
+    stateRank: result.stateRank,
+    shareUrl: result.shareUrl,
+  },
+});
   } catch (error) {
     console.error("Result GET error:", error);
     return NextResponse.json(

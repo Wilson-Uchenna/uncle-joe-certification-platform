@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -15,7 +15,9 @@ import {
   Gem,
   Bell,
   User,
+  LogOut,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -35,11 +37,15 @@ const navItems = [
   { href: "/profile", label: "Profile", icon: User },
 ];
 
-
-
 export function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    router.push("/login");
+  };
 
   function handleLogoClick(e: React.MouseEvent) {
     if (pathname === "/") {
@@ -53,12 +59,12 @@ export function Sidebar() {
       {/* ===== DESKTOP SIDEBAR (lg and up) ===== */}
       <aside className="hidden lg:flex w-60 bg-slate-900 text-white flex-col flex-shrink-0">
         <Link
-                  href="/"
-                  onClick={handleLogoClick}
-                  className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-4 items-center my-4"
-                >
-                  <img src="/skillora-3.png" alt="Company Logo" className="w-28 h-10" />
-                </Link>
+          href="/"
+          onClick={handleLogoClick}
+          className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-4 items-center my-4"
+        >
+          <img src="/skillora-3.png" alt="Company Logo" className="w-28 h-10" />
+        </Link>
 
         <nav className="flex-1 px-3 pb-4 space-y-0.5">
           {navItems.map((item) => {
@@ -81,6 +87,16 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2.5 w-full text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            Sign Out
+          </button>
+        </div>
       </aside>
 
       {/* ===== MOBILE HEADER (below lg) ===== */}
@@ -152,6 +168,16 @@ export function Sidebar() {
               );
             })}
           </nav>
+
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-3 py-2.5 w-full text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
     </>

@@ -82,26 +82,43 @@ const authOptions = {
   plugins: [
     emailOTP({
       async sendVerificationOTP({ email, otp, type }) {
+        console.log("EMAIL OTP CALLED", {
+          email,
+          otp,
+          type,
+        });
+
         let endpoint;
+
         if (type === "sign-in") {
           endpoint = "signin";
         } else if (type === "email-verification") {
           endpoint = "verification";
-        } else {
-          endpoint = "reset-password";
+        } else if (type === "forget-password") {
+          endpoint = "forget-password";
         }
 
-        const baseurl = process.env.BETTER_AUTH_URL || `https://${process.env.VERCEL_URL}`;
+        const baseurl =
+          process.env.BETTER_AUTH_URL || `https://${process.env.VERCEL_URL}`;
 
+        console.log("BASE URL:", baseurl);
+        console.log("ENDPOINT:", endpoint);
 
-        const res = await fetch(
-          `${baseurl}/api/email/send/${endpoint}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ to: email, otp }),
+        const res = await fetch(`${baseurl}/api/email/send/${endpoint}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            to: email,
+            otp,
+          }),
+        });
+
+        console.log("EMAIL RESPONSE STATUS:", res.status);
+
+        const text = await res.text();
+        console.log("EMAIL RESPONSE BODY:", text);
 
         if (!res.ok) {
           throw new Error(`Failed to send OTP email: ${res.status}`);
