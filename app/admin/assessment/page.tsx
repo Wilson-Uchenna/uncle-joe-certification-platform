@@ -95,6 +95,7 @@ export default function AssessmentManagement() {
   const handleCategoryChange = (id: string) => {
     setCategoryId(id);
     const cat = categories.find((c) => c._id === id) || null;
+    console.log(cat)
     setSelectedCategory(cat);
     setQuestions([]);
   };
