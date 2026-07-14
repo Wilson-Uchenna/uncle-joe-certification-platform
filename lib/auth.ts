@@ -91,11 +91,11 @@ const authOptions = {
           endpoint = "reset-password";
         }
 
-        const baseUrl = process.env.BETTER_AUTH_URL || `https://${process.env.VERCEL_URL}`;
+        const baseurl = process.env.BETTER_AUTH_URL || `https://${process.env.VERCEL_URL}`;
 
 
         const res = await fetch(
-          `${baseUrl}/api/email/send/${endpoint}`,
+          `${baseurl}/api/email/send/${endpoint}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
