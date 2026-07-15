@@ -349,7 +349,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-lg leading-relaxed mb-6">
-            Skillora is an absolute game-changer. I took the exam, seamlessly
+            A.R.W.P.C is an absolute game-changer. I took the exam, seamlessly
             downloaded my certificate, and landed a remote internship just two
             weeks later
           </p>

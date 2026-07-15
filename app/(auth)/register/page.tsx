@@ -204,7 +204,7 @@ export default function RegisterPage() {
         {/* Added Welcome Message */}
         <div className="bg-indigo-50 rounded-xl p-5 mb-8 border border-indigo-100">
           <h3 className="text-sm font-semibold text-indigo-900 mb-2">
-            Welcome to Skillora Certification!
+            Welcome to African Remote Workers Certification Platform!
           </h3>
           <p className="text-xs text-indigo-700 leading-relaxed mb-2">
             Whether you're preparing for your first job, looking to upskill, or
@@ -212,7 +212,7 @@ export default function RegisterPage() {
             right place.
           </p>
           <p className="text-xs text-indigo-700 leading-relaxed">
-            Skillora is designed to help you learn practical skills, earn
+            A.R.W.P.C is designed to help you learn practical skills, earn
             certifications that showcase your abilities, and connect with
             opportunities that move your career forward.
           </p>
@@ -615,7 +615,7 @@ export default function RegisterPage() {
           </div>
 
           <p className="text-lg leading-relaxed mb-6">
-            Skillora is an absolute game-changer. I took the exam, seamlessly
+            A.R.W.P.C is an absolute game-changer. I took the exam, seamlessly
             downloaded my certificate, and landed a remote internship just two
             weeks later
           </p>

@@ -4,7 +4,7 @@ const STORIES = [
     stat: "4 months",
     statLabel: "to first offer",
     quote:
-      "Skillora gave me the certifications I needed to transition from retail into tech. Within 4 months of completing the Data Analytics track, I had three job offers. I chose Stripe and couldn't be happier.",
+      "A.R.W.P.C gave me the certifications I needed to transition from retail into tech. Within 4 months of completing the Data Analytics track, I had three job offers. I chose Stripe and couldn't be happier.",
     name: "Jonathan Mike",
     role: "Data Analyst",
   },
@@ -13,7 +13,7 @@ const STORIES = [
     stat: "2×",
     statLabel: "salary increase",
     quote:
-      "I was self-taught with no formal credentials. Skillora's certifications made my resume credible and their job board connected me to a role I genuinely love. The mentorship was the real game changer.",
+      "I was self-taught with no formal credentials. A.R.W.P.C's certifications made my resume credible and their job board connected me to a role I genuinely love. The mentorship was the real game changer.",
     name: "Liam Carter",
     role: "Cybersecurity Analyst",
   },
@@ -22,7 +22,7 @@ const STORIES = [
     stat: "6 weeks",
     statLabel: "to full-time offer",
     quote:
-      "Fresh out of university with a business degree, I had no idea how to break into product management. Skillora's PM certification and internship match gave me everything I needed.",
+      "Fresh out of university with a business degree, I had no idea how to break into product management. A.R.W.P.C's PM certification and internship match gave me everything I needed.",
     name: "Noah Smith",
     role: "Product Manager",
   },

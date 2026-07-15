@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
                               <div style="width: 12px; height: 12px; background-color: #ffffff; border-radius: 50%; margin: 12px auto;"></div>
                             </td>
                             <td style="padding-left: 10px;">
-                              <span style="font-size: 15px; font-weight: 700; color: #111827;">Skillora</span>
+                              <span style="font-size: 15px; font-weight: 700; color: #111827;">A.R.W.P.C</span>
                             </td>
                           </tr>
                         </table>
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
                     <tr>
                       <td style="padding-top: 20px;">
                         <p style="font-size: 14px; color: #374151; line-height: 1.6; margin: 0 0 12px 0;">
-                          ${name ? `Hi ${name},` : "Hi there,"} we received a request to reset your Skillora account password.
+                          ${name ? `Hi ${name},` : "Hi there,"} we received a request to reset your A.R.W.P.C account password.
                         </p>
                         <p style="font-size: 14px; color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
                           Enter the code below to continue. This code expires in 10 minutes.

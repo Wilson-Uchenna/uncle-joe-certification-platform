@@ -25,7 +25,7 @@ function otpEmailTemplate({ name, otp }: { name?: string; otp: string }) {
                 <td class="bg-[#2E2A87] px-10 py-8 text-center">
                   
                   <h1 class="text-white text-xl font-semibold m-0">
-                    Skillora Certification
+                    African Remote Workers Professional Certification
                   </h1>
                 </td>
               </tr>

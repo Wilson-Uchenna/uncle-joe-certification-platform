@@ -11,27 +11,27 @@ interface FAQItem {
 
 const FAQS: FAQItem[] = [
   {
-    question: "What is Skillora Certification?",
+    question: "What is African Remote Workers Professional Certification?",
     answer:
-      "Skillora Certification is an online learning and career development platform that helps individuals build practical skills, earn professional certifications, access internships, and apply for remote jobs.",
+      "African Remote Workers Professional Certification is an online learning and career development platform that helps individuals build practical skills, earn professional certifications, access internships, and apply for remote jobs.",
   },
   {
-    question: "Who can join Skillora?",
+    question: "Who can join A.R.W.P.C?",
     answer:
-      "Anyone eager to grow professionally! Whether you're a student, graduate, freelancer, job seeker, or working professional. Skillora is designed to support your career journey.",
+      "Anyone eager to grow professionally! Whether you're a student, graduate, freelancer, job seeker, or working professional. A.R.W.P.C is designed to support your career journey.",
   },
   {
     question: "Is registration free?",
     answer:
-      "Yes! Creating a Skillora account is completely free. Some specialized courses or certificatuon programs may have associated fees, which will always be clearly communicated before enrollment.",
+      "Yes! Creating a A.R.W.P.C account is completely free. Some specialized courses or certificatuon programs may have associated fees, which will always be clearly communicated before enrollment.",
   },
   {
     question: "How do I earn a certification?",
     answer:
-      "Complete your chosen course, finish all rquired learning modules, and successfully pass the final assessment. Once you've met the requirements, your Skillora Certification will be available for download.",
+      "Complete your chosen course, finish all rquired learning modules, and successfully pass the final assessment. Once you've met the requirements, your African Remote Workers Professional Certification will be available for download.",
   },
   {
-    question: "Are Skillora certificates verifiable?",
+    question: "Are A.R.W.P.C certificates verifiable?",
     answer:
       "Yes. Every certificate includes a unique verification code that allows employers and organizations to confirm its authenticity",
   },
@@ -41,14 +41,14 @@ const FAQS: FAQItem[] = [
       "Absolutely. Once you complete your profile and meet the eligibily requirements, you can apply for internship opportunities available on the platform.",
   },
   {
-    question: "Does Skillora help users find remote jobs?",
+    question: "Does A.R.W.P.C help users find remote jobs?",
     answer:
-      "Yes. Skillora connects qualified learnerss with verified employers offering remote job opportunities that match their skills and experience.",
+      "Yes. A.R.W.P.C connects qualified learnerss with verified employers offering remote job opportunities that match their skills and experience.",
   },
   {
     question: "Can I learn at my own pace?",
     answer:
-      "Yes. Most Skillora courses are self paced, allowing you to learn whenever it's convenient for you.",
+      "Yes. Most A.R.W.P.C courses are self paced, allowing you to learn whenever it's convenient for you.",
   },
   {
     question: "How do employers find me?",

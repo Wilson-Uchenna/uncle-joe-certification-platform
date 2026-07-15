@@ -12,7 +12,7 @@ export default function HeroSection() {
         </div>
         <div className="mx-auto max-w-[960px] md:px-22 w-full mt-2">
           <p className="text-lg text-on-surface-variant leading-7">
-            Unlock your career potential with Skillora Certification. Learn
+            Unlock your career potential with African Remote Workers Professional Certification. Learn
             practical, in-demand skills, earn industry-recognized
             certifications, gain internship opportunities, and connect with
             remote jobs — all on one platform.

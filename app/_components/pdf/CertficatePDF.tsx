@@ -247,7 +247,7 @@ export default function CertificatePDF({
         {/* Footer */}
         <View style={styles.footer}>
           <View>
-            <Text style={styles.verify}>Verify at: skillora-certification.com/verify</Text>
+            <Text style={styles.verify}>Verify at: arwpc.com/verify</Text>
             <Text style={styles.verifyCode}>Code: {verificationCode}</Text>
           </View>
           <View style={{ alignItems: "center" }}>

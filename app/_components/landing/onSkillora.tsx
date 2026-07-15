@@ -19,7 +19,7 @@ export default function Onskillora() {
             <div className="py-16 md:py-20 px-4 sm:px-6 lg:px-8">
   {/* Section label */}
   <h3 className="text-center text-xs font-semibold text-indigo-600 uppercase tracking-[0.2em] mb-12">
-    What You Can Do on Skillora
+    What You Can Do on A.R.W.P.C
   </h3>
 
   {/* Cards grid */}

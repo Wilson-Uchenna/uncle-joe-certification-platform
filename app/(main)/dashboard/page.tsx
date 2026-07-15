@@ -71,7 +71,7 @@ export default async function DashboardPage() {
         />
         <DashboardCard
           title="Certifications"
-          description="Complete your first course and assessment to earn your first Skillora Certification."
+          description="Complete your first course and assessment to earn your first African Remote Workers Professional Certification."
           linkText="Start Learning"
           href="/certificates"
           icon={Award}

@@ -146,7 +146,7 @@ const WHY_PAY = [
   {
     num: "05",
     title: "Platform & support",
-    desc: "Keeps Skillora improving and learner support running.",
+    desc: "Keeps A.R.W.P.C improving and learner support running.",
   },
   {
     num: "06",
@@ -516,7 +516,7 @@ export default function SkilloraCertificatePayment({
             it<em className="text-[#4C6EF5]">.</em>
           </>
         ),
-        sub: "Your Skillora Certificate has been generated. Download it now and unlock your training materials.",
+        sub: "Your A.R.W.P.C Certificate has been generated. Download it now and unlock your training materials.",
         btn: "Download My Certificate",
         showChecklist: true,
         note: (
@@ -610,7 +610,7 @@ export default function SkilloraCertificatePayment({
                     paid ? "text-[#31469C]" : "text-[#8A8FA8]",
                   )}
                 >
-                  {paid ? "SKILLORA · CERTIFIED" : "SKILLORA · PENDING PAYMENT"}
+                  {paid ? "A.R.W.P.C · CERTIFIED" : "A.R.W.P.C · PENDING PAYMENT"}
                 </div>
               </div>
             </div>
@@ -816,7 +816,7 @@ export default function SkilloraCertificatePayment({
                 id: "eligible",
                 tag: "Eligible for certificate",
                 title: "Congratulations!",
-                desc: "You qualify for your Skillora Certification. Pay to unlock it.",
+                desc: "You qualify for your A.R.W.P Certification. Pay to unlock it.",
                 variant: "eligible" as const,
               },
               {
@@ -886,7 +886,7 @@ export default function SkilloraCertificatePayment({
                 id: "eligible",
                 tag: "Eligible for certificate",
                 title: "Congratulations!",
-                desc: "You've met every course requirement and qualify for your Skillora Certification. Pay to unlock it.",
+                desc: "You've met every course requirement and qualify for your A.R.W.P Certification. Pay to unlock it.",
                 variant: "eligible" as const,
               },
               {
@@ -1080,7 +1080,7 @@ export default function SkilloraCertificatePayment({
 
       {/* Footer */}
       <footer className="text-center text-[#8A8FA8] text-[11.5px] md:text-[12.5px] py-[26px] md:py-[34px] md:pb-[50px]">
-        Skillora Certification · your progress, verified.
+        A.R.W.P.C · your progress, verified.
       </footer>
 
       {/* Mobile Bottom Bar */}
@@ -1314,7 +1314,7 @@ export default function SkilloraCertificatePayment({
             Payment successful
           </h3>
           <p className="text-[13px] text-[#565C77] mb-6">
-            Your Skillora Certificate is unlocked.
+            Your A.R.W.P.C Certificate is unlocked.
           </p>
         </div>
         <Button

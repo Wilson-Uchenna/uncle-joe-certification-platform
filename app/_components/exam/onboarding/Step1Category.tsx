@@ -23,7 +23,7 @@ export function Step1Category({
     <div className="animate-fadeIn">
       <HeroBanner
         title="Find the Skills That Match Your Career Goals"
-        subtitle="Whether you're preparing for your first job, changing careers, or improving your professional skills, Skillora has a learning path designed for you. Select the category that best matches your interests and ambitions."
+        subtitle="Whether you're preparing for your first job, changing careers, or improving your professional skills, A.R.W.P.C has a learning path designed for you. Select the category that best matches your interests and ambitions."
       />
 
       <WelcomeMessage

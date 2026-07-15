@@ -108,7 +108,7 @@ const RANK_DESCRIPTIONS = [
     color: colors.rank.platinum,
     bgGradient: "from-slate-200/10 to-slate-400/5",
     description:
-      "You've reached the highest level of excellence. Your dedication, consistency, and outstanding performance make you a role model within the Skillora community.",
+      "You've reached the highest level of excellence. Your dedication, consistency, and outstanding performance make you a role model within the A.R.W.P.C community.",
   },
   {
     tier: "Gold Performer",
@@ -116,7 +116,7 @@ const RANK_DESCRIPTIONS = [
     color: colors.rank.gold,
     bgGradient: "from-yellow-500/10 to-yellow-600/5",
     description:
-      "Excellent work! You're among Skillora's top-performing learners. Keep pushing your limits—you're closer than ever to the top spot.",
+      "Excellent work! You're among A.R.W.P.C's top-performing learners. Keep pushing your limits—you're closer than ever to the top spot.",
   },
   {
     tier: "Silver Performer",
@@ -156,7 +156,7 @@ const RANK_DESCRIPTIONS = [
     color: colors.rank.sprout,
     bgGradient: "from-green-500/10 to-green-600/5",
     description:
-      "Welcome to Skillora! Every successful professional starts somewhere. Keep learning and your achievements will soon speak for themselves.",
+      "Welcome to A.R.W.P.C! Every successful professional starts somewhere. Keep learning and your achievements will soon speak for themselves.",
   },
 ];
 
@@ -211,7 +211,7 @@ const ACHIEVEMENTS = [
   {
     icon: Award,
     title: "New Badge Unlocked",
-    message: "Congratulations! You've earned a new Skillora achievement badge.",
+    message: "Congratulations! You've earned a new A.R.W.P.C achievement badge.",
     color: "#FFD700",
   },
   {
@@ -869,7 +869,7 @@ export default function LeaderboardPage() {
             }}
           >
             <Trophy className="w-4 h-4" style={{ color: colors.rank.gold }} />
-            Skillora Leaderboard
+            A.R.W.P.C Leaderboard
           </motion.div>
 
           <motion.h1
@@ -893,7 +893,7 @@ export default function LeaderboardPage() {
             className="max-w-2xl mx-auto text-base sm:text-lg leading-relaxed"
             style={{ color: colors.text.secondary }}
           >
-            The Skillora Leaderboard celebrates learners who consistently invest
+            The A.R.W.P.C Leaderboard celebrates learners who consistently invest
             in their growth. Every course completed, certification earned, and
             milestone achieved moves you closer to the top. Keep learning, stay
             consistent, and let your progress inspire others.

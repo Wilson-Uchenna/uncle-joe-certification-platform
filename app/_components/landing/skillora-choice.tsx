@@ -8,7 +8,7 @@ export default function SkilloraChoice() {
           {/* Left column */}
           <div className="flex flex-col">
             <span className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.2em] mb-4">
-              Why Choose Skillora?
+              Why Choose A.R.W.P.C?
             </span>
 
             <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4 leading-tight">
@@ -20,7 +20,7 @@ export default function SkilloraChoice() {
             </h2>
 
             <p className="text-gray-500 text-sm leading-relaxed mb-8 max-w-md">
-              Skillora combines learning, certification, internships, and remote
+              A.R.W.P.C combines learning, certification, internships, and remote
               employment into one seamless experience — helping you transform
               knowledge into real career outcomes.
             </p>

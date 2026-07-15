@@ -17,7 +17,7 @@ export default function Impact() {
 
           {/* Subtext */}
           <p className="text-sm text-gray-400 leading-relaxed mb-12 max-w-2xl mx-auto">
-            At Skillora, we're building a future where skills open doors,
+            At A.R.W.P.C, we're building a future where skills open doors,
             certifications build confidence, and opportunities create lasting
             careers.
           </p>

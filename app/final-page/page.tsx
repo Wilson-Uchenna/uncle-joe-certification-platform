@@ -380,7 +380,7 @@ function CertificateStep({
         <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5" />
         <div className="relative z-10">
           <Award className="w-12 h-12 mx-auto mb-4 text-amber-300" />
-          <h3 className="text-xl font-bold mb-1">Skillora Certification</h3>
+          <h3 className="text-xl font-bold mb-1">African Remote Workers Professional Certification</h3>
           <p className="text-sm text-white/80 mb-4">{data.categoryName}</p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-sm font-semibold">
             <CheckCircle2 className="w-4 h-4" />
@@ -715,7 +715,7 @@ function OpportunitiesStep({
       icon: Award,
       title: "Certificate Earned",
       message:
-        "🏅 Your Skillora Certification has officially been awarded. Celebrate your achievement!",
+        "🏅 Your African Remote Workers Professional Certification has officially been awarded. Celebrate your achievement!",
       color: "emerald",
       bg: "bg-emerald-50",
       border: "border-emerald-200",
@@ -917,7 +917,7 @@ function ThankYouStep({
           <Heart className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-3xl font-bold text-[#1e1b4b] mb-4">
-          Thank You for Choosing Skillora Certification
+          Thank You for Choosing African Remote Workers Professional Certification
         </h2>
       </div>
 

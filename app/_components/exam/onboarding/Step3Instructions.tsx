@@ -192,7 +192,7 @@ export function Step3Instructions({
       {/* Motivation */}
       <MotivationCard
         quote="Every expert was once a beginner. The skills you start learning today could become the opportunities that change your life tomorrow. Keep learning. Keep growing. Keep believing."
-        author="— Skillora Team"
+        author="— A.R.W.P.C Team"
       />
 
       {/* CTAs */}
