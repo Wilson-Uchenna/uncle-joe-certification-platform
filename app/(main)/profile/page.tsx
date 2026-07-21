@@ -1,7 +1,7 @@
-"use client"
+// app/components/UserProfileDashboard.tsx
+"use client";
 
-
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   User,
   Mail,
@@ -17,6 +17,8 @@ import {
   Shield,
   Lock,
   Eye,
+  Globe,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,15 +26,14 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────
-interface EditableProfile {
+interface ProfileData {
   full_name: string;
   email: string;
   phone: string;
   school: string;
   state: string;
-}
-
-interface ReadOnlyProfile {
+  country: string;
+  role: string;
   onboardingComplete: boolean;
   selectedCategoryId: string | null;
   selectedCategoryName: string | null;
@@ -40,7 +41,7 @@ interface ReadOnlyProfile {
   selectedRole: string | null;
 }
 
-// ─── Color Scheme (from uploaded image) ────────────────
+// ─── Color Scheme ──────────────────────────────────────
 const COLORS = {
   bg: "#2c2c2c",
   bgElevated: "#363636",
@@ -61,61 +62,130 @@ const COLORS = {
   danger: "#ef4444",
 };
 
-// ─── Mock Data ─────────────────────────────────────────
-const INITIAL_EDITABLE: EditableProfile = {
-  full_name: "Alex Johnson",
-  email: "alex.johnson@school.edu",
-  phone: "+1 (555) 123-4567",
-  school: "Springfield High School",
-  state: "California",
-};
-
-const READONLY_DATA: ReadOnlyProfile = {
-  onboardingComplete: true,
-  selectedCategoryId: "cat_8f2a1b",
-  selectedCategoryName: "Science & Technology",
-  selectedCategorySlug: "science-technology",
-  selectedRole: "Student",
-};
-
 // ─── Component ─────────────────────────────────────────
 export default function UserProfileDashboard() {
-  const [profile, setProfile] = useState<EditableProfile>(INITIAL_EDITABLE);
-  const [original, setOriginal] = useState<EditableProfile>(INITIAL_EDITABLE);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [original, setOriginal] = useState<ProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleChange = (field: keyof EditableProfile, value: string) => {
+  // Fetch user data on mount
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch("/api/profile");
+      const json = await res.json();
+
+      if (!json.success) {
+        throw new Error(json.error || "Failed to load profile");
+      }
+
+      const data: ProfileData = json.data;
+      setProfile(data);
+      setOriginal(data);
+    } catch (err) {
+      setErrorToast(err instanceof Error ? err.message : "Failed to load profile");
+      setTimeout(() => setErrorToast(null), 4000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (field: keyof ProfileData, value: string) => {
+    if (!profile || !original) return;
+
     setProfile((prev) => {
+      if (!prev) return prev;
       const next = { ...prev, [field]: value };
       setHasChanges(
         next.full_name !== original.full_name ||
-          next.email !== original.email ||
           next.phone !== original.phone ||
           next.school !== original.school ||
-          next.state !== original.state
+          next.state !== original.state ||
+          next.country !== original.country
       );
       return next;
     });
   };
 
-  const handleSave = () => {
-    setOriginal(profile);
-    setHasChanges(false);
-    setIsEditing(false);
-    setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 3000);
+  const handleSave = async () => {
+    if (!profile) return;
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: profile.full_name,
+          phone: profile.phone,
+          school: profile.school,
+          state: profile.state,
+          country: profile.country,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!json.success) {
+        throw new Error(json.error || "Failed to save");
+      }
+
+      setOriginal(profile);
+      setHasChanges(false);
+      setIsEditing(false);
+      setSavedToast(true);
+      setTimeout(() => setSavedToast(false), 3000);
+    } catch (err) {
+      setErrorToast(err instanceof Error ? err.message : "Failed to save");
+      setTimeout(() => setErrorToast(null), 4000);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
-    setProfile(original);
+    if (original) {
+      setProfile(original);
+    }
     setHasChanges(false);
     setIsEditing(false);
   };
 
+  if (loading) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{ backgroundColor: COLORS.bg }}
+      >
+        <Loader2
+          className="h-8 w-8 animate-spin"
+          style={{ color: COLORS.primary }}
+        />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{ backgroundColor: COLORS.bg, color: COLORS.textMuted }}
+      >
+        Failed to load profile. Please refresh.
+      </div>
+    );
+  }
+
   const editableFields: Array<{
-    key: keyof EditableProfile;
+    key: keyof ProfileData;
     label: string;
     icon: React.ElementType;
     placeholder: string;
@@ -124,12 +194,13 @@ export default function UserProfileDashboard() {
     { key: "full_name", label: "Full Name", icon: User, placeholder: "Enter your full name" },
     { key: "email", label: "Email Address", icon: Mail, placeholder: "Enter your email", type: "email" },
     { key: "phone", label: "Phone Number", icon: Phone, placeholder: "Enter your phone number", type: "tel" },
-    { key: "school", label: "School", icon: GraduationCap, placeholder: "Enter your school name" },
+    { key: "school", label: "School / Employer", icon: GraduationCap, placeholder: "Enter your school or employer" },
     { key: "state", label: "State", icon: MapPin, placeholder: "Enter your state" },
+    { key: "country", label: "Country", icon: Globe, placeholder: "Enter your country" },
   ];
 
   const readOnlyFields: Array<{
-    key: keyof ReadOnlyProfile;
+    key: string;
     label: string;
     icon: React.ElementType;
     value: string;
@@ -138,33 +209,50 @@ export default function UserProfileDashboard() {
       key: "onboardingComplete",
       label: "Onboarding Status",
       icon: CheckCircle2,
-      value: READONLY_DATA.onboardingComplete ? "Completed" : "Incomplete",
+      value: profile.onboardingComplete ? "Completed" : "Incomplete",
     },
     {
       key: "selectedCategoryName",
       label: "Selected Category",
       icon: Tag,
-      value: READONLY_DATA.selectedCategoryName ?? "Not selected",
+      value: profile.selectedCategoryName ?? "Not selected",
     },
     {
       key: "selectedCategorySlug",
       label: "Category Slug",
       icon: Tag,
-      value: READONLY_DATA.selectedCategorySlug ?? "Not selected",
+      value: profile.selectedCategorySlug ?? "Not selected",
     },
     {
       key: "selectedCategoryId",
       label: "Category ID",
       icon: Tag,
-      value: READONLY_DATA.selectedCategoryId ?? "Not selected",
+      value: profile.selectedCategoryId ?? "Not selected",
     },
     {
       key: "selectedRole",
-      label: "Role",
+      label: "Selected Role",
       icon: Briefcase,
-      value: READONLY_DATA.selectedRole ?? "Not assigned",
+      value: profile.selectedRole ?? "Not assigned",
+    },
+    {
+      key: "role",
+      label: "System Role",
+      icon: Shield,
+      value: profile.role,
     },
   ];
+
+  const completionItems = [
+    { label: "Basic Info", done: !!profile.full_name && !!profile.email },
+    { label: "Contact Details", done: !!profile.phone },
+    { label: "School / Employer", done: !!profile.school },
+    { label: "Location", done: !!profile.state && !!profile.country },
+  ];
+
+  const completionPercent = Math.round(
+    (completionItems.filter((i) => i.done).length / completionItems.length) * 100
+  );
 
   return (
     <div
@@ -200,10 +288,7 @@ export default function UserProfileDashboard() {
               <Button
                 onClick={() => setIsEditing(true)}
                 className="h-9 gap-2 rounded-lg px-4 text-sm font-semibold"
-                style={{
-                  backgroundColor: COLORS.primary,
-                  color: "white",
-                }}
+                style={{ backgroundColor: COLORS.primary, color: "white" }}
               >
                 <Pencil className="h-3.5 w-3.5" />
                 Edit Profile
@@ -221,7 +306,7 @@ export default function UserProfileDashboard() {
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={!hasChanges}
+                  disabled={!hasChanges || saving}
                   className="h-9 gap-2 rounded-lg px-4 text-sm font-semibold"
                   style={{
                     backgroundColor: hasChanges ? COLORS.primary : COLORS.primaryDark,
@@ -229,7 +314,11 @@ export default function UserProfileDashboard() {
                     opacity: hasChanges ? 1 : 0.5,
                   }}
                 >
-                  <Save className="h-3.5 w-3.5" />
+                  {saving ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Save className="h-3.5 w-3.5" />
+                  )}
                   Save Changes
                 </Button>
               </>
@@ -242,7 +331,6 @@ export default function UserProfileDashboard() {
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           {/* Left Column — Editable Fields */}
           <div className="space-y-6">
-            {/* Header */}
             <div>
               <h2
                 className="text-xl font-semibold tracking-tight md:text-2xl"
@@ -255,17 +343,14 @@ export default function UserProfileDashboard() {
               </p>
             </div>
 
-            {/* Form Card */}
             <div
               className="rounded-2xl border p-5 md:p-7"
-              style={{
-                backgroundColor: COLORS.bgCard,
-                borderColor: COLORS.border,
-              }}
+              style={{ backgroundColor: COLORS.bgCard, borderColor: COLORS.border }}
             >
               <div className="space-y-5">
                 {editableFields.map((field) => {
                   const Icon = field.icon;
+                  const isEmail = field.key === "email";
                   return (
                     <div key={field.key} className="space-y-2">
                       <Label
@@ -276,14 +361,12 @@ export default function UserProfileDashboard() {
                         <Icon className="h-4 w-4" style={{ color: COLORS.primary }} />
                         {field.label}
                       </Label>
-                      {isEditing ? (
+                      {isEditing && !isEmail ? (
                         <Input
                           id={field.key}
                           type={field.type || "text"}
-                          value={profile[field.key]}
-                          onChange={(e) =>
-                            handleChange(field.key, e.target.value)
-                          }
+                          value={profile[field.key] as string}
+                          onChange={(e) => handleChange(field.key, e.target.value)}
                           placeholder={field.placeholder}
                           className="h-11 rounded-xl border-2 px-4 text-sm transition-all duration-200 focus-visible:ring-2 focus-visible:ring-offset-0"
                           style={{
@@ -298,15 +381,16 @@ export default function UserProfileDashboard() {
                           style={{
                             backgroundColor: COLORS.bgElevated,
                             borderColor: COLORS.border,
-                            color: profile[field.key]
+                            color: (profile[field.key] as string)
                               ? COLORS.textPrimary
                               : COLORS.textDisabled,
                           }}
                         >
-                          {profile[field.key] || (
-                            <span style={{ color: COLORS.textDisabled }}>
-                              Not provided
-                            </span>
+                          {(profile[field.key] as string) || (
+                            <span style={{ color: COLORS.textDisabled }}>Not provided</span>
+                          )}
+                          {isEmail && (
+                            <Lock className="ml-auto h-3.5 w-3.5" style={{ color: COLORS.textDisabled }} />
                           )}
                         </div>
                       )}
@@ -315,7 +399,6 @@ export default function UserProfileDashboard() {
                 })}
               </div>
 
-              {/* Mobile Save/Cancel */}
               {isEditing && (
                 <div className="mt-6 flex gap-3 md:hidden">
                   <Button
@@ -332,32 +415,27 @@ export default function UserProfileDashboard() {
                   </Button>
                   <Button
                     onClick={handleSave}
-                    disabled={!hasChanges}
+                    disabled={!hasChanges || saving}
                     className="flex-1 rounded-xl font-semibold"
                     style={{
-                      backgroundColor: hasChanges
-                        ? COLORS.primary
-                        : COLORS.primaryDark,
+                      backgroundColor: hasChanges ? COLORS.primary : COLORS.primaryDark,
                       color: "white",
                       opacity: hasChanges ? 1 : 0.5,
                     }}
                   >
-                    Save Changes
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
                   </Button>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right Column — Read-Only & Account Info */}
+          {/* Right Column — Read-Only & Stats */}
           <div className="space-y-6">
-            {/* Account Status Card */}
+            {/* Account Details Card */}
             <div
               className="rounded-2xl border p-5 md:p-6"
-              style={{
-                backgroundColor: COLORS.bgCard,
-                borderColor: COLORS.border,
-              }}
+              style={{ backgroundColor: COLORS.bgCard, borderColor: COLORS.border }}
             >
               <div className="mb-5 flex items-center gap-3">
                 <div
@@ -376,17 +454,15 @@ export default function UserProfileDashboard() {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {readOnlyFields.map((field) => {
                   const Icon = field.icon;
-                  const isComplete =
-                    field.key === "onboardingComplete" &&
-                    READONLY_DATA.onboardingComplete;
+                  const isComplete = field.key === "onboardingComplete" && profile.onboardingComplete;
 
                   return (
                     <div
                       key={field.key}
-                      className="flex items-start gap-3 rounded-xl p-3 transition-colors"
+                      className="flex items-start gap-3 rounded-xl p-3"
                       style={{ backgroundColor: COLORS.bgElevated }}
                     >
                       <div
@@ -399,9 +475,7 @@ export default function UserProfileDashboard() {
                       >
                         <Icon
                           className="h-4 w-4"
-                          style={{
-                            color: isComplete ? COLORS.success : COLORS.primary,
-                          }}
+                          style={{ color: isComplete ? COLORS.success : COLORS.primary }}
                         />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -429,7 +503,6 @@ export default function UserProfileDashboard() {
                 })}
               </div>
 
-              {/* Info Banner */}
               <div
                 className="mt-5 flex items-start gap-3 rounded-xl border p-4"
                 style={{
@@ -442,61 +515,40 @@ export default function UserProfileDashboard() {
                   style={{ color: COLORS.textSecondary }}
                 />
                 <p className="text-xs leading-relaxed" style={{ color: COLORS.textMuted }}>
-                  These fields are set during onboarding and cannot be changed
-                  from this page. Contact support if you need to update them.
+                  These fields are set during onboarding and cannot be changed from this page.
+                  Contact support if you need to update them.
                 </p>
               </div>
             </div>
 
-            {/* Quick Stats */}
+            {/* Profile Completion */}
             <div
               className="rounded-2xl border p-5 md:p-6"
-              style={{
-                backgroundColor: COLORS.bgCard,
-                borderColor: COLORS.border,
-              }}
+              style={{ backgroundColor: COLORS.bgCard, borderColor: COLORS.border }}
             >
-              <h3
-                className="mb-4 font-semibold"
-                style={{ color: COLORS.textPrimary }}
-              >
+              <h3 className="mb-4 font-semibold" style={{ color: COLORS.textPrimary }}>
                 Profile Completion
               </h3>
               <div className="space-y-3">
-                {[
-                  { label: "Basic Info", done: true },
-                  { label: "Contact Details", done: !!profile.phone },
-                  { label: "School Information", done: !!profile.school },
-                  { label: "Location", done: !!profile.state },
-                ].map((item, i) => (
+                {completionItems.map((item, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={cn(
                           "flex h-5 w-5 items-center justify-center rounded-full border",
-                          item.done
-                            ? "border-transparent"
-                            : "border-dashed"
+                          item.done ? "border-transparent" : "border-dashed"
                         )}
                         style={{
-                          backgroundColor: item.done
-                            ? COLORS.primary
-                            : "transparent",
-                          borderColor: item.done
-                            ? "transparent"
-                            : COLORS.border,
+                          backgroundColor: item.done ? COLORS.primary : "transparent",
+                          borderColor: item.done ? "transparent" : COLORS.border,
                         }}
                       >
-                        {item.done && (
-                          <CheckCircle2 className="h-3 w-3 text-white" />
-                        )}
+                        {item.done && <CheckCircle2 className="h-3 w-3 text-white" />}
                       </div>
                       <span
                         className="text-sm"
                         style={{
-                          color: item.done
-                            ? COLORS.textPrimary
-                            : COLORS.textDisabled,
+                          color: item.done ? COLORS.textPrimary : COLORS.textDisabled,
                         }}
                       >
                         {item.label}
@@ -504,9 +556,7 @@ export default function UserProfileDashboard() {
                     </div>
                     <span
                       className="text-xs font-medium"
-                      style={{
-                        color: item.done ? COLORS.success : COLORS.textMuted,
-                      }}
+                      style={{ color: item.done ? COLORS.success : COLORS.textMuted }}
                     >
                       {item.done ? "Done" : "Pending"}
                     </span>
@@ -514,27 +564,13 @@ export default function UserProfileDashboard() {
                 ))}
               </div>
 
-              {/* Progress Bar */}
               <div className="mt-5">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs font-medium" style={{ color: COLORS.textMuted }}>
                     Overall
                   </span>
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: COLORS.primary }}
-                  >
-                    {Math.round(
-                      ([
-                        true,
-                        !!profile.phone,
-                        !!profile.school,
-                        !!profile.state,
-                      ].filter(Boolean).length /
-                        4) *
-                        100
-                    )}
-                    %
+                  <span className="text-xs font-bold" style={{ color: COLORS.primary }}>
+                    {completionPercent}%
                   </span>
                 </div>
                 <div
@@ -543,19 +579,7 @@ export default function UserProfileDashboard() {
                 >
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${
-                        ([
-                          true,
-                          !!profile.phone,
-                          !!profile.school,
-                          !!profile.state,
-                        ].filter(Boolean).length /
-                          4) *
-                        100
-                      }%`,
-                      backgroundColor: COLORS.primary,
-                    }}
+                    style={{ width: `${completionPercent}%`, backgroundColor: COLORS.primary }}
                   />
                 </div>
               </div>
@@ -564,7 +588,7 @@ export default function UserProfileDashboard() {
         </div>
       </main>
 
-      {/* Save Toast */}
+      {/* Toasts */}
       <div
         className={cn(
           "fixed bottom-6 right-6 z-[150] flex items-center gap-3 rounded-xl px-5 py-3.5 shadow-lg transition-all duration-300",
@@ -580,6 +604,23 @@ export default function UserProfileDashboard() {
       >
         <CheckCircle2 className="h-5 w-5" style={{ color: COLORS.success }} />
         <span className="text-sm font-semibold">Profile saved successfully</span>
+      </div>
+
+      <div
+        className={cn(
+          "fixed bottom-6 right-6 z-[150] flex items-center gap-3 rounded-xl px-5 py-3.5 shadow-lg transition-all duration-300",
+          errorToast
+            ? "translate-y-0 opacity-100"
+            : "translate-y-4 opacity-0 pointer-events-none"
+        )}
+        style={{
+          backgroundColor: COLORS.danger,
+          color: "white",
+          boxShadow: "0 16px 32px -14px rgba(239,68,68,0.4)",
+        }}
+      >
+        <X className="h-5 w-5" />
+        <span className="text-sm font-semibold">{errorToast}</span>
       </div>
     </div>
   );
