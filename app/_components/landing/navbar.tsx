@@ -38,7 +38,7 @@ export default function Navbar() {
           onClick={handleLogoClick}
           className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
         >
-          <img src="/skillora-3.png" alt="Company Logo" className="w-28 h-10" />
+          <img src="/arwc.svg" alt="Company Logo" className="w-[20rem] " />
         </Link>
 
         <div className="hidden min-[1024px]:flex items-center gap-6 text-base">

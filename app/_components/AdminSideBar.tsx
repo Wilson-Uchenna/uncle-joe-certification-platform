@@ -77,7 +77,7 @@ const router = useRouter();
           onClick={handleLogoClick}
           className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
         >
-          <img src="/skillora-3.png" alt="Company Logo" className="w-28 h-10" />
+          <img src="/arwc.svg" alt="Company Logo" className="w-[96rem] text-white brightness-0 invert" />
         </Link>
 
         <p className="text-xs text-gray-500 mt-1">Command Center</p>
