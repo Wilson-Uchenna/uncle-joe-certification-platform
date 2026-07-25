@@ -133,9 +133,9 @@ export default function RoleOnboardingPage() {
         <div className="flex items-center gap-2 mb-8">
           <Link href="/" className="flex items-center gap-2">
             <img
-              src={"/skillora-3.png"}
-              alt="Skillora Logo"
-              className="w-28 h-10"
+              src={"/arwc.svg"}
+              alt="Company Logo"
+              className="w-[250px]"
             />
           </Link>
         </div>
@@ -248,7 +248,7 @@ export default function RoleOnboardingPage() {
           </div>
 
           <p className="text-lg leading-relaxed mb-6">
-            Skillora is an absolute game-changer. I took the exam, seamlessly
+            African Remote Worker Certification Platform is an absolute game-changer. I took the exam, seamlessly
             downloaded my certificate, and landed a remote internship just two
             weeks later.
           </p>

@@ -180,9 +180,9 @@ export default function RegisterPage() {
           <div className="flex items-center justify-center">
             <Link href="/" className="font-bold text-xl">
               <img
-                src={"/skillora-3.png"}
+                src={"/arwc.svg"}
                 alt="company logo"
-                className="w-28 h-10"
+                className="w-[250px]"
               />
             </Link>
           </div>

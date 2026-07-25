@@ -88,9 +88,9 @@ export default function LoginPage() {
         <div className="gap-2 mb-10">
           <div className="">
             <img
-              src={"/skillora-3.png"}
+              src={"/arwc.svg"}
               alt="company-logo"
-              className="w-28 h-10"
+              className="w-[250px]"
             />
           </div>
         </div>
