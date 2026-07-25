@@ -58,6 +58,30 @@ export function Step3Exam({
     startExam();
   }, []);
 
+  const isMountedRef = useRef(true);
+const examFinishedRef = useRef(false);
+
+useEffect(() => {
+  isMountedRef.current = true;
+  examFinishedRef.current = false;
+
+  return () => {
+    isMountedRef.current = false;
+    
+    // If exam wasn't submitted normally, mark as abandoned
+    if (!examFinishedRef.current && examId) {
+      fetch("/api/exam/abandon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ examId }),
+        // keepalive ensures the request fires even during page unload
+        keepalive: true,
+      }).catch(() => {});
+    }
+  };
+}, [examId]);
+
   const startExam = async () => {
     setLoading(true);
     setError("");
@@ -203,17 +227,28 @@ export function Step3Exam({
   showWarning,
 ]);
 
-  // ===== PREVENT REFRESH =====
-  useEffect(() => {
-    if (showWarning) return;
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "Leaving will submit your exam.";
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [showWarning]);
+  // ===== PREVENT REFRESH / CLOSE =====
+useEffect(() => {
+  if (showWarning || !examId) return;
 
+  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    // This only fires the abandon on actual unload, not on submit
+    if (!examFinishedRef.current) {
+      fetch("/api/exam/abandon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ examId }),
+        keepalive: true,
+      }).catch(() => {});
+    }
+    e.preventDefault();
+    e.returnValue = "Leaving will submit your exam.";
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+}, [showWarning, examId]);
   // ===== SAVE ANSWER =====
   
 
@@ -290,11 +325,11 @@ const saveAnswerDirect = async (questionIndex: number, answerIndex: number, show
   };
 
   // ===== SUBMIT =====
-  const handleSubmit = async (isTimeout = false, reason?: string) => {
-    if (isSubmittingRef.current) return;
-    isSubmittingRef.current = true;
-    setSubmitting(true);
-
+ const handleSubmit = async (isTimeout = false, reason?: string) => {
+  if (isSubmittingRef.current) return;
+  isSubmittingRef.current = true;
+  setSubmitting(true);
+  examFinishedRef.current = true; // ← Mark as finished
     try {
       const res = await fetch("/api/exam/submit", {
         method: "POST",
@@ -312,9 +347,10 @@ const saveAnswerDirect = async (questionIndex: number, answerIndex: number, show
       if (!res.ok) throw new Error(data.error || "Failed to submit exam");
       onSubmit(data);
     } catch (err: any) {
-      setError(err.message);
-      setSubmitting(false);
-      isSubmittingRef.current = false;
+      examFinishedRef.current = false;
+    setError(err.message);
+    setSubmitting(false);
+    isSubmittingRef.current = false;
     }
   };
 

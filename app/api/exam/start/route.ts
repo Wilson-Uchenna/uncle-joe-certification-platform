@@ -60,20 +60,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ─── Auto-abandon stale exams (> 2 hours old) ───
-    const staleThreshold = new Date(Date.now() - 5 * 60 * 1000);
-
     await Exam.updateMany(
       {
         userId: session.user.id,
         status: "in_progress",
-        startedAt: { $lt: staleThreshold },
       },
       {
         $set: {
           status: "abandoned",
           passed: false,
           completedAt: new Date(),
+          abandonReason: "user_started_new_exam",
         },
       },
     );
@@ -85,13 +82,17 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingExam) {
-      return NextResponse.json(
+      // Race condition — force abandon this one too
+      await Exam.updateOne(
+        { _id: existingExam._id },
         {
-          success: false,
-          error: "You have an ongoing exam",
-          examId: existingExam._id,
+          $set: {
+            status: "abandoned",
+            passed: false,
+            completedAt: new Date(),
+            abandonReason: "race_condition_cleanup",
+          },
         },
-        { status: 400 },
       );
     }
 
@@ -200,7 +201,7 @@ export async function POST(req: NextRequest) {
         options: q.options,
         codeSnippet: q.codeSnippet,
         language: q.language,
-        selectedAnswer: q.selectedAnswer
+        selectedAnswer: q.selectedAnswer,
       })),
       timeLimit,
       totalQuestions: TOTAL_QUESTIONS,
