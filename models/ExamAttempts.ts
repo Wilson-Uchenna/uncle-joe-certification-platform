@@ -37,4 +37,7 @@ const ExamAttemptSchema = new Schema<IExamAttempt>({
 // Anti-cheat analysis
 ExamAttemptSchema.index({ examId: 1, action: 1, timestamp: 1 });
 
-export default mongoose.models.ExamAttempt || mongoose.model<IExamAttempt>('ExamAttempt', ExamAttemptSchema);
+export const ExamAttempt =
+  mongoose.models.ExamAttempt || mongoose.model<IExamAttempt>('ExamAttempt', ExamAttemptSchema);
+
+  export default ExamAttempt;

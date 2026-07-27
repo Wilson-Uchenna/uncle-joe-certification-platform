@@ -6,13 +6,13 @@ export default function HeroSection() {
     <section className="relative min-h-[40vh] flex items-center overflow-hidden text-center justify-between mt-1 pt-20">
       <div className="max-w-[1040px] mx-auto px-4 md:px-22 w-full items-center py-12 md:py-4 md:mt-4">
         <div className="">
-          <h1 className="text-6xl md:text-[4rem] font-[400] text-primary leading-tight">
+          <h1 className="text-2xl lg:text-4xl xl:text-6xl md:text-[4rem] font-[400] text-primary leading-tight">
             Build Skills. Earn Certifications. Get Hired.
           </h1>
         </div>
         <div className="mx-auto max-w-[960px] md:px-22 w-full mt-2">
           <p className="text-lg text-on-surface-variant leading-7">
-            Unlock your career potential with Skillora Certification. Learn
+            Unlock your career potential with African Remote Workers Professional Certification. Learn
             practical, in-demand skills, earn industry-recognized
             certifications, gain internship opportunities, and connect with
             remote jobs — all on one platform.

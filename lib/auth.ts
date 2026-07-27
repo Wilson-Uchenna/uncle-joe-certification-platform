@@ -1,58 +1,165 @@
-import { betterAuth } from "better-auth/minimal";
+import { betterAuth, BetterAuthOptions } from "better-auth/minimal";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "@/lib/db";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { admin, emailOTP, customSession } from "better-auth/plugins";
+import { ObjectId } from "mongodb";
 
 const mongodb_uri = process.env.MONGODB_URI;
 
-export const auth = betterAuth({
+export interface ProfileInput {
+  full_name: string;
+  email: string;
+  phone?: string;
+  school?: string;
+  state?: string;
+  country?: string;
+}
+
+// Define auth options separately for type inference
+const authOptions = {
   secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL || `https://${process.env.VERCEL_URL}`,
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://uncle-joe-certification-platform.vercel.app",
+    "https://uncle-joe-certification-platform-*.vercel.app",
+  ],
   database: mongodbAdapter(db),
   emailAndPassword: {
     enabled: true,
-    autoSignIn: true,
+    autoSignIn: false,
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      // Use Resend to send verification email
-      await fetch(`${process.env.APP_URL}/api/email/send`, {
-        method: "POST",
-        body: JSON.stringify({
-          to: user.email,
-          subject: "Verify your email",
-          template: "verification",
-          url,
-        }),
-      });
-    },
   },
   user: {
     additionalFields: {
       fullName: {
         type: "string",
-        required: true,
-        input: true, // Allow during registration
-      },
-      phone: { type: "string" },
-      skillLevel: {
-        type: "string",
-        required: true,
+        required: false,
         input: true,
       },
+      phone: { type: "string", input: true },
+
       employer: { type: "string" },
       state: {
         type: "string",
-        required: true,
+        required: false,
         input: true,
       },
       country: {
         type: "string",
-        required: true,
+        required: false,
         input: true,
+      },
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "user",
+        input: false,
+      },
+      onboardingComplete: { type: "boolean", defaultValue: false },
+      selectedCategoryId: { type: "string", defaultValue: null, input: true },
+      selectedCategoryName: { type: "string", defaultValue: null, input: true },
+      selectedCategorySlug: { type: "string", defaultValue: null, input: true },
+      selectedRole: { type: "string", defaultValue: null, input: true },
+      tempPassword: { type: "boolean", defaultValue: false}
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user: any) => {
+          if (!user.fullName && user.name) {
+            user.fullName = user.name;
+          }
+          return { data: user };
+        },
       },
     },
   },
-  plugins: [nextCookies()],
+  plugins: [
+    emailOTP({
+      async sendVerificationOTP({ email, otp, type }) {
+        console.log("EMAIL OTP CALLED", {
+          email,
+          otp,
+          type,
+        });
+
+        let endpoint;
+
+        if (type === "sign-in") {
+          endpoint = "signin";
+        } else if (type === "email-verification") {
+          endpoint = "verification";
+        } else if (type === "forget-password") {
+          endpoint = "forget-password";
+        }
+
+        const baseurl =
+          process.env.BETTER_AUTH_URL || `https://${process.env.VERCEL_URL}`;
+
+        console.log("BASE URL:", baseurl);
+        console.log("ENDPOINT:", endpoint);
+
+        const res = await fetch(`${baseurl}/api/email/send/${endpoint}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to: email,
+            otp,
+          }),
+        });
+
+        console.log("EMAIL RESPONSE STATUS:", res.status);
+
+        const text = await res.text();
+        console.log("EMAIL RESPONSE BODY:", text);
+
+        if (!res.ok) {
+          throw new Error(`Failed to send OTP email: ${res.status}`);
+        }
+      },
+      disableSignUp: false,
+    }),
+    admin({
+      defaultRole: "user",
+      adminRoles: ["admin"],
+    }),
+  ],
+} satisfies BetterAuthOptions;
+
+export const auth = betterAuth({
+  ...authOptions,
+  plugins: [
+    ...(authOptions.plugins ?? []),
+    customSession(async ({ user, session }) => {
+      // Fetch additional user data from DB
+      const userDoc = await db
+        .collection("user")
+        .findOne(
+          { _id: new ObjectId(user.id) },
+          { projection: { role: 1, onboardingComplete: 1, tempPassword: 1 } },
+        );
+
+      return {
+        user: {
+          ...user,
+          role: (userDoc?.role as "user" | "admin") || "user",
+
+          onboardingComplete: userDoc?.onboardingComplete as
+            | boolean
+            | undefined,
+             tempPassword: (userDoc?.tempPassword as boolean) ?? false,
+        },
+        session,
+      };
+    }, authOptions),
+    nextCookies(),
+  ],
 });

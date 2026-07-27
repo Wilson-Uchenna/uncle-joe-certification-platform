@@ -2,51 +2,43 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IExamQuestion {
   questionId: mongoose.Types.ObjectId;
-  questionText: string; // Snapshot at exam time
-  options: string[]; // Snapshot at exam time
+  questionText: string;
+  options: string[];
+  correctAnswer: number;  // ← ADD THIS
   selectedAnswer?: number;
   isCorrect?: boolean;
-  timeSpent?: number; // Seconds on this question
+  timeSpent?: number;
 }
 
 export type ExamStatus =
   | "in_progress"
   | "completed"
   | "timed_out"
-  | "abandoned";
+  | "abandoned"
+  | "cheating_detected";  // ← ADD THIS
 
 export interface IExam extends Document {
   userId: string;
-  userName: string; // Synced from Better Auth
+  userName: string;
   categoryId: mongoose.Types.ObjectId;
-  categoryName: string; // Snapshot
+  categoryName: string;
   skillLevel: "entry" | "mid" | "advanced";
   isFinalStage: boolean;
-
-  // Questions
+  selectedRole: string;
   questions: IExamQuestion[];
   totalQuestions: number;
   correctCount: number;
-  score: number; // Percentage
-
-  // Timing
-  timeLimit: number; // Minutes
-  timeUsed: number; // Seconds
+  score: number;
+  timeLimit: number; // 25 entry | 30 mid | 45 advanced
+  timeUsed: number;
   startedAt: Date;
   completedAt?: Date;
-
-  // Status & Results
   status: ExamStatus;
   passed: boolean;
-
-  // Certificate
   certificateDownloaded: boolean;
   certificateUrl?: string;
   certificatePaidAt?: Date;
-
-  // Final stage qualification
   qualifiesForFinals: boolean;
-
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,6 +52,7 @@ const ExamQuestionSchema = new Schema<IExamQuestion>(
     },
     questionText: { type: String, required: true },
     options: [{ type: String, required: true }],
+    correctAnswer: { type: Number, required: true },  // ← ADD THIS
     selectedAnswer: Number,
     isCorrect: Boolean,
     timeSpent: { type: Number, default: 0 },
@@ -69,13 +62,12 @@ const ExamQuestionSchema = new Schema<IExamQuestion>(
 
 const ExamSchema = new Schema<IExam>(
   {
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, required: true },
     userName: String,
     categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,
-      index: true,
     },
     categoryName: { type: String, required: true },
     skillLevel: {
@@ -83,7 +75,8 @@ const ExamSchema = new Schema<IExam>(
       enum: ["entry", "mid", "advanced"],
       required: true,
     },
-    isFinalStage: { type: Boolean, default: false, index: true },
+    isFinalStage: { type: Boolean, default: false },
+    selectedRole: { type: String, required: true, index: true },
 
     questions: [ExamQuestionSchema],
     totalQuestions: { type: Number, required: true },
@@ -97,9 +90,8 @@ const ExamSchema = new Schema<IExam>(
 
     status: {
       type: String,
-      enum: ["in_progress", "completed", "timed_out", "abandoned"],
+      enum: ["in_progress", "completed", "timed_out", "abandoned", "cheating_detected"],
       default: "in_progress",
-      index: true,
     },
     passed: { type: Boolean, default: false },
 
@@ -112,14 +104,32 @@ const ExamSchema = new Schema<IExam>(
   { timestamps: true },
 );
 
-// Leaderboard & analytics indexes
+// Auto-set timeLimit based on skillLevel before validation
+ExamSchema.pre<IExam>("validate", function (this: IExam) {
+  const timeLimits: Record<IExam["skillLevel"], number> = {
+    entry: 25,
+    mid: 30,
+    advanced: 45,
+  };
+
+  if (this.skillLevel && timeLimits[this.skillLevel]) {
+    this.timeLimit = timeLimits[this.skillLevel];
+  }
+});
+
+// All indexes defined here only
+ExamSchema.index({ userId: 1 });
+ExamSchema.index({ categoryId: 1 });
+ExamSchema.index({ isFinalStage: 1 });
+ExamSchema.index({ status: 1 });
 ExamSchema.index({ categoryId: 1, score: -1, timeUsed: 1 });
-ExamSchema.index({ betterAuthUserId: 1, categoryId: 1, status: 1 });
+ExamSchema.index({ userId: 1, categoryId: 1, status: 1 });
 ExamSchema.index({
   passed: 1,
   certificateDownloaded: 1,
   qualifiesForFinals: 1,
 });
 
-export default mongoose.models.Exam ||
-  mongoose.model<IExam>("Exam", ExamSchema);
+export const Exam =
+  mongoose.models.Exam || mongoose.model<IExam>("Exam", ExamSchema);
+export default Exam;

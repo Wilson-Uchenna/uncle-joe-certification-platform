@@ -1,21 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/local-db";
+import { headers } from "next/headers";
+
+export type RouteContext = { params: Promise<{ [key: string]: string }> };
 
 export async function withAuth(
   handler: (req: NextRequest, user: any) => Promise<NextResponse>
 ) {
   return async (req: NextRequest) => {
     try {
-      const session = await auth.api.getSession();
-      
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
       if (!session?.user) {
         return NextResponse.json(
           { success: false, error: "Unauthorized" },
           { status: 401 }
         );
       }
-      
+
       return await handler(req, session.user);
     } catch (error) {
       console.error("API error:", error);
@@ -36,16 +41,19 @@ export async function withAuthAndDB(
   });
 }
 
-export async function withAdmin(
-  handler: (req: NextRequest, user: any) => Promise<NextResponse>
+// FIXED: context flows through properly
+export function withAdmin(
+  handler: (req: NextRequest, user: any, context: RouteContext) => Promise<NextResponse>
 ) {
-  return withAuthAndDB(async (req, user) => {
-    if (user.role !== "admin") {
-      return NextResponse.json(
-        { success: false, error: "Forbidden" },
-        { status: 403 }
-      );
-    }
-    return handler(req, user);
-  });
+  return async (req: NextRequest, context: RouteContext) => {
+    return (await withAuthAndDB(async (req, user) => {
+      if (user.role !== "admin") {
+        return NextResponse.json(
+          { success: false, error: "Forbidden" },
+          { status: 403 }
+        );
+      }
+      return handler(req, user, context);
+    }))(req); // ← invoke the returned handler with req
+  };
 }

@@ -4,9 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { MoveUpRight} from 'lucide-react'
-
-
+import { MoveUpRight } from "lucide-react";
 
 const NAVIGATION_LINKS = [
   { label: "How it works", href: "/#how-it-works" },
@@ -17,7 +15,7 @@ const NAVIGATION_LINKS = [
 ];
 
 export default function Navbar() {
-    const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
   const loggedIn = !!session;
   const pathname = usePathname();
@@ -38,29 +36,28 @@ export default function Navbar() {
         <Link
           href="/"
           onClick={handleLogoClick}
-          className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2"
+          className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
         >
-          <img src="/skillora-3.png" alt="Company Logo" className="w-28 h-10"/>
-          
+          <img src="/arwc.svg" alt="Company Logo" className="w-[20rem] " />
         </Link>
 
-        <div className="hidden md:flex items-center gap-6 text-base">
+        <div className="hidden min-[1024px]:flex items-center gap-6 text-base">
           {NAVIGATION_LINKS.map(({ label, href }) => (
-            <a
+            <Link
               key={label}
               href={href}
               className="text-on-surface-variant hover:text-secondary transition-colors"
             >
               {label}
-            </a>
+            </Link>
           ))}
         </div>
 
         {/* Desktop auth */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 hidden min-[1024px]:flex">
           {loggedIn ? (
             <Link
-              href="/profile"
+              href="/dashboard"
               className="hidden md:block px-6 py-2 bg-opportunity-gold text-white rounded-full font-bold shadow-md hover:shadow-lg active:scale-95 transition-all"
             >
               Dashboard
@@ -69,9 +66,10 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="hidden px-6 py-2 text-secondary font-bold hover:scale-95 transition-all inline login-link"
+                className="sm:hidden px-6 py-2 text-secondary font-bold hover:scale-95 transition-all inline login-link"
               >
-                <div>Sign In</div><MoveUpRight className="arrow-icon"/>
+                <div>Sign In</div>
+                <MoveUpRight className="arrow-icon" />
               </Link>
               <Link
                 href="/register"
@@ -81,41 +79,69 @@ export default function Navbar() {
               </Link>
             </>
           )}
-
+        </div>
+        <div>
           {/* Hamburger — mobile only */}
           <button
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-[5px] rounded-lg hover:bg-surface-container transition-colors"
+            className="min-[1023px]:hidden flex flex-col justify-center items-center w-10 h-10 gap-[5px] rounded-lg hover:bg-surface-container transition-colors"
           >
-            <span className={`block h-[2px] w-5 bg-primary rounded-full transition-all duration-200 origin-center ${open ? "rotate-45 translate-y-[7px]" : ""}`} />
-            <span className={`block h-[2px] w-5 bg-primary rounded-full transition-all duration-200 ${open ? "opacity-0 scale-x-0" : ""}`} />
-            <span className={`block h-[2px] w-5 bg-primary rounded-full transition-all duration-200 origin-center ${open ? "-rotate-45 -translate-y-[7px]" : ""}`} />
+            <span
+              className={`block h-[2px] w-5 bg-primary rounded-full transition-all duration-200 origin-center ${open ? "rotate-45 translate-y-[7px]" : ""}`}
+            />
+            <span
+              className={`block h-[2px] w-5 bg-primary rounded-full transition-all duration-200 ${open ? "opacity-0 scale-x-0" : ""}`}
+            />
+            <span
+              className={`block h-[2px] w-5 bg-primary rounded-full transition-all duration-200 origin-center ${open ? "-rotate-45 -translate-y-[7px]" : ""}`}
+            />
           </button>
         </div>
       </nav>
 
       {/* Mobile menu */}
-      <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 border-t border-outline-variant/40" : "max-h-0"}`}>
+      <div
+        className={`min-[1023px]:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 border-t border-outline-variant/40" : "max-h-0"}`}
+      >
         <div className="px-4 py-4 flex flex-col gap-1 bg-background">
           {NAVIGATION_LINKS.map(({ label, href }) => (
-            <a
+            <Link
               key={label}
               href={href}
               onClick={() => setOpen(false)}
               className="text-on-surface-variant text-sm font-medium py-3 border-b border-outline-variant/30 hover:text-secondary transition-colors last:border-0"
             >
               {label}
-            </a>
+            </Link>
           ))}
           <div className="flex flex-col gap-3 pt-4">
             {loggedIn ? (
-              <Link href="/profile" onClick={() => setOpen(false)} className="text-center text-sm font-bold text-white bg-opportunity-gold py-3 rounded-full hover:shadow-lg transition-all">Dashboard</Link>
+              <Link
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="text-center text-sm font-bold text-white bg-opportunity-gold py-3 rounded-full hover:shadow-lg transition-all"
+              >
+                Dashboard
+              </Link>
             ) : (
               <>
-                <Link href="/login" onClick={() => setOpen(false)} className="text-center text-sm font-bold text-secondary border border-secondary/30 py-3 rounded-full hover:bg-secondary/5 transition-colors">Login</Link>
-                <Link href="/register" onClick={() => setOpen(false)} className="text-center text-sm font-bold text-white bg-opportunity-gold py-3 rounded-full hover:shadow-lg transition-all">Register</Link>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-center gap-1.5 text-center text-sm font-bold text-white bg-secondary py-3 rounded-full hover:shadow-lg transition-all"
+                >
+                  Sign In
+                  <MoveUpRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setOpen(false)}
+                  className="text-center text-sm font-bold text-white bg-opportunity-gold py-3 rounded-full hover:shadow-lg transition-all"
+                >
+                  Create Account
+                </Link>
               </>
             )}
           </div>
