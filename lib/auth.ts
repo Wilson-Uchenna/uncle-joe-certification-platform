@@ -65,6 +65,7 @@ const authOptions = {
       selectedCategoryName: { type: "string", defaultValue: null, input: true },
       selectedCategorySlug: { type: "string", defaultValue: null, input: true },
       selectedRole: { type: "string", defaultValue: null, input: true },
+      tempPassword: { type: "boolean", defaultValue: false}
     },
   },
   databaseHooks: {
@@ -143,7 +144,7 @@ export const auth = betterAuth({
         .collection("user")
         .findOne(
           { _id: new ObjectId(user.id) },
-          { projection: { role: 1, onboardingComplete: 1 } },
+          { projection: { role: 1, onboardingComplete: 1, tempPassword: 1 } },
         );
 
       return {
@@ -154,6 +155,7 @@ export const auth = betterAuth({
           onboardingComplete: userDoc?.onboardingComplete as
             | boolean
             | undefined,
+             tempPassword: (userDoc?.tempPassword as boolean) ?? false,
         },
         session,
       };

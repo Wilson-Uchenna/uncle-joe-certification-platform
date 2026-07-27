@@ -246,7 +246,7 @@ export default function LoginPage() {
           {/* Admin Login Link */}
           <div className="text-center">
             <Link
-              href="/admin/login"
+              href="/login-admin"
               className="text-sm text-gray-500 hover:text-indigo-600 transition-colors"
             >
               Sign in as Admin →
