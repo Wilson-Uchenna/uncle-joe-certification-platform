@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { to, otp, name } = await req.json();
 
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: `${process.env.EMAIL_FROM}`,
       to,
       subject: 'Your Verification Code',
       html: `

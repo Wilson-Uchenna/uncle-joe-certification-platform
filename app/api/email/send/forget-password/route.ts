@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     console.log("🔔 forget-password route hit:", { to, otp });
 
     const { data, error } = await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from:  `${process.env.EMAIL_FROM}`,
       to,
       subject: "Your password reset code",
       html: `

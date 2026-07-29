@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     }
 
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from:  `${process.env.EMAIL_FROM}`,
       to,
       subject: 'Your Sign-In Code',
       html: otpEmailTemplate({ name, otp }),
