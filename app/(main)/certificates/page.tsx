@@ -10,6 +10,8 @@ import {
   CheckCircle,
   Loader2,
   CreditCard,
+  Plus,
+  FileText,
 } from "lucide-react";
 import PaystackButton from "@/app/_components/payments/PaymentsButton";
 
@@ -76,10 +78,23 @@ export default function CertificatesPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">My Certificates</h1>
-      <p className="text-gray-500 mb-8">
-        Download your earned certificates and unlock new ones.
-      </p>
+      <div className="flex items-start justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            My Certificates
+          </h1>
+          <p className="text-gray-500">
+            Download your earned certificates and unlock new ones.
+          </p>
+        </div>
+        <button
+          onClick={() => router.push("/assessment")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap"
+        >
+          <Plus className="w-4 h-4" />
+          Take Exam
+        </button>
+      </div>
 
       {results.length === 0 && (
         <div className="text-center py-16 bg-gray-50 rounded-xl">
@@ -107,11 +122,11 @@ export default function CertificatesPage() {
           return (
             <div
               key={result._id}
-              className="bg-white border rounded-xl p-6 flex items-center justify-between"
+              className="bg-white border rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                     canDownload ? "bg-green-100" : "bg-gray-100"
                   }`}
                 >
@@ -136,7 +151,15 @@ export default function CertificatesPage() {
                 </div>
               </div>
 
-              <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => router.push(`/results/${result.examId}`)}
+                  className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  View Results
+                </button>
+
                 {canDownload ? (
                   <button
                     onClick={() => handleDownload(result._id)}
@@ -158,8 +181,13 @@ export default function CertificatesPage() {
                     ) : (
                       <button
                         className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg"
-                        onClick={() => router.push(`/certificates/payments/?examId=${result.examId}&score=${result.score}`)}
+                        onClick={() =>
+                          router.push(
+                            `/certificates/payments/?examId=${result.examId}&score=${result.score}`
+                          )
+                        }
                       >
+                        <CreditCard className="w-4 h-4" />
                         Continue to payment
                       </button>
                     )}

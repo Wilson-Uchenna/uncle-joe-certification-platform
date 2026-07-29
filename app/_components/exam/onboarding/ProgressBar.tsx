@@ -53,7 +53,7 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
             </div>
             {i < steps.length - 1 && (
               <div
-                className={`w-12 sm:w-16 h-[3px] rounded-full mb-6 mx-1.5 sm:mx-2 transition-all duration-400 ${
+                className={`w-12 sm:w-16 h-[3px] rounded-full sm:mb-2 md:mb-6 mx-1.5 sm:mx-2 transition-all duration-400 fog ${
                   step.num < currentStep
                     ? "bg-emerald-500"
                     : step.num === currentStep

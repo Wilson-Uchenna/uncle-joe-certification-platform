@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, Clock } from "lucide-react";
+import { Lock, Clock, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 function useCountdown(targetDate: string) {
   const [timeLeft, setTimeLeft] = useState<{
@@ -54,6 +55,7 @@ export function ResultsCountdown({
   onAvailable?: () => void;
 }) {
   const { timeLeft, isAvailable } = useCountdown(availableAt);
+  const router = useRouter()
 
   useEffect(() => {
     if (isAvailable && onAvailable) onAvailable();
@@ -63,7 +65,15 @@ export function ResultsCountdown({
 
   return (
     <div className="min-h-screen bg-[#f8f7fb] flex items-center justify-center px-5">
-      <div className="text-center max-w-md">
+      
+      <div className="text-center max-w-md w-full">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </button>
         <div className="w-20 h-20 rounded-full bg-violet-50 flex items-center justify-center mx-auto mb-6 border-2 border-violet-100">
           <Lock className="w-8 h-8 text-violet-600" />
         </div>

@@ -59,28 +59,28 @@ export function Step3Exam({
   }, []);
 
   const isMountedRef = useRef(true);
-const examFinishedRef = useRef(false);
+  const examFinishedRef = useRef(false);
 
-useEffect(() => {
-  isMountedRef.current = true;
-  examFinishedRef.current = false;
+  useEffect(() => {
+    isMountedRef.current = true;
+    examFinishedRef.current = false;
 
-  return () => {
-    isMountedRef.current = false;
-    
-    // If exam wasn't submitted normally, mark as abandoned
-    if (!examFinishedRef.current && examId) {
-      fetch("/api/exam/abandon", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ examId }),
-        // keepalive ensures the request fires even during page unload
-        keepalive: true,
-      }).catch(() => {});
-    }
-  };
-}, [examId]);
+    return () => {
+      isMountedRef.current = false;
+
+      // If exam wasn't submitted normally, mark as abandoned
+      if (!examFinishedRef.current && examId) {
+        fetch("/api/exam/abandon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ examId }),
+          // keepalive ensures the request fires even during page unload
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+  }, [examId]);
 
   const startExam = async () => {
     setLoading(true);
@@ -208,93 +208,96 @@ useEffect(() => {
 
   // ===== AUTO-SAVE =====
   useEffect(() => {
-  if (loading || !examId || cheatingDetected || showWarning) return;
-  
-  const autoSave = setInterval(() => {
-    const currentAnswer = answers[currentQuestion];
-    if (currentAnswer !== undefined) {
-      saveAnswerDirect(currentQuestion, currentAnswer, false);
-    }
-  }, 30000);
-  
-  return () => clearInterval(autoSave);
-}, [
-  currentQuestion,
-  answers,
-  examId,
-  loading,
-  cheatingDetected,
-  showWarning,
-]);
+    if (loading || !examId || cheatingDetected || showWarning) return;
+
+    const autoSave = setInterval(() => {
+      const currentAnswer = answers[currentQuestion];
+      if (currentAnswer !== undefined) {
+        saveAnswerDirect(currentQuestion, currentAnswer, false);
+      }
+    }, 30000);
+
+    return () => clearInterval(autoSave);
+  }, [
+    currentQuestion,
+    answers,
+    examId,
+    loading,
+    cheatingDetected,
+    showWarning,
+  ]);
 
   // ===== PREVENT REFRESH / CLOSE =====
-useEffect(() => {
-  if (showWarning || !examId) return;
+  useEffect(() => {
+    if (showWarning || !examId) return;
 
-  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-    // This only fires the abandon on actual unload, not on submit
-    if (!examFinishedRef.current) {
-      fetch("/api/exam/abandon", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ examId }),
-        keepalive: true,
-      }).catch(() => {});
-    }
-    e.preventDefault();
-    e.returnValue = "Leaving will submit your exam.";
-  };
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // This only fires the abandon on actual unload, not on submit
+      if (!examFinishedRef.current) {
+        fetch("/api/exam/abandon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ examId }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+      e.preventDefault();
+      e.returnValue = "Leaving will submit your exam.";
+    };
 
-  window.addEventListener("beforeunload", handleBeforeUnload);
-  return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-}, [showWarning, examId]);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [showWarning, examId]);
   // ===== SAVE ANSWER =====
-  
 
   // ===== SELECT ANSWER =====
   const selectAnswer = (optionIndex: number) => {
-  if (cheatingDetected || showWarning) return;
-  
-  // Update state
-  setAnswers((prev) => ({ ...prev, [currentQuestion]: optionIndex }));
-  
-  // Save directly with the value, don't read from stale state
-  saveAnswerDirect(currentQuestion, optionIndex);
-};
+    if (cheatingDetected || showWarning) return;
 
-const saveAnswerDirect = async (questionIndex: number, answerIndex: number, showLoading = true) => {
-  if (!examId) {
-    console.log("saveAnswerDirect: no examId");
-    return;
-  }
+    // Update state
+    setAnswers((prev) => ({ ...prev, [currentQuestion]: optionIndex }));
 
-  if (showLoading) setSaving(true);
-  try {
-    const res = await fetch("/api/exam/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        examId,
-        questionIndex,
-        answerIndex,
-        timeSpent: 0,
-      }),
-    });
+    // Save directly with the value, don't read from stale state
+    saveAnswerDirect(currentQuestion, optionIndex);
+  };
 
-    const data = await res.json();
-    console.log("saveAnswerDirect response:", data);
-    
-    if (!res.ok) {
-      console.error("saveAnswerDirect failed:", data.error);
+  const saveAnswerDirect = async (
+    questionIndex: number,
+    answerIndex: number,
+    showLoading = true,
+  ) => {
+    if (!examId) {
+      console.log("saveAnswerDirect: no examId");
+      return;
     }
-  } catch (err) {
-    console.error("saveAnswerDirect error:", err);
-  } finally {
-    if (showLoading) setSaving(false);
-  }
-};
+
+    if (showLoading) setSaving(true);
+    try {
+      const res = await fetch("/api/exam/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          examId,
+          questionIndex,
+          answerIndex,
+          timeSpent: 0,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("saveAnswerDirect response:", data);
+
+      if (!res.ok) {
+        console.error("saveAnswerDirect failed:", data.error);
+      }
+    } catch (err) {
+      console.error("saveAnswerDirect error:", err);
+    } finally {
+      if (showLoading) setSaving(false);
+    }
+  };
 
   // ===== TOGGLE FLAG =====
   const toggleFlag = () => {
@@ -325,11 +328,11 @@ const saveAnswerDirect = async (questionIndex: number, answerIndex: number, show
   };
 
   // ===== SUBMIT =====
- const handleSubmit = async (isTimeout = false, reason?: string) => {
-  if (isSubmittingRef.current) return;
-  isSubmittingRef.current = true;
-  setSubmitting(true);
-  examFinishedRef.current = true; // ← Mark as finished
+  const handleSubmit = async (isTimeout = false, reason?: string) => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setSubmitting(true);
+    examFinishedRef.current = true; // ← Mark as finished
     try {
       const res = await fetch("/api/exam/submit", {
         method: "POST",
@@ -348,9 +351,9 @@ const saveAnswerDirect = async (questionIndex: number, answerIndex: number, show
       onSubmit(data);
     } catch (err: any) {
       examFinishedRef.current = false;
-    setError(err.message);
-    setSubmitting(false);
-    isSubmittingRef.current = false;
+      setError(err.message);
+      setSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -408,16 +411,16 @@ const saveAnswerDirect = async (questionIndex: number, answerIndex: number, show
             </p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
             <button
               onClick={() => router.push("/dashboard")}
-              className="px-6 py-3 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+              className="w-full sm:w-auto px-6 py-3 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors"
             >
               Cancel & Return
             </button>
             <button
               onClick={() => setShowWarning(false)}
-              className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+              className="w-full sm:w-auto px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
             >
               I Understand — Start Exam
             </button>

@@ -41,6 +41,7 @@ export interface ExamSubmitResponse {
   passed: boolean;
   status: string;
   certificateAvailable: boolean;
+  resultsAvailableAt: Date;
 }
 
 export interface ExamState {

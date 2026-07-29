@@ -24,10 +24,23 @@ export function Step3Complete({
   result,
   onRestart,
 }: Step3CompleteProps) {
-  const router = useRouter()
+  const router = useRouter();
   const passed = result.passed;
   const examId = result.examId;
   const score = result.score;
+
+  const handleDownloadCertificate = () => {
+    const now = new Date().getTime();
+    const availableAt = new Date(result.resultsAvailableAt).getTime();
+
+    if (now >= availableAt) {
+      router.push(`/certificates/payments?examId=${examId}&score=${score}`);
+    } else {
+      // Embargo still active — send them to the results page,
+      // which already shows the countdown until it lifts
+      router.push(`/results/${examId}`);
+    }
+  };
 
   return (
     <div className="animate-fadeIn max-w-[600px] mx-auto">
@@ -113,7 +126,7 @@ export function Step3Complete({
             </div>
             <button
               className="mt-2 inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-violet-700 bg-violet-50 rounded-lg border border-violet-200 hover:bg-violet-100 transition-colors"
-              onClick={() => router.push(`/certificate-payment?examId=${examId}&score=${score}`)}
+              onClick={handleDownloadCertificate}
             >
               <Download className="w-4 h-4" />
               Download Certificate

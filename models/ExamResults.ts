@@ -36,6 +36,7 @@ export interface IResult extends Document {
   shareUrl?: string;
   isPublic: boolean;
   resultsAvailableAt: Date;
+   resultEmailSentAt?: Date;
   createdAt: Date;
 }
 
@@ -84,6 +85,7 @@ const ResultSchema = new Schema<IResult>(
     certificateRejectedAt: Date,
     certificateRejectedBy: String, // admin user id
     resultsAvailableAt: { type: Date, required: true },
+    resultEmailSentAt: Date,
 
     shareUrl: String,
     isPublic: { type: Boolean, default: true },
