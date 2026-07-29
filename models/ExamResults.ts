@@ -95,7 +95,6 @@ const ResultSchema = new Schema<IResult>(
 
 // All indexes defined here only
 ResultSchema.index({ userId: 1, createdAt: -1 });
-ResultSchema.index({ examId: 1 });
 ResultSchema.index({
   certificateAvailable: 1,
   certificateStatus: 1,

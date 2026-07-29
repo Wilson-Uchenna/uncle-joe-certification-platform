@@ -20,16 +20,17 @@ export async function GET(req: Request) {
   const dueResults = await Result.find({
     resultsAvailableAt: { $lte: now },
     resultEmailSentAt: null,
-  }).populate("user");
+  }).populate("userId");
 
   for (const result of dueResults) {
+    const user = result.userId as any;
     try {
       await resend.emails.send({
         from: "A.R.W.P.C <results@send.exams1.name.ng>",
-        to: result.user.email,
+        to: user.email,
         subject: "Your assessment results are ready",
         react: ResultsReadyEmail({
-          name: result.user.name,
+          name: result.userName,
           score: result.score,
           passed: result.passed,
           resultUrl: `${process.env.NEXT_PUBLIC_APP_URL}/results/${result.examId}`,
