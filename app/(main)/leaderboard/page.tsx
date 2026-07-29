@@ -848,7 +848,7 @@ export default function LeaderboardPage() {
 
   return (
     <div
-      className="min-h-screen"
+      className=""
       style={{ backgroundColor: colors.surface.bg, color: colors.text.primary }}
     >
       {/* Hero Section */}
