@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await connectDB;
+  await connectDB();
 
   const now = new Date();
 
