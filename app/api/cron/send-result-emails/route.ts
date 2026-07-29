@@ -1,27 +1,26 @@
 // app/api/cron/send-result-emails/route.ts
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import connectDB from "@/lib/local-db";
 import Result from "@/models/ExamResults";
 import { ResultsReadyEmail } from "@/app/_components/emails/ResultsReady";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET(req: Request) {
-  // Protect the endpoint
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  await connectDB;
+
   const now = new Date();
 
   const dueResults = await Result.find({
-    where: {
-      resultsAvailableAt: { lte: now },
-      resultEmailSentAt: null,
-    },
-    include: { user: true },
-  });
+    resultsAvailableAt: { $lte: now },
+    resultEmailSentAt: null,
+  }).populate("user");
 
   for (const result of dueResults) {
     try {
@@ -37,13 +36,11 @@ export async function GET(req: Request) {
         }),
       });
 
-      await Result.findByIdAndUpdate({
-        where: { id: result.id },
-        data: { resultEmailSentAt: now },
+      await Result.findByIdAndUpdate(result._id, {
+        resultEmailSentAt: now,
       });
     } catch (err) {
-      console.error(`Failed to send result email for ${result.id}`, err);
-      // don't mark as sent — it'll retry next run
+      console.error(`Failed to send result email for ${result._id}`, err);
     }
   }
 
