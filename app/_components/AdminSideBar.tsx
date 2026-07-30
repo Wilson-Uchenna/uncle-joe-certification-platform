@@ -126,7 +126,7 @@ const router = useRouter();
                 <img
                   src="/arwc.svg"
                   alt="Company Logo"
-                  className="w-28 h-10"
+                  className="w-[16rem]"
                 />
               </Link>
     
