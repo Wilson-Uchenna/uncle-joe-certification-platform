@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, Check, EyeIcon } from "lucide-react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const pathname = usePathname();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +81,13 @@ export default function LoginPage() {
     }
   };
 
+  function handleLogoClick(e: React.MouseEvent) {
+    if (pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
   return (
     <div className="min-h-[50vh] flex justify-between items-center max-w-[1650px] mx-auto my-10 px-4 sm:px-6 lg:px-8">
       {/* Left side — Form */}
@@ -87,11 +95,13 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="gap-2 mb-10">
           <div className="">
-            <img
-              src={"/arwc.svg"}
-              alt="company-logo"
-              className="w-[250px]"
-            />
+            <Link
+          href="/"
+          onClick={handleLogoClick}
+          className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
+        >
+          <img src="/company-logo.jpeg" alt="Company Logo" className="w-[10rem] md:w-[15rem]" />
+        </Link>
           </div>
         </div>
 

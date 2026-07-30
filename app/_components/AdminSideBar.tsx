@@ -71,6 +71,7 @@ const router = useRouter();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
+  
   return (
     <>
     <aside className="hidden lg:flex w-60 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
@@ -80,7 +81,7 @@ const router = useRouter();
           onClick={handleLogoClick}
           className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
         >
-          <img src="/arwc.svg" alt="Company Logo" className="w-[96rem] text-white" />
+          <img src="/company-logo.jpeg" alt="Company Logo" className="w-[10rem] md:w-[10rem]" />
         </Link>
 
         <p className="text-xs text-gray-500 mt-1">Command Center</p>

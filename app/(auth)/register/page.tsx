@@ -14,7 +14,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { type ProfileInput } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
@@ -74,6 +74,7 @@ const SKILL_LEVELS = [
 ];
 
 export default function RegisterPage() {
+  const pathname = usePathname();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -171,6 +172,13 @@ export default function RegisterPage() {
     router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
   };
 
+  function handleLogoClick(e: React.MouseEvent) {
+    if (pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
   return (
     <div className="min-h-[50vh] flex justify-between items-center max-w-[1650px] mx-auto">
       {/* Left side — Form */}
@@ -178,11 +186,15 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="flex items-center gap-2 mb-10">
           <div className="flex items-center justify-center">
-            <Link href="/" className="font-bold text-xl">
+            <Link
+              href="/"
+              onClick={handleLogoClick}
+              className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
+            >
               <img
-                src={"/arwc.svg"}
-                alt="company logo"
-                className="w-[250px]"
+                src="/company-logo.jpeg"
+                alt="Company Logo"
+                className="w-[10rem] md:w-[15rem]"
               />
             </Link>
           </div>

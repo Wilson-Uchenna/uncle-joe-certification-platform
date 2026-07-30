@@ -8,7 +8,6 @@ import Onskillora from "./_components/landing/onSkillora";
 import Professionals from "./_components/landing/professionals";
 import SkilloraChoice from "./_components/landing/skillora-choice";
 import SkilloraValues from "./_components/landing/skillora-values";
-import SuccessStoriess from "./_components/landing/success-stories";
 import WhySkillora from "./_components/landing/why-skillora";
 
 export default function Home() {
@@ -23,7 +22,7 @@ export default function Home() {
         <SkilloraChoice />
         <SkilloraValues />
         <Impact />
-        <SuccessStoriess />
+       
         <Certification />
         <CertificationUse />
         <FAQSection />

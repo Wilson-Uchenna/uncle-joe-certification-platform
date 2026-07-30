@@ -1,7 +1,7 @@
 export default function Impact() {
   return (
     <section>
-      <div className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-[#1a1a4e]">
+      <div className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-[#1a1a4e] font-[600]">
         <div className="max-w-4xl mx-auto text-center">
           {/* Label */}
           <span className="text-xs font-medium text-gray-400 uppercase tracking-[0.2em] mb-4 block">

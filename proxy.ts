@@ -11,21 +11,29 @@ export async function proxy(request: NextRequest) {
   const isLoggedIn = !!session?.user;
 
   // Public paths that don't need auth
-  const publicPaths = ["/", "/login", "/register", "/verify-email", "/login-admin", "/admin/register", "/forgot-password"];
+  const publicPaths = [
+    "/",
+    "/login",
+    "/register",
+    "/verify-email",
+    "/login-admin",
+    "/admin/register",
+    "/forgot-password",
+  ];
   const isPublic = publicPaths.includes(pathname);
 
   if (isLoggedIn && session.user.role === "admin") {
-  // Admin on public pages → admin dashboard
-  if (isPublic && pathname !== "/") {
+    // Admin on public pages → admin dashboard
+    if (isPublic && pathname !== "/") {
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    }
+    // Admin already on admin pages → allow
+    if (pathname.startsWith("/admin")) {
+      return NextResponse.next();
+    }
+    // Admin anywhere else → admin dashboard
     return NextResponse.redirect(new URL("/admin/dashboard", request.url));
   }
-  // Admin already on admin pages → allow
-  if (pathname.startsWith("/admin")) {
-    return NextResponse.next();
-  }
-  // Admin anywhere else → admin dashboard
-  return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-}
 
   // Not logged in + protected route → login
   if (!isLoggedIn && !isPublic && !pathname.startsWith("/api")) {

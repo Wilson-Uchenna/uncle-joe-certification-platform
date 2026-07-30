@@ -1,7 +1,7 @@
 const PROFESSIONALS = [
-  { image: "/Jonathan Mike.png", name: "Jonathan Mike", job: "DATA ANALYST" },
-  { image: "/Liam Carter.png", name: "Liam Carter", job: "CYBERSECURITY" },
-  { image: "/Noah Smith.png", name: "Noah Smith", job: "PRODUCT MANAGER" },
+  { image: "/Emeka Nwosu.jpg", name: "Emeka Nwosu", job: "DATA ANALYST" },
+  { image: "/Chidi Okafor.jpg", name: "Chidi Okafor", job: "CYBERSECURITY" },
+  { image: "/Ngozi Adeyemi.jpg", name: "Ngozi Adeyemi", job: "PRODUCT MANAGER" },
   {
     image: "/Emma Johnson.png",
     name: "Emma Johnson",
@@ -23,7 +23,7 @@ const FIGURES = [
 
 export default function Professionals() {
   return (
-    <section className="relative min-h-[40vh]  overflow-hidden text-center justify-between mt-20">
+    <section className="relative min-h-[40vh]  overflow-hidden text-center justify-between mt-15 font-[600]">
       <div className="w-4/5 px-8 sm:px-6 lg:px-10 xl:px-12 mx-auto">
         <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-gray-800 mb-8">
           Trusted by professionals like you

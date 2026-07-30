@@ -9,7 +9,7 @@ import {
 
 export default function CertificationUse() {
   return (
-    <div className="py-16 md:py-20 px-4 sm:px-6 lg:px-8">
+    <div className="py-6 md:py-16 px-4 sm:px-6 lg:px-8 font-[600]">
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left card — Where Can I Use My Certificate? */}
         <div className="bg-gray-100 rounded-xl p-8 border border-gray-100">

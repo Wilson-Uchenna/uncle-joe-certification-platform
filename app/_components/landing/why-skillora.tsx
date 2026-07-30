@@ -1,6 +1,6 @@
 export default function WhySkillora() {
     return (
-        <div className="flex flex-col items-center text-center py-16 md:py-20 max-w-3xl mx-auto px-4">
+        <div className="flex flex-col items-center text-center py-16 md:py-20 max-w-3xl mx-auto px-4 font-[600]">
   <span className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.2em] mb-4">
     Why A.R.W.P.C?
   </span>
