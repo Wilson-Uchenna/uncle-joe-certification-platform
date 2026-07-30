@@ -23,15 +23,14 @@ export async function GET(req: Request) {
     resultEmailSentAt: null,
   });
 
-  // Better Auth manages its own collection via the native driver —
-  // no Mongoose schema exists for it, so query it directly.
+  const userCollection = mongoose.connection.collection("user");
 
-  const userCollection = mongoose.connection.collection("user"); // confirm this matches Better Auth's actual collection name
+  let sentCount = 0;
 
   for (const result of dueResults) {
     try {
       const user = await userCollection.findOne({
-        _id: result.userId,
+        _id: new mongoose.Types.ObjectId(result.userId.toString()),
       });
 
       if (!user?.email) {
@@ -54,10 +53,12 @@ export async function GET(req: Request) {
       await Result.findByIdAndUpdate(result._id, {
         resultEmailSentAt: now,
       });
+
+      sentCount++;
     } catch (err) {
       console.error(`Failed to send result email for ${result._id}`, err);
     }
   }
 
-  return NextResponse.json({ sent: dueResults.length });
+  return NextResponse.json({ sent: sentCount, found: dueResults.length });
 }
