@@ -29,7 +29,7 @@ export default async function MainLayout({
         <TopNav />
 
         {/* Page content — changes on navigation */}
-        <main className="flex-1 overflow-y-auto p-6 pt-[36px]">
+        <main className="flex-1 overflow-y-auto p-6 pt-[50px]">
           {children}
         </main>
       </div>
