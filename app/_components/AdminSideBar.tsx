@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const menuItems = [
   {
@@ -57,6 +58,7 @@ const menuItems = [
 
 export default function AdminSideBar() {
   const pathname = usePathname();
+   const [open, setOpen] = useState(false);
 const router = useRouter();
   const handleLogout = async () => {
     await authClient.signOut();
@@ -70,14 +72,15 @@ const router = useRouter();
     }
   }
   return (
-    <aside className="w-82 bg-white border-r border-gray-200 flex flex-col overflow-y-auto">
+    <>
+    <aside className="hidden lg:flex w-60 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
       <div className="p-6 border-b border-gray-200">
         <Link
           href="/"
           onClick={handleLogoClick}
           className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
         >
-          <img src="/arwc.svg" alt="Company Logo" className="w-[96rem] text-white brightness-0 invert" />
+          <img src="/arwc.svg" alt="Company Logo" className="w-[96rem] text-white" />
         </Link>
 
         <p className="text-xs text-gray-500 mt-1">Command Center</p>
@@ -110,5 +113,90 @@ const router = useRouter();
         </button>
       </div>
     </aside>
+
+    {/* ===== MOBILE HEADER (below lg) ===== */}
+          <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900">
+            <div className="flex items-center justify-between h-14 px-4">
+              {/* Logo */}
+              <Link
+                href="/"
+                onClick={handleLogoClick}
+                className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
+              >
+                <img
+                  src="/arwc.svg"
+                  alt="Company Logo"
+                  className="w-28 h-10"
+                />
+              </Link>
+    
+              {/* Hamburger */}
+              <button
+                onClick={() => setOpen((v) => !v)}
+                aria-label={open ? "Close menu" : "Open menu"}
+                aria-expanded={open}
+                className="flex flex-col justify-center items-center w-10 h-10 gap-[5px] rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <span
+                  className={`block h-[2px] w-5 bg-white rounded-full transition-all duration-200 origin-center ${
+                    open ? "rotate-45 translate-y-[7px]" : ""
+                  }`}
+                />
+                <span
+                  className={`block h-[2px] w-5 bg-white rounded-full transition-all duration-200 ${
+                    open ? "opacity-0 scale-x-0" : ""
+                  }`}
+                />
+                <span
+                  className={`block h-[2px] w-5 bg-white rounded-full transition-all duration-200 origin-center ${
+                    open ? "-rotate-45 -translate-y-[7px]" : ""
+                  }`}
+                />
+              </button>
+            </div>
+    
+            {/* Mobile Menu Dropdown */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                open ? "max-h-[750px] border-t border-slate-700" : "max-h-0"
+              }`}
+            >
+              <nav className="px-4 py-3 flex flex-col gap-0.5 bg-slate-900">
+                {menuItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  const Icon = item.icon;
+    
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-amber-100 text-slate-900"
+                          : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                      }`}
+                    >
+                      <Icon className="w-[18px] h-[18px]" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+    
+              <div className="p-4 border-t border-gray-200">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-3 py-2.5 w-full text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+    
+    </>
+    
   );
 }
