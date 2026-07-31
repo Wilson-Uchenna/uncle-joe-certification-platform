@@ -9,7 +9,50 @@ import { OnboardingCompleteEmail } from "@/app/_components/emails/onBoardingEmai
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// GET handler unchanged — omitted here for brevity
+// GET: Fetch categories filtered by user's skill level
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      );
+    }
+
+    await connectDB();
+
+    const categories = await Category.find({
+      isActive: true,
+    })
+      .select("name slug description roles")
+      .sort({ name: 1 })
+      .lean();
+
+    return NextResponse.json({
+      success: true,
+      categories: categories.map((c) => ({
+        _id: c._id.toString(),
+        name: c.name,
+        slug: c.slug,
+        skillLevel: c.skillLevel,
+        description: c.description,
+        examTimeLimit: c.examTimeLimit,
+        passThreshold: c.passThreshold,
+        roles: c.roles,
+      })),
+    });
+  } catch (error) {
+    console.error("Onboarding GET error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch categories" },
+      { status: 500 },
+    );
+  }
+}
 
 // POST: Save onboarding selection
 export async function POST(req: NextRequest) {
