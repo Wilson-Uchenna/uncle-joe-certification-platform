@@ -65,7 +65,7 @@ function otpEmailTemplate({ name, otp }: { name?: string; otp: string }) {
               <tr>
                 <td class="px-10 pt-6 pb-8 text-center">
                   <p class="text-[#A7A4C9] text-xs m-0">
-                    &copy; 2026 Uncle Joe Certification. All rights reserved.
+                    &copy; 2026 African Remote Workers Certification Platform Examination. All rights reserved.
                   </p>
                 </td>
               </tr>

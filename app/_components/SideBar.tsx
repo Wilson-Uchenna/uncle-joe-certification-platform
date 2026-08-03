@@ -63,7 +63,11 @@ export function Sidebar() {
           onClick={handleLogoClick}
           className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-4 items-center my-4"
         >
-         <img src="/company-logo.jpeg" alt="Company Logo" className="w-[10rem] md:w-[10rem]" />
+          <img
+            src="/company-logo.jpeg"
+            alt="Company Logo"
+            className="w-[10rem] md:w-[10rem]"
+          />
         </Link>
 
         <nav className="flex-1 px-3 pb-4 space-y-0.5">
@@ -100,18 +104,18 @@ export function Sidebar() {
       </aside>
 
       {/* ===== MOBILE HEADER (below lg) ===== */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white text-white">
         <div className="flex items-center justify-between h-14 px-4">
           {/* Logo */}
           <Link
             href="/"
             onClick={handleLogoClick}
-            className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-2 items-center"
+            className="text-lg md:text-sm text-primary tracking-tight inline-flex gap-2 ml-4 items-center my-4"
           >
             <img
-              src="/arwc.svg"
+              src="/company-logo.jpeg"
               alt="Company Logo"
-              className="w-[14rem]"
+              className="w-[6.5rem] md:w-[7rem]"
             />
           </Link>
 
@@ -123,17 +127,17 @@ export function Sidebar() {
             className="flex flex-col justify-center items-center w-10 h-10 gap-[5px] rounded-lg hover:bg-white/10 transition-colors"
           >
             <span
-              className={`block h-[2px] w-5 bg-white rounded-full transition-all duration-200 origin-center ${
+              className={`block h-[2px] w-5 bg-slate-900 rounded-full transition-all duration-200 origin-center ${
                 open ? "rotate-45 translate-y-[7px]" : ""
               }`}
             />
             <span
-              className={`block h-[2px] w-5 bg-white rounded-full transition-all duration-200 ${
+              className={`block h-[2px] w-5 bg-slate-900 rounded-full transition-all duration-200 ${
                 open ? "opacity-0 scale-x-0" : ""
               }`}
             />
             <span
-              className={`block h-[2px] w-5 bg-white rounded-full transition-all duration-200 origin-center ${
+              className={`block h-[2px] w-5 bg-slate-900 rounded-full transition-all duration-200 origin-center ${
                 open ? "-rotate-45 -translate-y-[7px]" : ""
               }`}
             />

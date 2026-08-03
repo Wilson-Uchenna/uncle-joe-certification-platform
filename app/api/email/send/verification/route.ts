@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1a1a1a;">Verify Your Email</h2>
           <p>Hi ${name || `there`},</p>
-          <p>Your verification code for Uncle Joe Certification is:</p>
+          <p>Your verification code for African Remote Workers Certification Platform Examination is:</p>
           <div style="background: #f0f0f0; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 20px 0;">
             ${otp}
           </div>
