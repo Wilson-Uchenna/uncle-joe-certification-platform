@@ -1,6 +1,7 @@
 import Certification from "./_components/landing/certification";
 import CertificationUse from "./_components/landing/certification-use";
 import FAQSection from "./_components/landing/FAQSection";
+import Footer from "./_components/landing/footer";
 import HeroSection from "./_components/landing/HeroSection";
 import Impact from "./_components/landing/impact";
 import Navbar from "./_components/landing/navbar";
@@ -27,6 +28,7 @@ export default function Home() {
         <CertificationUse />
         <FAQSection />
       </main>
+      <Footer />
     </>
   );
 }
