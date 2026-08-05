@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, Check, EyeIcon } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, EyeIcon } from "lucide-react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { usePathname, useRouter } from "next/navigation";
@@ -17,14 +17,13 @@ export default function LoginPage() {
     password: "",
     otp: "",
   });
-  const [step, setStep] = useState<"email" | "otp">("email");
+  const [step, setStep] = useState<"credentials" | "otp">("credentials");
 
-  const validateStep1 = () => {
+  const validateCredentials = () => {
     if (!formData.email || !formData.password) {
       setError("Please fill in all required fields");
       return false;
     }
-
     if (formData.password.length < 8) {
       setError("Password must be at least 8 characters");
       return false;
@@ -32,34 +31,52 @@ export default function LoginPage() {
     return true;
   };
 
-  // Step 1: Request OTP
-  const handleSendOtp = async () => {
+  const handlePasswordSignIn = async () => {
     setError(null);
-    if (!validateStep1()) return;
+    if (!validateCredentials()) return;
 
     setIsLoading(true);
-    const res = await authClient.emailOtp.sendVerificationOtp({
+    const res = await authClient.signIn.email({
       email: formData.email,
-      type: "sign-in",
+      password: formData.password,
     });
 
     if (res.error) {
-      setError(res.error.message ?? "Failed to send OTP");
+      setError(res.error.message ?? "Invalid email or password");
       setIsLoading(false);
       return;
     }
 
-    setStep("otp"); // ← switch to OTP input view
+    // Sign-in succeeded even if unverified (requireEmailVerification isn't set).
+    // Route unverified accounts to the OTP step instead of the dashboard.
+    if (res.data?.user && res.data.user.emailVerified === false) {
+      const otpRes = await authClient.emailOtp.sendVerificationOtp({
+        email: formData.email,
+        type: "email-verification",
+      });
+
+      if (otpRes.error) {
+        setError(otpRes.error.message ?? "Failed to send verification code");
+        setIsLoading(false);
+        return;
+      }
+
+      setStep("otp");
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(false);
+    router.push("/dashboard");
   };
 
-  // Step 2: Verify with code from email
+  // Only reached for unverified accounts — a first-time login post-signup.
   const handleVerifyOtp = async () => {
     setError(null);
     setIsLoading(true);
-    const res = await authClient.signIn.emailOtp({
+    const res = await authClient.emailOtp.verifyEmail({
       email: formData.email,
-      otp: formData.otp, // ← user types this from their email
+      otp: formData.otp,
     });
 
     if (res.error) {
@@ -68,6 +85,7 @@ export default function LoginPage() {
       return;
     }
 
+    // autoSignInAfterVerification: true means the session is already set here.
     setIsLoading(false);
     router.push("/dashboard");
   };
@@ -77,7 +95,7 @@ export default function LoginPage() {
     if (step === "otp") {
       handleVerifyOtp();
     } else {
-      handleSendOtp();
+      handlePasswordSignIn();
     }
   };
 
