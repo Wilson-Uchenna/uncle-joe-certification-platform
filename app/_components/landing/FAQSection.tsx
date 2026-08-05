@@ -23,12 +23,12 @@ const FAQS: FAQItem[] = [
   {
     question: "Is registration free?",
     answer:
-      "Yes! Creating a A.R.W.P.C account is completely free. Some specialized courses or certificatuon programs may have associated fees, which will always be clearly communicated before enrollment.",
+      "Yes! Creating a A.R.W.P.C account is completely free. Some specialized courses or certification programs may have associated fees, which will always be clearly communicated before enrollment.",
   },
   {
     question: "How do I earn a certification?",
     answer:
-      "Complete your chosen course, finish all rquired learning modules, and successfully pass the final assessment. Once you've met the requirements, your African Remote Workers Professional Certification will be available for download.",
+      "Complete your chosen course, finish all required learning modules, and successfully pass the final assessment. Once you've met the requirements, your African Remote Workers Professional Certification will be available for download.",
   },
   {
     question: "Are A.R.W.P.C certificates verifiable?",
@@ -43,7 +43,7 @@ const FAQS: FAQItem[] = [
   {
     question: "Does A.R.W.P.C help users find remote jobs?",
     answer:
-      "Yes. A.R.W.P.C connects qualified learnerss with verified employers offering remote job opportunities that match their skills and experience.",
+      "Yes. A.R.W.P.C connects qualified learners with verified employers offering remote job opportunities that match their skills and experience.",
   },
   {
     question: "Can I learn at my own pace?",

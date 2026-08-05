@@ -106,16 +106,7 @@ export default function Navbar() {
         className={`min-[1023px]:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 border-t border-outline-variant/40" : "max-h-0"}`}
       >
         <div className="px-4 py-4 flex flex-col gap-1 bg-background">
-          {NAVIGATION_LINKS.map(({ label, href }) => (
-            <Link
-              key={label}
-              href={href}
-              onClick={() => setOpen(false)}
-              className="text-on-surface-variant text-sm font-medium py-3 border-b border-outline-variant/30 hover:text-secondary transition-colors last:border-0"
-            >
-              {label}
-            </Link>
-          ))}
+          
           <div className="flex flex-col gap-3 pt-4">
             {loggedIn ? (
               <Link
