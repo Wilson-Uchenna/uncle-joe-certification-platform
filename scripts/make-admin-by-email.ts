@@ -6,6 +6,10 @@ config({ path: resolve(process.cwd(), '.env.local') });
 
 async function makeAdmin() {
   const { db } = await import('@/lib/db');
+  const { Resend } = await import('resend');
+  const { AdminWelcomeEmail } = await import(
+    '../app/_components/emails/AdminWelcomeEmail'
+  );
 
   const email = process.argv[2];
 
@@ -40,8 +44,35 @@ async function makeAdmin() {
 
   console.log('✅ Promoted to admin');
   console.log('   Email:', email);
-  console.log('   Login → /admin/login');
 
+  // Notify immediately — don't wait for the yearly cron
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    await resend.emails.send({
+      from: 'A.R.W.P.C <admin@send.exams1.name.ng>',
+      to: email,
+      subject: "You've been made an admin",
+      react: AdminWelcomeEmail({
+        name: user.fullName || user.name || 'there',
+        loginUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin/login`,
+      }),
+    });
+
+    await db.collection('user').updateOne(
+      { _id: user._id },
+      { $set: { adminNotifiedAt: new Date() } },
+    );
+
+    console.log('   Welcome email: sent');
+  } catch (err) {
+    // Promotion already succeeded — don't fail the whole script over email delivery.
+    // The yearly cron will pick this admin up as a fallback since adminNotifiedAt
+    // never got set.
+    console.error('   ⚠️  Failed to send welcome email:', err);
+  }
+
+  console.log('   Login → /admin/login');
   process.exit(0);
 }
 
