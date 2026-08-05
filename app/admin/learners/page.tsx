@@ -30,52 +30,69 @@ type Learner = {
   status: "active" | "suspended" | "banned";
 };
 
+/* ───────── Primaryc Color System ───────── */
+const P = {
+  light:      "#E8E0FF",
+  lightHover: "#DDD1FF",
+  lightActive:"#C4B3FF",
+  normal:     "#7C5CFF",
+  normalHover:"#6B4DEB",
+  normalActive:"#5A3FD6",
+  dark:       "#4A35B5",
+  darkHover:  "#3D2D99",
+  darkActive: "#31247A",
+  darker:     "#1E1452",
+};
+
 const STATUS_STYLES = {
   active: {
     bg: "bg-[#22c55e]/10",
-    text: "text-[#22c55e]",
-    dot: "bg-[#22c55e]",
+    text: "text-[#4ade80]",
+    dot: "bg-[#4ade80]",
+    border: "border-[#22c55e]/20",
     label: "Active",
   },
   suspended: {
-    bg: "bg-[#eab308]/10",
-    text: "text-[#eab308]",
-    dot: "bg-[#eab308]",
+    bg: "bg-[#f59e0b]/10",
+    text: "text-[#fbbf24]",
+    dot: "bg-[#fbbf24]",
+    border: "border-[#f59e0b]/20",
     label: "Suspended",
   },
   banned: {
     bg: "bg-[#ef4444]/10",
-    text: "text-[#ef4444]",
-    dot: "bg-[#ef4444]",
+    text: "text-[#f87171]",
+    dot: "bg-[#f87171]",
+    border: "border-[#ef4444]/20",
     label: "Banned",
   },
 };
 
 const LEVEL_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   Advanced: {
-    bg: "bg-[#7c5cff]/10",
-    text: "text-[#7c5cff]",
-    border: "border-[#7c5cff]/20",
+    bg: "bg-[#7C5CFF]/10",
+    text: "text-[#A78BFF]",
+    border: "border-[#7C5CFF]/20",
   },
   Mid: {
     bg: "bg-[#3b82f6]/10",
-    text: "text-[#3b82f6]",
+    text: "text-[#60a5fa]",
     border: "border-[#3b82f6]/20",
   },
   Entry: {
     bg: "bg-[#22c55e]/10",
-    text: "text-[#22c55e]",
+    text: "text-[#4ade80]",
     border: "border-[#22c55e]/20",
   },
 };
 
 const AVATAR_COLORS = [
-  "bg-[#7c5cff]/20 text-[#7c5cff]",
-  "bg-[#3b82f6]/20 text-[#3b82f6]",
-  "bg-[#ef4444]/20 text-[#ef4444]",
-  "bg-[#f59e0b]/20 text-[#f59e0b]",
-  "bg-[#22c55e]/20 text-[#22c55e]",
-  "bg-[#ec4899]/20 text-[#ec4899]",
+  "bg-[#7C5CFF]/20 text-[#A78BFF]",
+  "bg-[#3b82f6]/20 text-[#60a5fa]",
+  "bg-[#ef4444]/20 text-[#f87171]",
+  "bg-[#f59e0b]/20 text-[#fbbf24]",
+  "bg-[#22c55e]/20 text-[#4ade80]",
+  "bg-[#ec4899]/20 text-[#f472b6]",
 ];
 
 function getInitials(name: string) {
@@ -153,90 +170,90 @@ export default function LearnerManagement() {
   const totalPages = Math.ceil(total / 20);
 
   return (
-    <div className="w-full mx-auto min-h-screen bg-gray-50 p-6 font-sans">
+    <div className="w-full min-h-screen bg-[#0B0A14] text-[#E8E0FF] p-6 font-sans antialiased">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-1">Learner Management</h1>
-        <p className="text-[#6b6b8a] text-sm">
-          View, manage, and support all registered learners.
+        <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
+          Learner Management
+        </h1>
+        <p className="text-[#8B85A4] text-sm">
+          View, manage, and support all registered learners across your platform.
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-50 border border-[#1e1e2e] rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#7c5cff]/10 flex items-center justify-center">
-              <Users className="w-4 h-4 text-[#7c5cff]" />
+        {[
+          {
+            icon: Users,
+            label: "Total Learners",
+            value: total.toLocaleString(),
+            color: P.normal,
+            bg: "bg-[#7C5CFF]/10",
+            text: "text-[#A78BFF]",
+          },
+          {
+            icon: Activity,
+            label: "Active Now",
+            value: learners.filter((l) => l.status === "active").length,
+            color: "#22c55e",
+            bg: "bg-[#22c55e]/10",
+            text: "text-[#4ade80]",
+          },
+          {
+            icon: FileCheck,
+            label: "Total Exams",
+            value: learners.reduce((sum, l) => sum + l.examsTaken, 0).toLocaleString(),
+            color: "#3b82f6",
+            bg: "bg-[#3b82f6]/10",
+            text: "text-[#60a5fa]",
+          },
+          {
+            icon: Award,
+            label: "Certificates",
+            value: learners.reduce((sum, l) => sum + l.certificatesEarned, 0).toLocaleString(),
+            color: "#f59e0b",
+            bg: "bg-[#f59e0b]/10",
+            text: "text-[#fbbf24]",
+          },
+        ].map((stat, i) => (
+          <div
+            key={i}
+            className="bg-[#13121F] border border-[#1E1C2E] rounded-2xl p-5 hover:border-[#2A2740] transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+              >
+                <stat.icon className={`w-5 h-5 ${stat.text}`} />
+              </div>
+              <span className="text-[#6B668A] text-xs font-semibold uppercase tracking-wider">
+                {stat.label}
+              </span>
             </div>
-            <span className="text-[#6b6b8a] text-xs font-medium uppercase tracking-wider">
-              Total Learners
-            </span>
+            <p className="text-3xl font-bold text-white tracking-tight">
+              {stat.value}
+            </p>
           </div>
-          <p className="text-2xl font-bold text-purple-900">{total.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gray-50 border border-[#1e1e2e] rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#22c55e]/10 flex items-center justify-center">
-              <Activity className="w-4 h-4 text-[#22c55e]" />
-            </div>
-            <span className="text-[#6b6b8a] text-xs font-medium uppercase tracking-wider">
-              Active Now
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-blue-700">
-            {learners.filter((l) => l.status === "active").length}
-          </p>
-        </div>
-
-        <div className="bg-gray-50 border border-[#1e1e2e] rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center">
-              <FileCheck className="w-4 h-4 text-[#3b82f6]" />
-            </div>
-            <span className="text-[#6b6b8a] text-xs font-medium uppercase tracking-wider">
-              Total Exams
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-purple-900">
-            {learners.reduce((sum, l) => sum + l.examsTaken, 0).toLocaleString()}
-          </p>
-        </div>
-
-        <div className="bg-gray-50 border border-[#1e1e2e] rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#eab308]/10 flex items-center justify-center">
-              <Award className="w-4 h-4 text-[#eab308]" />
-            </div>
-            <span className="text-[#6b6b8a] text-xs font-medium uppercase tracking-wider">
-              Certificates
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-blue-700">
-            {learners
-              .reduce((sum, l) => sum + l.certificatesEarned, 0)
-              .toLocaleString()}
-          </p>
-        </div>
+        ))}
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="relative flex-1 max-w-md w-full">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b6b8a]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5A557A]" />
           <input
             type="text"
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-gray-50] border border-[#2a2a3e] rounded-lg pl-10 pr-4 py-2.5 text-sm placeholder-[#4a4a6a] focus:outline-none focus:border-[#7c5cff] focus:ring-1 focus:ring-[#7c5cff]/30 transition-all"
+            className="w-full bg-[#13121F] border border-[#1E1C2E] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-[#4A4568] focus:outline-none focus:border-[#7C5CFF] focus:ring-1 focus:ring-[#7C5CFF]/40 transition-all"
           />
         </div>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="bg-gray-50 border border-[#2a2a3e] rounded-lg px-4 py-2.5 text-sm text-[#6b6b8a] focus:outline-none focus:border-[#7c5cff] cursor-pointer"
+          className="bg-[#13121F] border border-[#1E1C2E] rounded-xl px-4 py-2.5 text-sm text-[#B0ABCC] focus:outline-none focus:border-[#7C5CFF] cursor-pointer hover:border-[#2A2740] transition-all"
         >
           <option value="all">All Status</option>
           <option value="active">Active</option>
@@ -246,50 +263,38 @@ export default function LearnerManagement() {
       </div>
 
       {/* Table */}
-      <div className="bg-gray-50 border shadow rounded-xl overflow-hidden">
+      <div className="bg-[#13121F] border border-[#1E1C2E] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#1e1e2e]">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Learner
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Level
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Location
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Exams
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Certificates
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Last Active
-                </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-[#6b6b8a] uppercase tracking-wider">
-                  Actions
-                </th>
+              <tr className="border-b border-[#1E1C2E] bg-[#0F0E1A]">
+                {["Learner", "Level", "Location", "Exams", "Certificates", "Status", "Last Active", "Actions"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className={`px-6 py-4 text-xs font-semibold text-[#6B668A] uppercase tracking-wider ${
+                        h === "Actions" ? "text-right" : "text-left"
+                      }`}
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1e1e2e]">
+            <tbody className="divide-y divide-[#1E1C2E]">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12">
-                    <div className="flex items-center justify-center gap-2 text-[#6b6b8a]">
-                      <div className="w-4 h-4 border-2 border-[#7c5cff] border-t-transparent rounded-full animate-spin" />
+                  <td colSpan={8} className="text-center py-16">
+                    <div className="flex flex-col items-center justify-center gap-3 text-[#6B668A]">
+                      <div className="w-6 h-6 border-2 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
                       <span className="text-sm">Loading learners...</span>
                     </div>
                   </td>
                 </tr>
               ) : learners.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-[#6b6b8a] text-sm">
+                  <td colSpan={8} className="text-center py-16 text-[#5A557A] text-sm">
                     No learners found matching your criteria.
                   </td>
                 </tr>
@@ -302,20 +307,20 @@ export default function LearnerManagement() {
                   return (
                     <tr
                       key={learner.id}
-                      className="hover:bg-[#1a1a28] transition-colors group"
+                      className="hover:bg-[#1A1830] transition-colors duration-200 group"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold ${avatarColor}`}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${avatarColor} ring-2 ring-transparent group-hover:ring-[#7C5CFF]/20 transition-all`}
                           >
                             {getInitials(learner.name)}
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white">
+                            <p className="text-sm font-semibold text-white group-hover:text-[#E8E0FF] transition-colors">
                               {learner.name}
                             </p>
-                            <p className="text-xs text-[#6b6b8a]">
+                            <p className="text-xs text-[#5A557A]">
                               {learner.email}
                             </p>
                           </div>
@@ -323,38 +328,36 @@ export default function LearnerManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${level.bg} ${level.text} border ${level.border}`}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${level.bg} ${level.text} border ${level.border}`}
                         >
                           {learner.skillLevel}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#9a9ab5]">
+                      <td className="px-6 py-4 text-sm text-[#8B85A4]">
                         {learner.state}, {learner.country}
                       </td>
-                      <td className="px-6 py-4 text-sm text-white font-medium">
+                      <td className="px-6 py-4 text-sm text-white font-semibold tabular-nums">
                         {learner.examsTaken}
                       </td>
-                      <td className="px-6 py-4 text-sm text-white font-medium">
+                      <td className="px-6 py-4 text-sm text-white font-semibold tabular-nums">
                         {learner.certificatesEarned}
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${status.bg} ${status.text} ${status.border}`}
                         >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${status.dot}`}
-                          />
+                          <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#6b6b8a]">
+                      <td className="px-6 py-4 text-sm text-[#5A557A]">
                         {learner.lastActive}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleView(learner.id)}
-                            className="p-2 rounded-lg text-[#6b6b8a] hover:text-white hover:bg-[#2a2a3e] transition-all"
+                            className="p-2 rounded-lg text-[#5A557A] hover:text-[#A78BFF] hover:bg-[#7C5CFF]/10 transition-all"
                             title="View Profile"
                           >
                             <Eye className="w-4 h-4" />
@@ -363,17 +366,15 @@ export default function LearnerManagement() {
                           {learner.status === "active" && (
                             <>
                               <button
-                                onClick={() =>
-                                  handleAction(learner.id, "suspend")
-                                }
-                                className="p-2 rounded-lg text-[#6b6b8a] hover:text-[#eab308] hover:bg-[#eab308]/10 transition-all"
+                                onClick={() => handleAction(learner.id, "suspend")}
+                                className="p-2 rounded-lg text-[#5A557A] hover:text-[#fbbf24] hover:bg-[#f59e0b]/10 transition-all"
                                 title="Suspend"
                               >
                                 <Ban className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleAction(learner.id, "ban")}
-                                className="p-2 rounded-lg text-[#6b6b8a] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
+                                className="p-2 rounded-lg text-[#5A557A] hover:text-[#f87171] hover:bg-[#ef4444]/10 transition-all"
                                 title="Ban"
                               >
                                 <Ban className="w-4 h-4" />
@@ -384,17 +385,15 @@ export default function LearnerManagement() {
                           {learner.status === "suspended" && (
                             <>
                               <button
-                                onClick={() =>
-                                  handleAction(learner.id, "unban")
-                                }
-                                className="p-2 rounded-lg text-[#6b6b8a] hover:text-[#22c55e] hover:bg-[#22c55e]/10 transition-all"
+                                onClick={() => handleAction(learner.id, "unban")}
+                                className="p-2 rounded-lg text-[#5A557A] hover:text-[#4ade80] hover:bg-[#22c55e]/10 transition-all"
                                 title="Restore"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleAction(learner.id, "ban")}
-                                className="p-2 rounded-lg text-[#6b6b8a] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
+                                className="p-2 rounded-lg text-[#5A557A] hover:text-[#f87171] hover:bg-[#ef4444]/10 transition-all"
                                 title="Ban"
                               >
                                 <Ban className="w-4 h-4" />
@@ -405,7 +404,7 @@ export default function LearnerManagement() {
                           {learner.status === "banned" && (
                             <button
                               onClick={() => handleAction(learner.id, "unban")}
-                              className="p-2 rounded-lg text-[#6b6b8a] hover:text-[#22c55e] hover:bg-[#22c55e]/10 transition-all"
+                              className="p-2 rounded-lg text-[#5A557A] hover:text-[#4ade80] hover:bg-[#22c55e]/10 transition-all"
                               title="Restore"
                             >
                               <CheckCircle2 className="w-4 h-4" />
@@ -424,15 +423,15 @@ export default function LearnerManagement() {
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-        <p className="text-sm text-[#6b6b8a]">
-          Showing <span className="text-white font-medium">{learners.length}</span> of{" "}
-          <span className="text-white font-medium">{total.toLocaleString()}</span> learners
+        <p className="text-sm text-[#5A557A]">
+          Showing <span className="text-[#E8E0FF] font-semibold">{learners.length}</span> of{" "}
+          <span className="text-[#E8E0FF] font-semibold">{total.toLocaleString()}</span> learners
         </p>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="p-2 rounded-lg border border-[#2a2a3e] text-[#6b6b8a] hover:text-white hover:border-[#7c5cff] hover:bg-[#7c5cff]/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2.5 rounded-xl border border-[#1E1C2E] text-[#5A557A] hover:text-white hover:border-[#7C5CFF] hover:bg-[#7C5CFF]/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -444,10 +443,10 @@ export default function LearnerManagement() {
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`min-w-[40px] px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
                   isActive
-                    ? "bg-[#7c5cff] text-white"
-                    : "border border-[#2a2a3e] text-[#6b6b8a] hover:text-white hover:border-[#7c5cff] hover:bg-[#7c5cff]/10"
+                    ? "bg-[#7C5CFF] text-white shadow-lg shadow-[#7C5CFF]/25"
+                    : "border border-[#1E1C2E] text-[#5A557A] hover:text-white hover:border-[#7C5CFF] hover:bg-[#7C5CFF]/10"
                 }`}
               >
                 {p}
@@ -457,10 +456,10 @@ export default function LearnerManagement() {
 
           {totalPages > 5 && (
             <>
-              <span className="text-[#4a4a6a] px-1">...</span>
+              <span className="text-[#3A3560] px-1">...</span>
               <button
                 onClick={() => setPage(totalPages)}
-                className="px-3 py-2 rounded-lg border border-[#2a2a3e] text-[#6b6b8a] hover:text-white hover:border-[#7c5cff] hover:bg-[#7c5cff]/10 transition-all text-sm font-medium"
+                className="min-w-[40px] px-3 py-2 rounded-xl border border-[#1E1C2E] text-[#5A557A] hover:text-white hover:border-[#7C5CFF] hover:bg-[#7C5CFF]/10 transition-all text-sm font-semibold"
               >
                 {totalPages}
               </button>
@@ -470,7 +469,7 @@ export default function LearnerManagement() {
           <button
             onClick={() => setPage((p) => p + 1)}
             disabled={page >= totalPages}
-            className="p-2 rounded-lg border border-[#2a2a3e] text-[#6b6b8a] hover:text-white hover:border-[#7c5cff] hover:bg-[#7c5cff]/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2.5 rounded-xl border border-[#1E1C2E] text-[#5A557A] hover:text-white hover:border-[#7C5CFF] hover:bg-[#7C5CFF]/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
