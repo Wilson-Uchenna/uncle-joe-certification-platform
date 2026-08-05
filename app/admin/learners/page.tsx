@@ -156,7 +156,7 @@ export default function LearnerManagement() {
     <div className="w-full mx-auto min-h-screen bg-gray-50 p-6 font-sans">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-1">Learner Management</h1>
+        <h1 className="text-3xl font-bold text-slate-900 mb-1">Learner Management</h1>
         <p className="text-[#6b6b8a] text-sm">
           View, manage, and support all registered learners.
         </p>
