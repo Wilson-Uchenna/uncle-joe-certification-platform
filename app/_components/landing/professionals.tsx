@@ -1,17 +1,21 @@
-const PROFESSIONALS = [
-  { image: "/Emeka Nwosu.jpg", name: "Emeka Nwosu", job: "DATA ANALYST" },
-  { image: "/Chidi Okafor.jpg", name: "Chidi Okafor", job: "CYBERSECURITY" },
-  { image: "/Ngozi Adeyemi.jpg", name: "Ngozi Adeyemi", job: "PRODUCT MANAGER" },
+const COMPANIES = [
+  
   {
-    image: "/Emma Johnson.png",
-    name: "Emma Johnson",
-    job: "GRAPHICS DESIGNER",
+    image: "ALUMNI.jpeg",
+  },
+  {image: "ception.png"},
+  {
+    image: "ALOGO.jpeg"
   },
   {
-    image: "/Sophia Brown.png",
-    name: "Sophia Brown",
-    job: "SOFTWARE ENGINEER",
+    image: "XP.jpeg"
   },
+  {
+    image: "uneed.jpeg"
+  },
+  {
+    image: "glow.jpeg"
+  }
 ];
 
 const FIGURES = [
@@ -26,24 +30,24 @@ export default function Professionals() {
     <section className="relative min-h-[40vh]  overflow-hidden text-center justify-between mt-15 font-[600]">
       <div className="w-4/5 px-8 sm:px-6 lg:px-10 xl:px-12 mx-auto">
         <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-gray-800 mb-8">
-          Trusted by professionals like you
+          Trusted by diverse organizations
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
-          {PROFESSIONALS.map(({ image, name, job }) => (
-            <div key={name}>
-              <div className="aspect-[4/5] rounded-lg overflow-hidden mb-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+          {COMPANIES.map(({ image }) => (
+            <div key={image}>
+              <div className="aspect-[5/5] rounded-lg overflow-hidden mb-3">
                 <img
                   src={image}
-                  alt={name}
+                  // alt={name}
                   className="w-full h-full object-cover"
                 />
               </div>
               <h3 className="text-sm text-start font-bold text-gray-900">
-                {name}
+                {/* {name} */}
               </h3>
               <p className="text-[11px] text-start font-medium text-gray-500 uppercase tracking-wide leading-tight">
-                {job}
+                {/* {job} */}
               </p>
             </div>
           ))}
