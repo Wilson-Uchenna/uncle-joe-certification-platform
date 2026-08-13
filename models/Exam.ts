@@ -76,7 +76,7 @@ const ExamSchema = new Schema<IExam>(
       required: true,
     },
     isFinalStage: { type: Boolean, default: false },
-    selectedRole: { type: String, required: true, index: true },
+    selectedRole: { type: String },
 
     questions: [ExamQuestionSchema],
     totalQuestions: { type: Number, required: true },

@@ -29,7 +29,7 @@ type Question = {
   explanation: string;
   skillLevel: SkillLevel;
   isFinalStage: boolean;
-  role: string;
+  
 };
 
 const SKILL_LEVEL_CONFIG: Record<
@@ -101,7 +101,7 @@ export default function AssessmentManagement() {
   };
 
   const addQuestion = () => {
-    const defaultRole = questions[0]?.role || selectedCategory?.roles[0] || "";
+    // const defaultRole = questions[0]?.role || selectedCategory?.roles[0] || "";
     const defaultSkillLevel = questions[0]?.skillLevel || "entry";
     setQuestions([
       ...questions,
@@ -114,7 +114,7 @@ export default function AssessmentManagement() {
         explanation: "",
         skillLevel: defaultSkillLevel,
         isFinalStage: false,
-        role: defaultRole,
+        // role: defaultRole,
       },
     ]);
   };
@@ -123,7 +123,7 @@ export default function AssessmentManagement() {
     const updated = [...questions];
     updated[index] = { ...updated[index], [field]: value };
 
-    if (index === 0 && (field === "role" || field === "skillLevel") && value) {
+    if (index === 0 && (field === "skillLevel") && value) {
       for (let i = 1; i < updated.length; i++) {
         updated[i][field] = value;
       }
@@ -171,9 +171,9 @@ export default function AssessmentManagement() {
       if (q.options.some((o) => !o.trim()))
         return `Question ${i + 1}: all options required`;
       if (!q.skillLevel) return `Question ${i + 1}: skill level is required`;
-      if (selectedCategory?.roles.length && !q.role) {
-        return `Question ${i + 1}: select a sub-role`;
-      }
+      // if (selectedCategory?.roles.length && !q.role) {
+      //   return `Question ${i + 1}: select a sub-role`;
+      // }
     }
     return null;
   };
@@ -250,15 +250,15 @@ export default function AssessmentManagement() {
   };
 
   const firstQuestion = questions[0];
-  const isMasterRoleSet = !!firstQuestion?.role;
-  const masterRole = firstQuestion?.role ?? "";
+  // const isMasterRoleSet = !!firstQuestion?.role;
+  // const masterRole = firstQuestion?.role ?? "";
   const isMasterSkillLevelSet = !!firstQuestion;
   const masterSkillLevel = firstQuestion?.skillLevel ?? "entry";
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+      <div className="block md:flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Assessment Management
@@ -334,14 +334,14 @@ export default function AssessmentManagement() {
       {/* Master Lock Indicators */}
       {questions.length > 1 && (
         <div className="mb-4 space-y-2">
-          {isMasterRoleSet && (
+          {/* {isMasterRoleSet && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
               <Lock className="w-4 h-4 text-blue-600" />
               <p className="text-sm text-blue-700">
                 All questions locked to sub-role: <strong>{masterRole}</strong>.
               </p>
             </div>
-          )}
+          )} */}
           {isMasterSkillLevelSet && (
             <div className="p-3 bg-violet-50 border border-violet-200 rounded-lg flex items-center gap-2">
               <Lock className="w-4 h-4 text-violet-600" />
@@ -381,7 +381,7 @@ export default function AssessmentManagement() {
       <div className="space-y-6">
         {questions.map((q, qIndex) => {
           const isFirst = qIndex === 0;
-          const isRoleLocked = !isFirst && isMasterRoleSet;
+          // const isRoleLocked = !isFirst && isMasterRoleSet;
           const isSkillLevelLocked = !isFirst && isMasterSkillLevelSet;
           const hasCodeSnippet = q.codeSnippet !== null;
 
@@ -395,12 +395,12 @@ export default function AssessmentManagement() {
                   <h3 className="font-semibold text-gray-900">
                     Question {qIndex + 1}
                   </h3>
-                  {isRoleLocked && (
+                  {/* {isRoleLocked && (
                     <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full flex items-center gap-1">
                       <Lock className="w-3 h-3" />
                       Locked
                     </span>
-                  )}
+                  )} */}
                 </div>
                 <button
                   onClick={() => removeQuestion(qIndex)}
@@ -545,7 +545,7 @@ export default function AssessmentManagement() {
                 )}
 
                 {/* Role */}
-                {selectedCategory && selectedCategory.roles.length > 0 && (
+                {/* {selectedCategory && selectedCategory.roles.length > 0 && (
                   <div className="relative">
                     <select
                       value={q.role}
@@ -572,7 +572,7 @@ export default function AssessmentManagement() {
                       </div>
                     )}
                   </div>
-                )}
+                )} */}
 
                 {/* Final Stage */}
                 <label className="flex items-center gap-2 text-sm text-gray-700">

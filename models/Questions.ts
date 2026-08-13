@@ -18,7 +18,7 @@ export interface IQuestion extends Document {
 const QuestionSchema = new Schema<IQuestion>(
   {
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
-    role: { type: String, required: true },
+    role: { type: String},
     skillLevel: {
       type: String,
       enum: ["entry", "mid", "advanced"],
@@ -36,7 +36,7 @@ const QuestionSchema = new Schema<IQuestion>(
   { timestamps: true }
 );
 
-QuestionSchema.index({ categoryId: 1, role: 1, skillLevel: 1, isActive: 1 });
+QuestionSchema.index({ categoryId: 1, skillLevel: 1, isActive: 1 });
 QuestionSchema.index({ isFinalStage: 1 });
 
 export const Question =

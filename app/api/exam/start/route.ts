@@ -34,13 +34,13 @@ export async function POST(req: NextRequest) {
 
     const body = (await req.json()) as {
       categoryId: string;
-      selectedRole: string;
+      
       skillLevel: SkillLevel;
       isFinalStage?: boolean;
     };
-    const { categoryId, selectedRole, skillLevel, isFinalStage = false } = body;
+    const { categoryId,  skillLevel, isFinalStage = false } = body;
 
-    if (!categoryId || !selectedRole || !skillLevel) {
+    if (!categoryId || !skillLevel) {
       return NextResponse.json(
         {
           success: false,
@@ -121,12 +121,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!category.roles.includes(selectedRole)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid role for this category" },
-        { status: 400 },
-      );
-    }
+    // if (!category.roles.includes(selectedRole)) {
+    //   return NextResponse.json(
+    //     { success: false, error: "Invalid role for this category" },
+    //     { status: 400 },
+    //   );
+    // }
 
     // ─── Final stage check ───
     if (isFinalStage) {
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       {
         $match: {
           categoryId: new mongoose.Types.ObjectId(categoryId),
-          role: selectedRole,
+          // role: selectedRole,
           skillLevel,
           isFinalStage,
           isActive: true,
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Not enough questions available for "${selectedRole}" at ${skillLevel} level. Found ${questions.length}, need ${TOTAL_QUESTIONS}.`,
+          error: `Not enough questions available for "${category.name}" at ${skillLevel} level. Found ${questions.length}, need ${TOTAL_QUESTIONS}.`,
         },
         { status: 400 },
       );
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
       categoryId,
       categoryName: category.name,
       skillLevel,
-      selectedRole,
+      // selectedRole,
       questions: questions.map((q) => ({
         questionId: q._id,
         questionText: q.question,
@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
       })),
       timeLimit,
       totalQuestions: TOTAL_QUESTIONS,
-      selectedRole,
+      // selectedRole,
       skillLevel,
     });
   } catch (error) {
