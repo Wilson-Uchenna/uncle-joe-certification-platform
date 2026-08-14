@@ -12,9 +12,9 @@ const TOTAL_QUESTIONS = 20;
 type SkillLevel = "entry" | "mid" | "advanced";
 
 const SKILL_LEVEL_TIME_LIMITS: Record<SkillLevel, number> = {
-  entry: 25,
+  entry: 45,
   mid: 30,
-  advanced: 45,
+  advanced: 25,
 };
 
 export async function POST(req: NextRequest) {

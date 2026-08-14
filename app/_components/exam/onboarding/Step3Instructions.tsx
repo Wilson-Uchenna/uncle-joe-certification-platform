@@ -30,7 +30,7 @@ const skillLevels = [
   {
     value: "entry" as const,
     label: "Entry Level",
-    description: "25 minutes • 20 questions",
+    description: "45 minutes • 100 questions",
     icon: "🌱",
     color: "from-emerald-500 to-emerald-700",
     bgColor: "bg-emerald-50",
