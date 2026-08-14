@@ -7,7 +7,7 @@ import { Question } from "@/models/Questions";
 import { Exam } from "@/models/Exam";
 import { headers } from "next/headers";
 
-const TOTAL_QUESTIONS = 20;
+const TOTAL_QUESTIONS = 100;
 
 type SkillLevel = "entry" | "mid" | "advanced";
 
