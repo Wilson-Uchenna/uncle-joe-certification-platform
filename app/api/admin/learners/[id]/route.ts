@@ -6,7 +6,7 @@ import { Exam } from "@/models/Exam";
 import { Result } from "@/models/ExamResults";
 
 export const GET = withAdmin(async (req: NextRequest, user, context: RouteContext) => {
-  const { userId } = await context.params;
+  const { id: userId } = await context.params;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return NextResponse.json({ success: false, error: "Invalid user ID" }, { status: 400 });

@@ -26,7 +26,7 @@ type Question = {
   language: CodeLanguage | null;
   options: string[];
   correctAnswer: number;
-  explanation: string;
+  explanation: string | null;
   skillLevel: SkillLevel;
   isFinalStage: boolean;
   
@@ -498,7 +498,7 @@ export default function AssessmentManagement() {
               {/* Explanation */}
               <textarea
                 placeholder="Explanation (shown after answering)"
-                value={q.explanation}
+                value={q.explanation ?? ""}
                 onChange={(e) =>
                   updateQuestion(qIndex, "explanation", e.target.value)
                 }
