@@ -53,7 +53,7 @@ const ResultSchema = new Schema<IResult>(
     userName: String,
     categoryName: { type: String, required: true },
     skillLevel: { type: String, required: true },
-    selectedRole: { type: String, required: true, index: true },
+    selectedRole: { type: String },
 
     score: { type: Number, required: true },
     correctCount: { type: Number, required: true },

@@ -73,13 +73,13 @@ export async function POST(req: NextRequest) {
       userName: session.user.name,
       categoryName: exam.categoryName,
       skillLevel: exam.skillLevel,
-      selectedRole: exam.selectedRole,
       score,
       correctCount,
       totalQuestions: exam.totalQuestions,
       passed,
       certificateAvailable: passed,
       certificateDownloaded: false,
+      
       resultsAvailableAt: new Date(Date.now() + EMBARGO_HOURS * 60 * 1000), // 24 hours embargo
     });
 
