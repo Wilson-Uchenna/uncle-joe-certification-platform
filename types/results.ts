@@ -23,6 +23,7 @@ export interface ResultData {
   stateRank?: number;
   certificateAvailable: boolean;
   certificateDownloaded: boolean;
+  certificatePaidAt?: string;
   shareUrl?: string;
   isPublic: boolean;
   createdAt: string;

@@ -20,6 +20,8 @@ import {
   XCircle,
   AlertCircle,
   Sparkles,
+  ArrowLeft,
+  Lock,
 } from "lucide-react";
 import {
   ResultData,
@@ -27,6 +29,49 @@ import {
   getScoreLabel,
 } from "@/types/results";
 import { ResultsCountdown } from "@/app/_components/results/ResultCountdown";
+
+function PaymentRequired({ examId, score }: { examId: string; score: number }) {
+  const router = useRouter();
+
+  return (
+    <div className="min-h-screen bg-[#f8f7fb] flex items-center justify-center px-5">
+      <div className="text-center max-w-md w-full">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </button>
+
+        <div className="w-20 h-20 rounded-full bg-violet-50 flex items-center justify-center mx-auto mb-6 border-2 border-violet-100">
+          <Lock className="w-8 h-8 text-violet-600" />
+        </div>
+
+        <h1 className="text-2xl font-bold text-[#1e1b4b] mb-2">
+          Unlock Your Full Results
+        </h1>
+        <p className="text-sm text-slate-500 mb-8">
+          Your results are ready. Complete payment to view your detailed
+          breakdown and download your certificate.
+        </p>
+
+        <button
+          onClick={() =>
+            router.push(`/certificates/payments?examId=${examId}&score=${score}`)
+          }
+          className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-white rounded-xl transition-all hover:-translate-y-0.5"
+          style={{
+            background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+            boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)",
+          }}
+        >
+          Continue to Payment
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ResultsPage() {
   const params = useParams();
@@ -37,6 +82,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [embargoLifted, setEmbargoLifted] = useState(true);
+  const [paymentRequired, setPaymentRequired] = useState(false);
 
   useEffect(() => {
     if (!examId) return;
@@ -77,6 +123,15 @@ export default function ResultsPage() {
         return;
       }
 
+       // Embargo has lifted — now check payment
+      if (!resultData.certificatePaidAt) {
+        setResult(resultData);
+        setEmbargoLifted(true);
+        setPaymentRequired(true);
+        setLoading(false);
+        return;
+      }
+
       setResult(resultData);
       setEmbargoLifted(true);
     } catch (err: any) {
@@ -85,6 +140,8 @@ export default function ResultsPage() {
       setLoading(false);
     }
   };
+
+  const isUnlocked = !!result?.certificatePaidAt;
 
   if (loading) {
     return (
@@ -104,6 +161,10 @@ export default function ResultsPage() {
         onAvailable={fetchResult}
       />
     );
+  }
+
+  if (paymentRequired && result) {
+    return <PaymentRequired examId={examId} score={result.score} />;
   }
 
   if (error || !result) {
