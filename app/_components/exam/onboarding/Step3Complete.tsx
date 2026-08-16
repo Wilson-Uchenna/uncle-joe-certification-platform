@@ -101,22 +101,7 @@ export function Step3Complete({
           </span>
         </div>
 
-        {/* Score */}
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-violet-700">
-              {result.score}%
-            </div>
-            <div className="text-xs text-slate-500">Your Score</div>
-          </div>
-          <div className="w-px h-10 bg-slate-200" />
-          <div className="text-center">
-            <div className="text-3xl font-bold text-slate-700">
-              {result.correctCount}/{result.totalQuestions}
-            </div>
-            <div className="text-xs text-slate-500">Correct</div>
-          </div>
-        </div>
+      
 
         {passed && result.certificateAvailable && (
           <div className="flex flex-col items-center gap-2">
@@ -135,7 +120,7 @@ export function Step3Complete({
         )}
       </div>
 
-      <div className="flex gap-3 justify-center">
+      <div className="block md:flex gap-3 justify-center">
         <button
           onClick={onRestart}
           className="px-6 py-2.5 text-sm font-medium text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
