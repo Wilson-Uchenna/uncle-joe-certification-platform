@@ -12,7 +12,15 @@ import {
   CreditCard,
   Plus,
   FileText,
+  InfoIcon,
+  X,
 } from "lucide-react";
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import PaystackButton from "@/app/_components/payments/PaymentsButton";
 
 type ExamResult = {
@@ -33,6 +41,8 @@ export default function CertificatesPage() {
   const [results, setResults] = useState<ExamResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState<string | null>(null);
+  const [retakeBlocked, setRetakeBlocked] = useState(false);
+  const [retakeMessage, setRetakeMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.user) return;
@@ -47,49 +57,53 @@ export default function CertificatesPage() {
   };
 
   const handleTakeExam = async () => {
-  try {
-    const res = await fetch("/api/exams/results?latest=true");
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/exam/results?latest=true");
+      const data = await res.json();
 
-    if (!data.success) {
-      alert(data.error || "Unable to check exam status.");
-      return;
-    }
+      if (!data.success) {
+        setRetakeMessage(data.error || "Unable to check exam status.");
+        setRetakeBlocked(true);
+        return;
+      }
 
-    const latestResult = data.result;
+      const latestResult = data.result;
 
-    // User has never taken an exam
-    if (!latestResult) {
+      // No previous exam
+      if (!latestResult) {
+        router.push("/assessment");
+        return;
+      }
+
+      const resultsAvailableAt = new Date(
+        latestResult.resultsAvailableAt,
+      ).getTime();
+
+      // Results are still under embargo
+      if (Date.now() < resultsAvailableAt) {
+        const remainingMs = resultsAvailableAt - Date.now();
+
+        const remainingMinutes = Math.ceil(remainingMs / (1000 * 60));
+
+        setRetakeMessage(
+          `You cannot retake the exam yet. Please wait ${remainingMinutes} minute${
+            remainingMinutes !== 1 ? "s" : ""
+          } before trying again.`,
+        );
+
+        setRetakeBlocked(true);
+        return;
+      }
+
+      // Embargo expired
       router.push("/assessment");
-      return;
+    } catch (error) {
+      console.error("Retake check failed:", error);
+
+      setRetakeMessage("Unable to check your exam status. Please try again.");
+      setRetakeBlocked(true);
     }
-
-    const resultsAvailableAt = new Date(
-      latestResult.resultsAvailableAt
-    ).getTime();
-
-    if (Date.now() < resultsAvailableAt) {
-      const remainingMs = resultsAvailableAt - Date.now();
-      const remainingMinutes = Math.ceil(
-        remainingMs / (1000 * 60)
-      );
-
-      alert(
-        `You cannot retake the exam yet. Please wait ${remainingMinutes} minute${
-          remainingMinutes !== 1 ? "s" : ""
-        }.`
-      );
-
-      return;
-    }
-
-    router.push("/assessment");
-  } catch (error) {
-    console.error("Retake check failed:", error);
-    alert("Unable to check exam status. Please try again.");
-  }
-};
-
+  };
   const handlePaymentSuccess = async (reference: string) => {
     setVerifying(reference);
     try {
@@ -139,6 +153,34 @@ export default function CertificatesPage() {
           Take Exam
         </button>
       </div>
+
+      {/* Retake warning appears here */}
+      {retakeMessage && (
+        <Alert className="mb-6 border-amber-200 bg-amber-50 text-amber-900 shadow-sm">
+          <div className="flex items-start gap-3">
+            <InfoIcon className="mt-0.5 h-5 w-5 text-amber-600" />
+
+            <div className="flex-1 pr-6">
+              <AlertTitle className="mb-1 text-sm font-semibold text-amber-900">
+                Retake not available
+              </AlertTitle>
+
+              <AlertDescription className="text-sm leading-6 text-amber-800">
+                {retakeMessage}
+              </AlertDescription>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setRetakeMessage(null)}
+              className="absolute right-3 top-3 rounded-md p-1.5 text-amber-600 transition-colors hover:bg-amber-100 hover:text-amber-900"
+              aria-label="Close alert"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </Alert>
+      )}
 
       {results.length === 0 && (
         <div className="text-center py-16 bg-gray-50 rounded-xl">
@@ -227,7 +269,7 @@ export default function CertificatesPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg"
                         onClick={() =>
                           router.push(
-                            `/certificates/payments/?examId=${result.examId}&score=${result.score}`
+                            `/certificates/payments/?examId=${result.examId}&score=${result.score}`,
                           )
                         }
                       >
