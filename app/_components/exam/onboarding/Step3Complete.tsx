@@ -120,7 +120,7 @@ export function Step3Complete({
         )}
       </div>
 
-      <div className="block md:flex gap-3 justify-center">
+      <div className="flex-col md:flex gap-3 justify-center items-center flex md:flex-row">
         <button
           onClick={onRestart}
           className="px-6 py-2.5 text-sm font-medium text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
