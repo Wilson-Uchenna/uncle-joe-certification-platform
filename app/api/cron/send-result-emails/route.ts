@@ -46,7 +46,7 @@ export async function GET(req: Request) {
           name: result.userName,
           score: result.score,
           passed: result.passed,
-          resultUrl: `${process.env.NEXT_PUBLIC_APP_URL}/results/${result.examId}`,
+          resultUrl: `${process.env.BETTER_AUTH_URL}/results/${result.examId}`,
         }),
       });
 
