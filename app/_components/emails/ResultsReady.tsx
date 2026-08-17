@@ -1,6 +1,13 @@
 // emails/ResultsReady.tsx
 import {
-  Html, Head, Body, Container, Section, Text, Button, Preview,
+  Html,
+  Head,
+  Body,
+  Container,
+  Section,
+  Text,
+  Button,
+  Preview,
 } from "@react-email/components";
 
 export function ResultsReadyEmail({
@@ -20,11 +27,17 @@ export function ResultsReadyEmail({
       <Preview>Your assessment results are ready</Preview>
       <Body style={{ backgroundColor: "#f8f7fb", fontFamily: "sans-serif" }}>
         <Container style={{ padding: "32px", maxWidth: "480px" }}>
-          <Text style={{ fontSize: "20px", fontWeight: "bold", color: "#1e1b4b" }}>
+          <Text
+            style={{ fontSize: "20px", fontWeight: "bold", color: "#1e1b4b" }}
+          >
             Hi {name}, your results are in!
           </Text>
-          <Text style={{ fontSize: "14px", color: "#475569" }}>
-            You scored <strong>{score}%</strong> and {passed ? "passed 🎉" : "did not pass this attempt"}.
+          <Text
+            style={{ fontSize: "14px", color: "#475569", lineHeight: "1.6" }}
+          >
+            {passed
+              ? "Congratulations on passing your assessment! Your results are ready to view."
+              : "You can retake the exam if you would like another opportunity to improve your score. Your results and retake options are available below."}
           </Text>
           <Button
             href={resultUrl}

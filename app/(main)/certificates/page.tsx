@@ -46,6 +46,50 @@ export default function CertificatesPage() {
     setLoading(false);
   };
 
+  const handleTakeExam = async () => {
+  try {
+    const res = await fetch("/api/exams/results?latest=true");
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.error || "Unable to check exam status.");
+      return;
+    }
+
+    const latestResult = data.result;
+
+    // User has never taken an exam
+    if (!latestResult) {
+      router.push("/assessment");
+      return;
+    }
+
+    const resultsAvailableAt = new Date(
+      latestResult.resultsAvailableAt
+    ).getTime();
+
+    if (Date.now() < resultsAvailableAt) {
+      const remainingMs = resultsAvailableAt - Date.now();
+      const remainingMinutes = Math.ceil(
+        remainingMs / (1000 * 60)
+      );
+
+      alert(
+        `You cannot retake the exam yet. Please wait ${remainingMinutes} minute${
+          remainingMinutes !== 1 ? "s" : ""
+        }.`
+      );
+
+      return;
+    }
+
+    router.push("/assessment");
+  } catch (error) {
+    console.error("Retake check failed:", error);
+    alert("Unable to check exam status. Please try again.");
+  }
+};
+
   const handlePaymentSuccess = async (reference: string) => {
     setVerifying(reference);
     try {
@@ -88,7 +132,7 @@ export default function CertificatesPage() {
           </p>
         </div>
         <button
-          onClick={() => router.push("/assessment")}
+          onClick={handleTakeExam}
           className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap"
         >
           <Plus className="w-4 h-4" />
@@ -106,7 +150,7 @@ export default function CertificatesPage() {
             Complete an exam to earn your first certificate.
           </p>
           <button
-            onClick={() => router.push("/assessment")}
+            onClick={handleTakeExam}
             className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
             Take an Exam
