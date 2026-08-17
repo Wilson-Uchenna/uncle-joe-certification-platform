@@ -187,7 +187,7 @@ export default function ExamPage() {
             category={selectedCategory}
             selectedRole={selectedRole}
             result={examResult}
-            onRestart={handleRestart}
+            
           />
         )}
       </div>

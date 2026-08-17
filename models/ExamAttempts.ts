@@ -1,19 +1,23 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type AttemptAction = 
-  | 'started' 
-  | 'answer_saved' 
-  | 'navigated' 
-  | 'tab_switched' 
-  | 'refreshed' 
-  | 'submitted' 
+export type AttemptStatus =
+  | 'in_progress'
+  | 'completed'
+  | 'terminated'
+  | 'timed_out';
+
+export type AttemptEndReason =
+  | 'submitted'
   | 'timed_out'
-  | 'resumed';
+  | 'tab_switched'
+  | 'refreshed'
+  | 'cheating_detected'
+  | 'other';
 
 export interface IExamAttempt extends Document {
   examId: mongoose.Types.ObjectId;
   betterAuthUserId: string;
-  action: AttemptAction;
+  reason: AttemptEndReason;
   questionIndex?: number;
   answerIndex?: number;
   metadata?: Record<string, any>;    // IP, user agent, etc.
@@ -23,9 +27,9 @@ export interface IExamAttempt extends Document {
 const ExamAttemptSchema = new Schema<IExamAttempt>({
   examId: { type: Schema.Types.ObjectId, ref: 'Exam', required: true, index: true },
   betterAuthUserId: { type: String, required: true, index: true },
-  action: { 
+  reason: { 
     type: String, 
-    enum: ['started', 'answer_saved', 'navigated', 'tab_switched', 'refreshed', 'submitted', 'timed_out', 'resumed'],
+    enum: ['submitted','timed_out','tab_switched','refreshed','cheating_detected','other'],
     required: true 
   },
   questionIndex: Number,

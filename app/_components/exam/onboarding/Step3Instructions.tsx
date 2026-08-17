@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, ListOrdered, Check, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, ListOrdered, Check, Zap, Lock } from "lucide-react";
 import { Category } from "@/types/exam";
 import { MotivationCard } from "@/app/_components/ui/MotivationCard";
 import { GradientButton } from "@/app/_components/ui/GradientButton";
@@ -36,6 +36,8 @@ const skillLevels = [
     bgColor: "bg-emerald-50",
     borderColor: "border-emerald-200",
     textColor: "text-emerald-700",
+    disabled: false,
+    badge: null,
   },
   {
     value: "mid" as const,
@@ -46,6 +48,8 @@ const skillLevels = [
     bgColor: "bg-amber-50",
     borderColor: "border-amber-200",
     textColor: "text-amber-700",
+    disabled: true,
+    badge: "Coming Soon",
   },
   {
     value: "advanced" as const,
@@ -56,6 +60,8 @@ const skillLevels = [
     bgColor: "bg-rose-50",
     borderColor: "border-rose-200",
     textColor: "text-rose-700",
+    disabled: true,
+    badge: "Coming Soon",
   },
 ];
 
@@ -109,21 +115,42 @@ export function Step3Instructions({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {skillLevels.map((level) => {
             const isSelected = selectedLevel === level.value;
+            const isDisabled = level.disabled;
+
             return (
               <button
                 key={level.value}
-                onClick={() => setSelectedLevel(level.value)}
+                onClick={() => !isDisabled && setSelectedLevel(level.value)}
+                disabled={isDisabled}
                 className={`relative rounded-xl border-2 p-4 text-left transition-all duration-200 ${
-                  isSelected
-                    ? `${level.borderColor} ${level.bgColor} ring-2 ring-offset-1 ring-${level.textColor.split("-")[1]}-400`
-                    : "border-slate-200 hover:border-slate-300 bg-white"
+                  isDisabled
+                    ? "border-slate-100 bg-slate-50 cursor-not-allowed opacity-60"
+                    : isSelected
+                      ? `${level.borderColor} ${level.bgColor} ring-2 ring-offset-1 ring-${level.textColor.split("-")[1]}-400`
+                      : "border-slate-200 hover:border-slate-300 bg-white"
                 }`}
               >
+                {/* Coming Soon Badge */}
+                {isDisabled && level.badge && (
+                  <div className="absolute top-2 right-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wide">
+                      <Lock className="w-2.5 h-2.5" />
+                      {level.badge}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl">{level.icon}</span>
+                  <span className={`text-xl ${isDisabled ? "grayscale" : ""}`}>
+                    {level.icon}
+                  </span>
                   <span
                     className={`text-sm font-bold ${
-                      isSelected ? level.textColor : "text-slate-700"
+                      isDisabled
+                        ? "text-slate-400"
+                        : isSelected
+                          ? level.textColor
+                          : "text-slate-700"
                     }`}
                   >
                     {level.label}
@@ -131,12 +158,18 @@ export function Step3Instructions({
                 </div>
                 <p
                   className={`text-xs ${
-                    isSelected ? level.textColor : "text-slate-500"
+                    isDisabled
+                      ? "text-slate-400"
+                      : isSelected
+                        ? level.textColor
+                        : "text-slate-500"
                   }`}
                 >
                   {level.description}
                 </p>
-                {isSelected && (
+
+                {/* Selected Checkmark */}
+                {!isDisabled && isSelected && (
                   <div className="absolute top-2 right-2">
                     <div
                       className={`w-5 h-5 rounded-full bg-gradient-to-br ${level.color} flex items-center justify-center`}

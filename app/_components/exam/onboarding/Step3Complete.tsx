@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { FileCheck, ArrowRight } from "lucide-react";
 import { Category, ExamSubmitResponse } from "@/types/exam";
@@ -8,7 +7,6 @@ interface Step3CompleteProps {
   category: Category;
   selectedRole: string;
   result: ExamSubmitResponse;
-  onRestart: () => void;
 }
 
 const purple = {
@@ -21,7 +19,6 @@ export function Step3Complete({
   category,
   selectedRole,
   result,
-  onRestart,
 }: Step3CompleteProps) {
   return (
     <div className="animate-fadeIn max-w-[600px] mx-auto">
@@ -38,11 +35,9 @@ export function Step3Complete({
         >
           <FileCheck className="w-10 h-10 text-white" />
         </div>
-
         <h2 className="text-xl font-bold mb-2" style={{ color: purple.darker }}>
           Assessment Submitted!
         </h2>
-
         <p
           className="text-sm leading-relaxed max-w-[400px] mx-auto mb-4"
           style={{ color: "#6b21a8" }}
@@ -50,7 +45,6 @@ export function Step3Complete({
           Your responses have been received successfully. Your results are
           being processed and will be available soon.
         </p>
-
         {/* Category + Role */}
         <div className="flex items-center justify-center gap-2">
           <span className="px-3 py-1 bg-white/60 rounded-full text-xs font-semibold text-violet-700">
@@ -62,14 +56,7 @@ export function Step3Complete({
           </span>
         </div>
       </div>
-
       <div className="flex-col md:flex gap-3 justify-center items-center flex md:flex-row">
-        <button
-          onClick={onRestart}
-          className="px-6 py-2.5 text-sm font-medium text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
-        >
-          Retake Exam
-        </button>
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white rounded-lg transition-all hover:-translate-y-0.5"
