@@ -50,6 +50,7 @@ export async function GET(
     passed: result.passed,
     certificateAvailable: result.certificateAvailable,
     certificatePaidAt: result.certificatePaidAt,
+    resultsPaidAt: result.resultsPaidAt,
     certificateDownloaded: result.certificateDownloaded,
     resultsAvailableAt: result.resultsAvailableAt,
     breakdown: result.breakdown,

@@ -4,7 +4,7 @@ import { Result } from "@/models/ExamResults";
 import mongoose from "mongoose";
 
 export const POST = withAdmin(async (req: NextRequest, adminUser, context: RouteContext) => {
-  const { certId } = await context.params;
+  const { id: certId } = await context.params;
 
   if (!mongoose.Types.ObjectId.isValid(certId)) {
     return NextResponse.json({ success: false, error: "Invalid certificate ID" }, { status: 400 });

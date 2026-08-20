@@ -120,7 +120,7 @@ function PaymentRequired({
       setStage("ready");
     } catch {
       showToast("Could not start payment. Please try again.");
-       setStage("error");
+      setStage("error");
     }
   };
 
@@ -132,7 +132,7 @@ function PaymentRequired({
       3200,
     );
   }, []);
-  
+
   const handleSuccess = async (ref: string) => {
     setStage("processing");
     try {
@@ -259,6 +259,7 @@ export default function ResultsPage() {
       }
 
       const resultData: ResultData = data.result;
+      console.log("Fetched result data:", resultData);
 
       // NEW: Check embargo
       const now = new Date().getTime();
@@ -281,6 +282,7 @@ export default function ResultsPage() {
       }
 
       setResult(resultData);
+      setPaymentRequired(false); // NEW — explicitly clear the paywall once paid
       setEmbargoLifted(true);
     } catch (err: any) {
       setError(err.message);

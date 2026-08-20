@@ -1,21 +1,9 @@
-import { Document, Page, Text, View, StyleSheet, Image, Font } from "@react-pdf/renderer";
-
-Font.register({
-  family: "Inter",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiJ-Ek-_EeA.woff2", fontWeight: 700 },
-  ],
-});
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
-    width: "842px",
-    height: "595px",
     padding: 0,
     backgroundColor: "#fafaf9",
-    fontFamily: "Inter",
-    position: "relative",
   },
   border: {
     position: "absolute",
@@ -38,11 +26,6 @@ const styles = StyleSheet.create({
   header: {
     marginTop: 60,
     alignItems: "center",
-  },
-  logo: {
-    width: 64,
-    height: 64,
-    marginBottom: 16,
   },
   orgName: {
     fontSize: 14,
@@ -129,7 +112,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: "#4338ca",
     fontWeight: 700,
-    fontFamily: "Courier",
   },
   seal: {
     width: 80,
@@ -186,8 +168,8 @@ export default function CertificatePDF({
   totalQuestions,
   passed,
   issuedAt,
-  verificationCode,
-  orgName = "Your Organization",
+  
+  orgName = "African Remote Workers Professional Certification Platform",
 }: CertificatePDFProps) {
   const formattedDate = new Date(issuedAt).toLocaleDateString("en-US", {
     year: "numeric",
@@ -198,22 +180,18 @@ export default function CertificatePDF({
   return (
     <Document>
       <Page size={[842, 595]} style={styles.page}>
-        {/* Decorative borders */}
         <View style={styles.border} />
         <View style={styles.innerBorder} />
 
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.orgName}>{orgName}</Text>
         </View>
 
-        {/* Title */}
         <View style={{ alignItems: "center" }}>
           <Text style={styles.title}>Certificate</Text>
           <Text style={styles.subtitle}>of Achievement</Text>
         </View>
 
-        {/* Recipient */}
         <View style={styles.recipient}>
           <Text style={styles.presentedTo}>Presented To</Text>
           <Text style={styles.name}>{userName}</Text>
@@ -223,7 +201,6 @@ export default function CertificatePDF({
           </Text>
         </View>
 
-        {/* Details */}
         <View style={styles.details}>
           <View style={styles.detailBlock}>
             <Text style={styles.detailLabel}>Date Issued</Text>
@@ -244,12 +221,8 @@ export default function CertificatePDF({
           </View>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
-          <View>
-            <Text style={styles.verify}>Verify at: arwpc.com/verify</Text>
-            <Text style={styles.verifyCode}>Code: {verificationCode}</Text>
-          </View>
+          
           <View style={{ alignItems: "center" }}>
             <Text style={styles.signName}>Director of Education</Text>
             <Text style={styles.signTitle}>Certifying Authority</Text>

@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       certificateAvailable: passed,
       certificateDownloaded: false,
       
-      resultsAvailableAt: new Date(Date.now() + EMBARGO_HOURS * 60 *60 * 1000), // 24 hours embargo
+      resultsAvailableAt: new Date(Date.now() + EMBARGO_HOURS *60 * 1000), // 24 hours embargo
     });
 
     // Update rankings (async, don't block)
