@@ -6,9 +6,14 @@ import { Exam } from "@/models/Exam";
 import { Payment } from "@/models/payment";
 import { paystack } from "@/lib/paystack";
 
+const PRICES: Record<string, number> = {
+  results: 5000,
+};
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
+    console.log("Payment init session:", session);
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
@@ -17,7 +22,15 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
-    const { examId, amount = 5000, type = "certificate" } = await req.json();
+     const { examId, type = "results" } = await req.json();
+    
+     const amount = PRICES[type];
+    if (!examId || !amount) {
+      return NextResponse.json(
+        { success: false, error: "Invalid data" },
+        { status: 400 },
+      );
+    }
 
     if (!examId || amount <= 0) {
       return NextResponse.json(
@@ -29,7 +42,6 @@ export async function POST(req: NextRequest) {
     const exam = await Exam.findOne({
       _id: examId,
       userId: session.user.id,
-      passed: true,
     }).lean();
 
     if (!exam) {
@@ -42,7 +54,7 @@ export async function POST(req: NextRequest) {
     const existing = await Payment.findOne({
       userId: session.user.id,
       examId,
-      type: "certificate",
+      type,
       status: "success",
     });
 

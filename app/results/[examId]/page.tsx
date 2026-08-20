@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -22,6 +22,7 @@ import {
   Sparkles,
   ArrowLeft,
   Lock,
+  Loader2,
 } from "lucide-react";
 import {
   ResultData,
@@ -29,50 +30,197 @@ import {
   getScoreLabel,
 } from "@/types/results";
 import { ResultsCountdown } from "@/app/_components/results/ResultCountdown";
+import PaystackButton from "@/app/_components/payments/PaymentsButton";
+import { authClient } from "@/lib/auth-client";
 
-function PaymentRequired({ examId, score }: { examId: string; score: number }) {
-  const router = useRouter();
+function PaymentRequired({
+  examId,
+  onUnlocked,
+}: {
+  examId: string;
+  onUnlocked: () => void;
+}) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [stage, setStage] = useState<
+    "idle" | "initializing" | "ready" | "processing" | "error"
+  >("idle");
+  const [reference, setReference] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [examData, setExamData] = useState<any>(null);
+  const [paid, setPaid] = useState(false);
+  const [loadingExam, setLoadingExam] = useState(true);
+  const [toast, setToast] = useState<{ msg: string; show: boolean }>({
+    msg: "",
+    show: false,
+  });
+
+  const toastTimer = useRef<NodeJS.Timeout | null>(null);
+
+  async function fetchSession() {
+    const session = await authClient.getSession();
+    return session;
+  }
+
+  useEffect(() => {
+    authClient
+      .getSession()
+      .then((s) => setEmail(s?.data?.user?.email ?? null))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchExamData();
+  }, []);
+
+  const fetchExamData = async () => {
+    try {
+      const res = await fetch(`/api/result/${examId}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setExamData(data.result);
+        if (data.result.certificatePaidAt) {
+          setPaid(true);
+        }
+      }
+    } catch (err) {
+    } finally {
+      setLoadingExam(false);
+    }
+  };
+
+  const startPayment = async () => {
+    if (!examData) {
+      showToast("Still loading your result — try again in a moment.");
+      return;
+    }
+    setModalOpen(true);
+    setStage("initializing");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/payment/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          examId: examData.examId,
+          amount: 5000,
+          email,
+          type: "results",
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        showToast(data.error || "Could not start payment");
+        return;
+      }
+      setReference(data.reference);
+      setStage("ready");
+    } catch {
+      showToast("Could not start payment. Please try again.");
+       setStage("error");
+    }
+  };
+
+  const showToast = useCallback((msg: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ msg, show: true });
+    toastTimer.current = setTimeout(
+      () => setToast((t) => ({ ...t, show: false })),
+      3200,
+    );
+  }, []);
+  
+  const handleSuccess = async (ref: string) => {
+    setStage("processing");
+    try {
+      const res = await fetch("/api/payment/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ reference: ref }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success)
+        throw new Error(data.error || "Verification failed");
+      setModalOpen(false);
+      onUnlocked(); // parent re-fetches the result, paymentRequired flips false
+    } catch (err: any) {
+      setErrorMsg(err.message || "Payment failed. Please try again.");
+      setStage("error");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#f8f7fb] flex items-center justify-center px-5">
       <div className="text-center max-w-md w-full">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </button>
-
         <div className="w-20 h-20 rounded-full bg-violet-50 flex items-center justify-center mx-auto mb-6 border-2 border-violet-100">
           <Lock className="w-8 h-8 text-violet-600" />
         </div>
-
         <h1 className="text-2xl font-bold text-[#1e1b4b] mb-2">
           Unlock Your Full Results
         </h1>
         <p className="text-sm text-slate-500 mb-8">
-          Your results are ready. Complete payment to view your detailed
-          breakdown and download your certificate.
+          Your results are ready. Pay ₦5,000 to view your detailed breakdown
+          {/* if passed, mention cert; you don't know pass/fail yet client-side though — see note below */}
+          .
         </p>
-
         <button
-          onClick={() =>
-            router.push(`/certificates/payments?examId=${examId}&score=${score}`)
-          }
+          onClick={startPayment}
           className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-white rounded-xl transition-all hover:-translate-y-0.5"
           style={{
             background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
             boxShadow: "0 4px 15px rgba(124, 58, 237, 0.3)",
           }}
         >
-          Continue to Payment
+          Unlock Results — ₦5,000
         </button>
       </div>
+
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-5">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center">
+            {stage === "initializing" && (
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-violet-600" />
+            )}
+            {stage === "ready" && reference && email && (
+              <PaystackButton
+                email={email}
+                amount={5000}
+                reference={reference}
+                metadata={{ examId, type: "results" }}
+                onSuccess={handleSuccess}
+                onCancel={() => setModalOpen(false)}
+                className="w-full bg-violet-600 text-white font-bold h-12 rounded-xl"
+              >
+                Pay ₦5,000 with Paystack
+              </PaystackButton>
+            )}
+            {stage === "processing" && (
+              <>
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-violet-600" />
+                <p className="text-sm text-slate-500">Verifying payment…</p>
+              </>
+            )}
+            {stage === "error" && (
+              <>
+                <p className="text-sm text-red-600 mb-4">{errorMsg}</p>
+                <button
+                  onClick={startPayment}
+                  className="text-sm font-bold text-violet-700"
+                >
+                  Try again
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
 export default function ResultsPage() {
   const params = useParams();
   const router = useRouter();
@@ -123,8 +271,8 @@ export default function ResultsPage() {
         return;
       }
 
-       // Embargo has lifted — now check payment
-      if (!resultData.certificatePaidAt) {
+      // Embargo has lifted — now check payment
+      if (!resultData.resultsPaidAt) {
         setResult(resultData);
         setEmbargoLifted(true);
         setPaymentRequired(true);
@@ -164,7 +312,7 @@ export default function ResultsPage() {
   }
 
   if (paymentRequired && result) {
-    return <PaymentRequired examId={examId} score={result.score} />;
+    return <PaymentRequired examId={examId} onUnlocked={fetchResult} />;
   }
 
   if (error || !result) {
@@ -511,7 +659,7 @@ function QualificationCTA({ result }: { result: ResultData }) {
           available in your dashboard shortly.
         </p>
         <Link
-          href="/certificates"
+          href={`/certificates/payments/?examId=${result.examId}&score=${result.score}`}
           className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-emerald-700 text-sm font-bold rounded-lg hover:bg-emerald-50 transition-colors"
         >
           <Download className="w-4 h-4" />

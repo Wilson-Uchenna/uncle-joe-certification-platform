@@ -23,6 +23,7 @@ export interface IResult extends Document {
   overallRank?: number;
   stateRank?: number;
   certificateAvailable: boolean;
+  resultsPaidAt?: Date;
   certificatePaidAt: Date;
   certificateDownloaded: boolean;
   certificateStatus: {
@@ -75,6 +76,7 @@ const ResultSchema = new Schema<IResult>(
 
     certificateAvailable: { type: Boolean, default: false },
     certificatePaidAt: Date,
+     resultsPaidAt: { type: Date, default: null },
     certificateDownloaded: { type: Boolean, default: false },
     certificateStatus: {
       type: String,

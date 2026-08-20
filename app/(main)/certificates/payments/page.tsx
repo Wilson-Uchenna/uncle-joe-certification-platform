@@ -7,6 +7,7 @@ export default function CertificatePaymentPage() {
   const searchParams = useSearchParams();
   const examId = searchParams.get("examId");
   const score = searchParams.get("score");
+  
 
   if (!examId || !score) {
     return (

@@ -24,6 +24,7 @@ export interface ResultData {
   certificateAvailable: boolean;
   certificateDownloaded: boolean;
   certificatePaidAt?: string;
+  resultsPaidAt?: string;
   shareUrl?: string;
   isPublic: boolean;
   createdAt: string;

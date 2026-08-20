@@ -37,6 +37,7 @@ export interface IExam extends Document {
   passed: boolean;
   certificateDownloaded: boolean;
   certificateUrl?: string;
+  resultsPaidAt?: Date;
   certificatePaidAt?: Date;
   qualifiesForFinals: boolean;
   createdAt: Date;
@@ -98,7 +99,7 @@ const ExamSchema = new Schema<IExam>(
     certificateDownloaded: { type: Boolean, default: false },
     certificateUrl: String,
     certificatePaidAt: Date,
-
+    resultsPaidAt: { type: Date, default: null },
     qualifiesForFinals: { type: Boolean, default: false },
   },
   { timestamps: true },
