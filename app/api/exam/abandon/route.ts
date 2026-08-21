@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/local-db";
 import { Exam } from "@/models/Exam";
-import { ExamAttempt } from "@/models/ExamAttempt"; // NEW
+import { ExamAttempt } from "@/models/ExamAttempts"; // NEW
 import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
