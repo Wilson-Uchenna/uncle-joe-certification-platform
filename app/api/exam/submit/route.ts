@@ -6,6 +6,7 @@ import { Result } from "@/models/ExamResults";
 import { Ranking } from "@/models/rankings";
 import { headers } from "next/headers";
 import mongoose from "mongoose";
+import ExamAttempt from "@/models/ExamAttempts";
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -57,13 +58,23 @@ export async function POST(req: NextRequest) {
     exam.status = isTimeout ? "timed_out" : "completed";
     exam.completedAt = new Date();
     exam.timeUsed = exam.questions.reduce(
-      (sum: any, q: { timeSpent: any; }) => sum + (q.timeSpent || 0),
+      (sum: any, q: { timeSpent: any }) => sum + (q.timeSpent || 0),
       0,
     );
-    // Qualifies for finals?
     exam.qualifiesForFinals = passed && !exam.isFinalStage;
 
     await exam.save();
+
+    // NEW — close out the attempt tied to this exam
+    await ExamAttempt.findOneAndUpdate(
+      { examId: exam._id, userId: session.user.id, status: "in_progress" },
+      {
+        status: "completed",
+        endReason: isTimeout ? "timed_out" : "submitted",
+        endedAt: new Date(),
+      },
+    );
+
     const EMBARGO_HOURS = Number(process.env.RESULTS_EMBARGO_HOURS) || 5;
 
     // Create result
@@ -79,8 +90,8 @@ export async function POST(req: NextRequest) {
       passed,
       certificateAvailable: passed,
       certificateDownloaded: false,
-      
-      resultsAvailableAt: new Date(Date.now() + EMBARGO_HOURS *60 * 1000), // 24 hours embargo
+
+      resultsAvailableAt: new Date(Date.now() + EMBARGO_HOURS * 60 * 1000), // 24 hours embargo
     });
 
     // Update rankings (async, don't block)
@@ -112,9 +123,9 @@ async function updateRankings(userId: string, userName: string) {
   // Implementation in leaderboard section
   try {
     await connectDB();
-    
+
     const userObjectId = new mongoose.Types.ObjectId(userId);
-    
+
     // Aggregate all exam results for this user
     const userStats = await Result.aggregate([
       { $match: { userId: userObjectId, passed: true } },
@@ -127,11 +138,11 @@ async function updateRankings(userId: string, userName: string) {
           categories: {
             $addToSet: {
               categoryName: "$categoryName",
-              score: "$score"
-            }
-          }
-        }
-      }
+              score: "$score",
+            },
+          },
+        },
+      },
     ]);
 
     if (!userStats.length) return;
@@ -144,35 +155,38 @@ async function updateRankings(userId: string, userName: string) {
       .collection("user")
       .findOne({ _id: userObjectId });
 
-       const state = userProfile?.state || "Unknown";
+    const state = userProfile?.state || "Unknown";
     const country = userProfile?.country || "Unknown";
     const skillLevel = userProfile?.skillLevel || "entry";
 
     const now = new Date();
-    const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
     // Define all ranking types to update for this user
     const rankingConfigs = [
-      { type: 'overall' as const, query: { rankingType: 'overall' } },
-      { type: 'state' as const, query: { rankingType: 'state', state } },
-      { type: 'monthly' as const, query: { rankingType: 'monthly', period: currentPeriod } },
+      { type: "overall" as const, query: { rankingType: "overall" } },
+      { type: "state" as const, query: { rankingType: "state", state } },
+      {
+        type: "monthly" as const,
+        query: { rankingType: "monthly", period: currentPeriod },
+      },
     ];
 
-     const categoryResults = await Result.aggregate([
+    const categoryResults = await Result.aggregate([
       { $match: { userId: userObjectId, passed: true } },
       {
         $group: {
           _id: "$categoryName",
           totalScore: { $sum: "$score" },
           examCount: { $sum: 1 },
-          avgScore: { $avg: "$score" }
-        }
-      }
+          avgScore: { $avg: "$score" },
+        },
+      },
     ]);
 
     // Update all rankings in a session for consistency
     const session = await mongoose.startSession();
-    
+
     try {
       await session.withTransaction(async () => {
         // 1. Update overall, state, and monthly rankings
@@ -195,18 +209,18 @@ async function updateRankings(userId: string, userName: string) {
               $setOnInsert: {
                 createdAt: now,
                 rank: 999999, // Will be recalculated
-              }
+              },
             },
-            { upsert: true, session }
+            { upsert: true, session },
           );
         }
 
-       for (const cat of categoryResults) {
+        for (const cat of categoryResults) {
           await Ranking.findOneAndUpdate(
             {
               userId: userObjectId,
-              rankingType: 'category',
-              categoryName: cat._id
+              rankingType: "category",
+              categoryName: cat._id,
             },
             {
               $set: {
@@ -223,25 +237,26 @@ async function updateRankings(userId: string, userName: string) {
               $setOnInsert: {
                 createdAt: now,
                 rank: 999999,
-              }
+              },
             },
-            { upsert: true, session }
+            { upsert: true, session },
           );
         }
       });
 
       // 3. Recalculate ranks for all affected leaderboards
       await recalculateRanks(session, [
-        { rankingType: 'overall' },
-        { rankingType: 'state', state },
-        { rankingType: 'monthly', period: currentPeriod },
-        ...categoryResults.map(c => ({ rankingType: 'category' as const, categoryName: c._id }))
+        { rankingType: "overall" },
+        { rankingType: "state", state },
+        { rankingType: "monthly", period: currentPeriod },
+        ...categoryResults.map((c) => ({
+          rankingType: "category" as const,
+          categoryName: c._id,
+        })),
       ]);
-
     } finally {
       await session.endSession();
     }
-
   } catch (error) {
     console.error("Update rankings error:", error);
     throw error;
@@ -251,12 +266,11 @@ async function updateRankings(userId: string, userName: string) {
 // Recalculate ranks for specified leaderboards
 async function recalculateRanks(
   session: mongoose.ClientSession,
-  filters: Array<Record<string, any>>
+  filters: Array<Record<string, any>>,
 ) {
   for (const filter of filters) {
     // Get all rankings for this filter, sorted by score desc, then examsTaken desc
-    const rankings = await Ranking
-      .find({ ...filter, isActive: true })
+    const rankings = await Ranking.find({ ...filter, isActive: true })
       .sort({ score: -1, examsTaken: -1, averageScore: -1 })
       .session(session)
       .lean();
@@ -269,9 +283,9 @@ async function recalculateRanks(
           $set: {
             previousRank: ranking.rank || index + 1,
             rank: index + 1,
-          }
-        }
-      }
+          },
+        },
+      },
     }));
 
     if (bulkOps.length > 0) {
@@ -279,4 +293,3 @@ async function recalculateRanks(
     }
   }
 }
-

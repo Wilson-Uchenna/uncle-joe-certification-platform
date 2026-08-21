@@ -1,47 +1,55 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
-export type AttemptStatus =
-  | 'in_progress'
-  | 'completed'
-  | 'terminated'
-  | 'timed_out';
+export type AttemptStatus = "in_progress" | "completed" | "terminated";
 
 export type AttemptEndReason =
-  | 'submitted'
-  | 'timed_out'
-  | 'tab_switched'
-  | 'refreshed'
-  | 'cheating_detected'
-  | 'other';
+  | "submitted"
+  | "timed_out"
+  | "tab_switched"
+  | "cheating_detected"
+  | "abandoned";
 
 export interface IExamAttempt extends Document {
-  examId: mongoose.Types.ObjectId;
-  betterAuthUserId: string;
-  reason: AttemptEndReason;
-  questionIndex?: number;
-  answerIndex?: number;
-  metadata?: Record<string, any>;    // IP, user agent, etc.
-  timestamp: Date;
+  userId: string;
+  categoryId: mongoose.Types.ObjectId;
+  skillLevel: "entry" | "mid" | "advanced";
+  examId?: mongoose.Types.ObjectId; // linked once the Exam doc for this attempt exists
+  status: AttemptStatus;
+  endReason?: AttemptEndReason;
+  startedAt: Date;
+  endedAt?: Date;
 }
 
 const ExamAttemptSchema = new Schema<IExamAttempt>({
-  examId: { type: Schema.Types.ObjectId, ref: 'Exam', required: true, index: true },
-  betterAuthUserId: { type: String, required: true, index: true },
-  reason: { 
-    type: String, 
-    enum: ['submitted','timed_out','tab_switched','refreshed','cheating_detected','other'],
-    required: true 
+  userId: { type: String, required: true, index: true },
+  categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+  skillLevel: {
+    type: String,
+    enum: ["entry", "mid", "advanced"],
+    required: true,
   },
-  questionIndex: Number,
-  answerIndex: Number,
-  metadata: Schema.Types.Mixed,
-  timestamp: { type: Date, default: Date.now },
+  examId: { type: Schema.Types.ObjectId, ref: "Exam" },
+  status: {
+    type: String,
+    enum: ["in_progress", "completed", "terminated"],
+    default: "in_progress",
+    required: true,
+  },
+  endReason: {
+    type: String,
+    enum: ["submitted", "timed_out", "tab_switched", "cheating_detected", "abandoned"],
+  },
+  startedAt: { type: Date, default: Date.now, required: true },
+  endedAt: Date,
 });
 
-// Anti-cheat analysis
-ExamAttemptSchema.index({ examId: 1, action: 1, timestamp: 1 });
+// Fast lookup: "does this user have an open or recent attempt for this category/level?"
+ExamAttemptSchema.index({ userId: 1, categoryId: 1, skillLevel: 1, startedAt: -1 });
+// Fast lookup: is there currently an in-progress attempt (should be at most one)?
+ExamAttemptSchema.index({ userId: 1, status: 1 });
 
 export const ExamAttempt =
-  mongoose.models.ExamAttempt || mongoose.model<IExamAttempt>('ExamAttempt', ExamAttemptSchema);
+  mongoose.models.ExamAttempt ||
+  mongoose.model<IExamAttempt>("ExamAttempt", ExamAttemptSchema);
 
-  export default ExamAttempt;
+export default ExamAttempt;

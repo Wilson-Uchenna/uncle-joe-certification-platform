@@ -1,8 +1,8 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/local-db";
 import { Exam } from "@/models/Exam";
+import { ExamAttempt } from "@/models/ExamAttempt"; // NEW
 import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
@@ -43,6 +43,12 @@ export async function POST(req: NextRequest) {
         { status: 404 },
       );
     }
+
+    // NEW — close out the attempt tied to this exam
+    await ExamAttempt.findOneAndUpdate(
+      { examId, userId: session.user.id, status: "in_progress" },
+      { status: "terminated", endReason: "abandoned", endedAt: new Date() },
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -122,9 +122,9 @@ export default function CertificatesPage() {
     }
   };
 
-  const handleDownload = (certid: string) => {
-    window.open(`/api/certificates/${certid}/download`, "_blank");
-  };
+ const handleViewCertificate = (examId: string) => {
+  router.push(`/certificates/view?examId=${examId}`);
+};
 
   if (loading) {
     return (
@@ -248,12 +248,12 @@ export default function CertificatesPage() {
 
                 {canDownload ? (
                   <button
-                    onClick={() => handleDownload(result._id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download
-                  </button>
+    onClick={() => handleViewCertificate(result.examId)}
+    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+  >
+    <Download className="w-4 h-4" />
+    View Certificate
+  </button>
                 ) : (
                   <>
                     {verifying === result._id ? (

@@ -661,7 +661,7 @@ function QualificationCTA({ result }: { result: ResultData }) {
           available in your dashboard shortly.
         </p>
         <Link
-          href={`/certificates/payments/?examId=${result.examId}&score=${result.score}`}
+          href={`/certificates/view/?examId=${result.examId}&score=${result.score}`}
           className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-emerald-700 text-sm font-bold rounded-lg hover:bg-emerald-50 transition-colors"
         >
           <Download className="w-4 h-4" />

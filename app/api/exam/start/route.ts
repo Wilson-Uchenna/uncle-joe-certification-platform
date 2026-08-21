@@ -5,6 +5,7 @@ import connectDB from "@/lib/local-db";
 import { Category } from "@/models/Category";
 import { Question } from "@/models/Questions";
 import { Exam } from "@/models/Exam";
+import { ExamAttempt } from "@/models/ExamAttempts"; // NEW
 import { headers } from "next/headers";
 
 const TOTAL_QUESTIONS = 100;
@@ -19,10 +20,7 @@ const SKILL_LEVEL_TIME_LIMITS: Record<SkillLevel, number> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
@@ -34,37 +32,28 @@ export async function POST(req: NextRequest) {
 
     const body = (await req.json()) as {
       categoryId: string;
-      
       skillLevel: SkillLevel;
       isFinalStage?: boolean;
     };
-    const { categoryId,  skillLevel, isFinalStage = false } = body;
+    const { categoryId, skillLevel, isFinalStage = false } = body;
 
     if (!categoryId || !skillLevel) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "categoryId, selectedRole, and skillLevel are required",
-        },
+        { success: false, error: "categoryId and skillLevel are required" },
         { status: 400 },
       );
     }
 
     if (!["entry", "mid", "advanced"].includes(skillLevel)) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid skillLevel. Must be entry, mid, or advanced.",
-        },
+        { success: false, error: "Invalid skillLevel. Must be entry, mid, or advanced." },
         { status: 400 },
       );
     }
 
+    // ─── Abandon any stale in-progress exam ───
     await Exam.updateMany(
-      {
-        userId: session.user.id,
-        status: "in_progress",
-      },
+      { userId: session.user.id, status: "in_progress" },
       {
         $set: {
           status: "abandoned",
@@ -75,39 +64,21 @@ export async function POST(req: NextRequest) {
       },
     );
 
-    // ─── Check ongoing exam ───
-    const existingExam = await Exam.findOne({
+    // ─── Abandon any stale in-progress attempt (mirrors the Exam cleanup above) ───
+    await ExamAttempt.updateMany(
+      { userId: session.user.id, status: "in_progress" },
+      { $set: { status: "terminated", endReason: "abandoned", endedAt: new Date() } },
+    );
+
+    // Rate limit — now attempt-based instead of Exam-based
+    const recentAttempts = await ExamAttempt.countDocuments({
       userId: session.user.id,
-      status: "in_progress",
+      startedAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) },
     });
 
-    if (existingExam) {
-      // Race condition — force abandon this one too
-      await Exam.updateOne(
-        { _id: existingExam._id },
-        {
-          $set: {
-            status: "abandoned",
-            passed: false,
-            completedAt: new Date(),
-            abandonReason: "race_condition_cleanup",
-          },
-        },
-      );
-    }
-
-    // Rate limit
-    const recentExams = await Exam.countDocuments({
-      userId: session.user.id,
-      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) },
-    });
-
-    if (recentExams >= 3) {
+    if (recentAttempts >= 3) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Too many exams started recently. Please wait.",
-        },
+        { success: false, error: "Too many exams started recently. Please wait." },
         { status: 429 },
       );
     }
@@ -120,13 +91,6 @@ export async function POST(req: NextRequest) {
         { status: 404 },
       );
     }
-
-    // if (!category.roles.includes(selectedRole)) {
-    //   return NextResponse.json(
-    //     { success: false, error: "Invalid role for this category" },
-    //     { status: 400 },
-    //   );
-    // }
 
     // ─── Final stage check ───
     if (isFinalStage) {
@@ -149,7 +113,6 @@ export async function POST(req: NextRequest) {
       {
         $match: {
           categoryId: new mongoose.Types.ObjectId(categoryId),
-          // role: selectedRole,
           skillLevel,
           isFinalStage,
           isActive: true,
@@ -177,12 +140,11 @@ export async function POST(req: NextRequest) {
       categoryId,
       categoryName: category.name,
       skillLevel,
-      // selectedRole,
       questions: questions.map((q) => ({
         questionId: q._id,
         questionText: q.question,
         options: q.options,
-        correctAnswer: q.correctAnswer, // ← ADD THIS
+        correctAnswer: q.correctAnswer,
       })),
       totalQuestions: TOTAL_QUESTIONS,
       timeLimit,
@@ -191,7 +153,16 @@ export async function POST(req: NextRequest) {
       startedAt: new Date(),
     });
 
-    // ─── Return ───
+    // ─── Open the attempt, linked to this exam ───
+    await ExamAttempt.create({
+      userId: session.user.id,
+      categoryId,
+      skillLevel,
+      examId: exam._id,
+      status: "in_progress",
+      startedAt: new Date(),
+    });
+
     return NextResponse.json({
       success: true,
       examId: exam._id,
@@ -205,7 +176,6 @@ export async function POST(req: NextRequest) {
       })),
       timeLimit,
       totalQuestions: TOTAL_QUESTIONS,
-      // selectedRole,
       skillLevel,
     });
   } catch (error) {
