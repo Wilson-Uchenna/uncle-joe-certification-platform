@@ -152,7 +152,7 @@ export default function AdminDashboard() {
             />
             <StatCard
               title="Revenue Generated"
-              value={`₦${((analytics?.revenueGenerated || 0) / 100).toLocaleString()}`}
+              value={`₦${(analytics?.revenueGenerated || 0).toLocaleString()}`}
               icon={TrendingUp}
               trend="up"
               color="orange"
@@ -263,8 +263,9 @@ function StatCard({ title, value, icon: Icon, trend, color }: any) {
 }
 
 function FunnelStep({ label, value, total, color }: any) {
-  const safeValue = value ?? 0; // ← Default to 0 if undefined/null
-  const percentage = total > 0 ? Math.round((safeValue / total) * 100) : 0;
+  const safeValue = value ?? 0;
+  const rawPercentage = total > 0 ? Math.round((safeValue / total) * 100) : 0;
+  const displayPercentage = Math.min(rawPercentage, 100); // clamp bar width only
 
   return (
     <div>
@@ -277,10 +278,10 @@ function FunnelStep({ label, value, total, color }: any) {
       <div className="w-full bg-gray-200 rounded-full h-2.5">
         <div
           className={`h-2.5 rounded-full ${color} transition-all`}
-          style={{ width: `${percentage}%` }}
+          style={{ width: `${displayPercentage}%` }}
         />
       </div>
-      <p className="text-xs text-gray-500 mt-0.5">{percentage}% of total</p>
+      <p className="text-xs text-gray-500 mt-0.5">{rawPercentage}% of total</p>
     </div>
   );
 }

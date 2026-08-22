@@ -9,44 +9,58 @@ export type AttemptEndReason =
   | "cheating_detected"
   | "abandoned";
 
-export interface IExamAttempt extends Document {
-  userId: string;
-  categoryId: mongoose.Types.ObjectId;
-  skillLevel: "entry" | "mid" | "advanced";
-  examId?: mongoose.Types.ObjectId; // linked once the Exam doc for this attempt exists
+export interface IAttemptEntry {
+  examId: mongoose.Types.ObjectId;
+  attemptNumber: number;
   status: AttemptStatus;
   endReason?: AttemptEndReason;
   startedAt: Date;
   endedAt?: Date;
 }
 
+export interface IExamAttempt extends Document {
+  userId: string;
+  categoryId: mongoose.Types.ObjectId;
+  skillLevel: "entry" | "mid" | "advanced";
+  attempts: IAttemptEntry[];
+}
+
+const AttemptEntrySchema = new Schema<IAttemptEntry>(
+  {
+    examId: { type: Schema.Types.ObjectId, ref: "Exam", required: true },
+    attemptNumber: { type: Number, required: true },
+    status: {
+      type: String,
+      enum: ["in_progress", "completed", "terminated"],
+      default: "in_progress",
+      required: true,
+    },
+    endReason: {
+      type: String,
+      enum: ["submitted", "timed_out", "tab_switched", "cheating_detected", "abandoned"],
+    },
+    startedAt: { type: Date, required: true },
+    endedAt: Date,
+  },
+  { _id: false },
+);
+
 const ExamAttemptSchema = new Schema<IExamAttempt>({
-  userId: { type: String, required: true, index: true },
+  userId: { type: String, required: true },
   categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
   skillLevel: {
     type: String,
     enum: ["entry", "mid", "advanced"],
     required: true,
   },
-  examId: { type: Schema.Types.ObjectId, ref: "Exam" },
-  status: {
-    type: String,
-    enum: ["in_progress", "completed", "terminated"],
-    default: "in_progress",
-    required: true,
-  },
-  endReason: {
-    type: String,
-    enum: ["submitted", "timed_out", "tab_switched", "cheating_detected", "abandoned"],
-  },
-  startedAt: { type: Date, default: Date.now, required: true },
-  endedAt: Date,
+  attempts: [AttemptEntrySchema],
 });
 
-// Fast lookup: "does this user have an open or recent attempt for this category/level?"
-ExamAttemptSchema.index({ userId: 1, categoryId: 1, skillLevel: 1, startedAt: -1 });
-// Fast lookup: is there currently an in-progress attempt (should be at most one)?
-ExamAttemptSchema.index({ userId: 1, status: 1 });
+// One document per user+category+skillLevel — enforced at the DB level
+ExamAttemptSchema.index(
+  { userId: 1, categoryId: 1, skillLevel: 1 },
+  { unique: true },
+);
 
 export const ExamAttempt =
   mongoose.models.ExamAttempt ||

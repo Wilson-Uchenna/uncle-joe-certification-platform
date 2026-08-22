@@ -44,10 +44,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // NEW — close out the attempt tied to this exam
-    await ExamAttempt.findOneAndUpdate(
-      { examId, userId: session.user.id, status: "in_progress" },
-      { status: "terminated", endReason: "abandoned", endedAt: new Date() },
+    await ExamAttempt.updateOne(
+      {
+        userId: session.user.id,
+        categoryId: exam.categoryId,
+        skillLevel: exam.skillLevel,
+        "attempts.examId": examId,
+      },
+      {
+        $set: {
+          "attempts.$[entry].status": "terminated",
+          "attempts.$[entry].endReason": "abandoned",
+          "attempts.$[entry].endedAt": new Date(),
+        },
+      },
+      { arrayFilters: [{ "entry.examId": examId }] },
     );
 
     return NextResponse.json({ success: true });

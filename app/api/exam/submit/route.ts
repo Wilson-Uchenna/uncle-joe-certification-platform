@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    const { examId, isTimeout = false } = await req.json();
+  const { examId, isTimeout = false, cheatingDetected = false } = await req.json();
 
     const exam = await Exam.findOne({
       _id: examId,
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     exam.correctCount = correctCount;
     exam.score = score;
     exam.passed = passed;
-    exam.status = isTimeout ? "timed_out" : "completed";
+    exam.status = cheatingDetected ? "cheating_detected" : isTimeout ? "timed_out" : "completed";
     exam.completedAt = new Date();
     exam.timeUsed = exam.questions.reduce(
       (sum: any, q: { timeSpent: any }) => sum + (q.timeSpent || 0),
@@ -66,14 +66,21 @@ export async function POST(req: NextRequest) {
     await exam.save();
 
     // NEW — close out the attempt tied to this exam
-    await ExamAttempt.findOneAndUpdate(
-      { examId: exam._id, userId: session.user.id, status: "in_progress" },
-      {
-        status: "completed",
-        endReason: isTimeout ? "timed_out" : "submitted",
-        endedAt: new Date(),
-      },
-    );
+    await ExamAttempt.updateOne(
+  { userId: session.user.id, categoryId: exam.categoryId, skillLevel: exam.skillLevel, "attempts.examId": exam._id },
+  {
+    $set: {
+      "attempts.$[entry].status": cheatingDetected ? "terminated" : "completed",
+      "attempts.$[entry].endReason": cheatingDetected
+        ? "cheating_detected"
+        : isTimeout
+          ? "timed_out"
+          : "submitted",
+      "attempts.$[entry].endedAt": new Date(),
+    },
+  },
+  { arrayFilters: [{ "entry.examId": exam._id }] },
+);
 
     const EMBARGO_HOURS = Number(process.env.RESULTS_EMBARGO_HOURS) || 5;
 

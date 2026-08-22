@@ -153,15 +153,31 @@ export async function POST(req: NextRequest) {
       startedAt: new Date(),
     });
 
-    // ─── Open the attempt, linked to this exam ───
-    await ExamAttempt.create({
-      userId: session.user.id,
-      categoryId,
-      skillLevel,
-      examId: exam._id,
-      status: "in_progress",
-      startedAt: new Date(),
-    });
+    const priorAttempts = await ExamAttempt.countDocuments({
+  userId: session.user.id,
+  categoryId,
+  skillLevel,
+});
+
+
+   const attemptDoc = await ExamAttempt.findOneAndUpdate(
+  { userId: session.user.id, categoryId, skillLevel },
+  {
+    $push: {
+      attempts: {
+        examId: exam._id,
+        attemptNumber: 0, // placeholder, fixed right below
+        status: "in_progress",
+        startedAt: new Date(),
+      },
+    },
+  },
+  { upsert: true, new: true },
+);
+
+const lastIndex = attemptDoc.attempts.length - 1;
+attemptDoc.attempts[lastIndex].attemptNumber = lastIndex + 1;
+await attemptDoc.save();
 
     return NextResponse.json({
       success: true,
