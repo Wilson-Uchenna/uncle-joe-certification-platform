@@ -30,6 +30,7 @@ type ExamResult = {
   skillLevel: string;
   score: number;
   passed: boolean;
+  resultsPaidAt?: string;
   certificatePaidAt?: string;
   certificateDownloaded: boolean;
   createdAt: string;
@@ -122,9 +123,9 @@ export default function CertificatesPage() {
     }
   };
 
- const handleViewCertificate = (examId: string) => {
-  router.push(`/certificates/view?examId=${examId}`);
-};
+  const handleViewCertificate = (examId: string) => {
+    router.push(`/certificates/view?examId=${examId}`);
+  };
 
   if (loading) {
     return (
@@ -202,7 +203,7 @@ export default function CertificatesPage() {
 
       <div className="space-y-4">
         {results.map((result) => {
-          const isPaid = !!result.certificatePaidAt;
+          const isPaid = !!result.resultsPaidAt;
           const canDownload = isPaid && result.passed;
 
           return (
@@ -248,12 +249,12 @@ export default function CertificatesPage() {
 
                 {canDownload ? (
                   <button
-    onClick={() => handleViewCertificate(result.examId)}
-    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-  >
-    <Download className="w-4 h-4" />
-    View Certificate
-  </button>
+                    onClick={() => handleViewCertificate(result.examId)}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  >
+                    <Download className="w-4 h-4" />
+                    View Certificate
+                  </button>
                 ) : (
                   <>
                     {verifying === result._id ? (
