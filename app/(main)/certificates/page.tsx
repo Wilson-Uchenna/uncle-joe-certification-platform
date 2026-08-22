@@ -268,11 +268,7 @@ export default function CertificatesPage() {
                     ) : (
                       <button
                         className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg"
-                        onClick={() =>
-                          router.push(
-                            `/certificates/payments/?examId=${result.examId}&score=${result.score}`,
-                          )
-                        }
+                        onClick={() => router.push(`/results/${result.examId}`)}
                       >
                         <CreditCard className="w-4 h-4" />
                         Continue to payment
