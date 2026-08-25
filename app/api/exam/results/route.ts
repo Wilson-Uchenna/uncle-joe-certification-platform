@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -36,30 +36,14 @@ export async function GET(req: NextRequest) {
     let resultsQuery = Result.find(query)
       .sort({ createdAt: -1 })
       .select(
-        "examId categoryName skillLevel score passed certificateAvailable certificateDownloaded resultsAvailableAt createdAt"
+        "examId categoryName skillLevel score passed certificateAvailable certificateDownloaded resultsAvailableAt resultsPaidAt createdAt",
       );
 
-    // Only fetch the latest result when requested
     if (latestOnly) {
       resultsQuery = resultsQuery.limit(1);
     }
 
     const results = await resultsQuery.lean();
-
-    // Get exam payment data
-    const examIds = results
-      .map((r: any) => r.examId)
-      .filter(Boolean);
-
-    const exams = await mongoose.connection
-      .collection("exams")
-      .find({ _id: { $in: examIds } })
-      .project({ certificatePaidAt: 1 })
-      .toArray();
-
-    const examMap = new Map(
-      exams.map((e: any) => [e._id.toString(), e])
-    );
 
     const enriched = results.map((r: any) => ({
       _id: r._id.toString(),
@@ -70,8 +54,7 @@ export async function GET(req: NextRequest) {
       passed: r.passed,
       certificateAvailable: r.certificateAvailable,
       certificateDownloaded: r.certificateDownloaded,
-      certificatePaidAt:
-        examMap.get(r.examId?.toString())?.certificatePaidAt,
+      resultsPaidAt: r.resultsPaidAt,
       resultsAvailableAt: r.resultsAvailableAt,
       createdAt: r.createdAt,
     }));
@@ -79,7 +62,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       results: enriched,
-      result: latestOnly ? enriched[0] ?? null : undefined,
+      result: latestOnly ? (enriched[0] ?? null) : undefined,
     });
   } catch (error: any) {
     console.error("GET /api/exams/results error:", error);
@@ -89,7 +72,7 @@ export async function GET(req: NextRequest) {
         success: false,
         error: error.message || "Failed to fetch results",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

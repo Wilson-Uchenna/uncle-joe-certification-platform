@@ -3,7 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Font, Svg, Circle, Path, G } fr
 // Cursive font for the signature — Great Vibes, hosted on Google Fonts' static CDN
 Font.register({
   family: "GreatVibes",
-  src: "https://fonts.gstatic.com/s/greatvibes/v18/RWmMoKWR9v4ksMfaWd_JN9XLiaQ.ttf",
+  src: "https://raw.githubusercontent.com/google/fonts/main/ofl/greatvibes/GreatVibes-Regular.ttf",
 });
 
 const styles = StyleSheet.create({
