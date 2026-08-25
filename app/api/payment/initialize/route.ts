@@ -13,7 +13,6 @@ const PRICES: Record<string, number> = {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
-    console.log("Payment init session:", session);
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
@@ -22,17 +21,10 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
-     const { examId, type = "results" } = await req.json();
-    
-     const amount = PRICES[type];
-    if (!examId || !amount) {
-      return NextResponse.json(
-        { success: false, error: "Invalid data" },
-        { status: 400 },
-      );
-    }
+    const { examId, type = "results" } = await req.json();
 
-    if (!examId || amount <= 0) {
+    const amount = PRICES[type];
+    if (!examId || !amount) {
       return NextResponse.json(
         { success: false, error: "Invalid data" },
         { status: 400 },
@@ -46,26 +38,44 @@ export async function POST(req: NextRequest) {
 
     if (!exam) {
       return NextResponse.json(
-        { success: false, error: "Exam not found or not passed" },
+        { success: false, error: "Exam not found" },
         { status: 404 },
       );
     }
 
-    const existing = await Payment.findOne({
+    const existingSuccess = await Payment.findOne({
       userId: session.user.id,
       examId,
       type,
       status: "success",
     });
 
-    if (existing) {
+    if (existingSuccess) {
       return NextResponse.json(
-        { success: false, error: "Already paid for this certificate" },
+        { success: false, error: "Already paid for this exam" },
         { status: 409 },
       );
     }
 
-    const reference = `CERT-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    // NEW — reuse a still-fresh pending payment instead of creating another one
+    const existingPending = await Payment.findOne({
+      userId: session.user.id,
+      examId,
+      type,
+      status: "pending",
+      createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) },
+    });
+
+    if (existingPending) {
+      return NextResponse.json({
+        success: true,
+        reference: existingPending.providerReference,
+        email: session.user.email,
+        amount: existingPending.amount,
+      });
+    }
+
+    const reference = `RES-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
     await Payment.create({
       userId: session.user.id,
