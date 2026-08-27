@@ -1,10 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Font, Svg, Circle, Path, G } from "@react-pdf/renderer";
-
-// Cursive font for the signature — Great Vibes, hosted on Google Fonts' static CDN
-Font.register({
-  family: "GreatVibes",
-  src: "https://raw.githubusercontent.com/google/fonts/main/ofl/greatvibes/GreatVibes-Regular.ttf",
-});
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
@@ -33,6 +27,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 60,
     right: 50,
+    width: 160,
+    height: 160,
     opacity: 0.06,
   },
   header: {
@@ -106,6 +102,10 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     color: "#1e1b4b",
   },
+  sealImage: {
+    width: 84,
+    height: 84,
+  },
   sealLabel: {
     marginTop: 6,
     fontSize: 8,
@@ -159,42 +159,6 @@ const styles = StyleSheet.create({
   },
 });
 
-// Vector badge — concentric rings, a star, and small tick marks around the rim
-function SealBadge({ size = 84 }: { size?: number }) {
-  const r = size / 2;
-  return (
-    <Svg width={size} height={size} viewBox="0 0 84 84">
-      <Circle cx="42" cy="42" r="40" fill="none" stroke="#4338ca" strokeWidth="1.5" />
-      <Circle cx="42" cy="42" r="34" fill="none" stroke="#4338ca" strokeWidth="1" strokeDasharray="2 3" />
-      <Circle cx="42" cy="42" r="28" fill="#eef2ff" stroke="#1e1b4b" strokeWidth="1.5" />
-      {/* Tick marks around the rim */}
-      {Array.from({ length: 24 }).map((_, i) => {
-        const angle = (i * 15 * Math.PI) / 180;
-        const x1 = 42 + 36 * Math.cos(angle);
-        const y1 = 42 + 36 * Math.sin(angle);
-        const x2 = 42 + 39 * Math.cos(angle);
-        const y2 = 42 + 39 * Math.sin(angle);
-        return (
-          <Path
-            key={i}
-            d={`M ${x1} ${y1} L ${x2} ${y2}`}
-            stroke="#4338ca"
-            strokeWidth="1"
-          />
-        );
-      })}
-      {/* 5-point star, centered */}
-      <G transform="translate(42 40) scale(0.9)">
-        <Path
-          d="M0,-14 L3.3,-4.3 L13.3,-4.3 L5.3,1.6 L8.5,11.3 L0,5.4 L-8.5,11.3 L-5.3,1.6 L-13.3,-4.3 L-3.3,-4.3 Z"
-          fill="#4338ca"
-        />
-      </G>
-      <Text style={{ display: "none" }} />
-    </Svg>
-  );
-}
-
 interface CertificatePDFProps {
   userName: string;
   categoryName: string;
@@ -206,6 +170,7 @@ interface CertificatePDFProps {
   issuedAt: string;
   verificationCode: string;
   orgName?: string;
+  sealImageSrc: string;
 }
 
 export default function CertificatePDF({
@@ -219,6 +184,7 @@ export default function CertificatePDF({
   issuedAt,
   verificationCode,
   orgName = "African Remote Workers Professional Certification Platform",
+  sealImageSrc,
 }: CertificatePDFProps) {
   const formattedDate = new Date(issuedAt).toLocaleDateString("en-US", {
     year: "numeric",
@@ -232,10 +198,7 @@ export default function CertificatePDF({
         <View style={styles.border} />
         <View style={styles.innerBorder} />
 
-        {/* Faint watermark seal, bottom-right, behind everything else */}
-        <View style={styles.watermarkSeal}>
-          <SealBadge size={160} />
-        </View>
+        <Image style={styles.watermarkSeal} src={sealImageSrc} />
 
         <View style={styles.header}>
           <Text style={styles.orgName}>{orgName}</Text>
@@ -263,7 +226,7 @@ export default function CertificatePDF({
           </View>
 
           <View style={styles.detailBlock}>
-            <SealBadge />
+            <Image style={styles.sealImage} src={sealImageSrc} />
             <Text style={styles.sealLabel}>OFFICIAL SEAL</Text>
           </View>
 

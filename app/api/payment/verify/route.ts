@@ -42,8 +42,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-
-     if (payment.status === "success") {
+    if (payment.status === "success") {
       const exam = await Exam.findById(payment.examId).lean();
       return NextResponse.json({
         success: true,
@@ -57,8 +56,14 @@ export async function POST(req: NextRequest) {
     const data = await paystack.transaction.verify(reference);
 
     const expectedKobo = payment.amount * 100;
+    const expectedWithFeeKobo = Math.round(
+      ((payment.amount + 100) / 0.985) * 100,
+    );
 
-    if (data.status === "success" && data.amount === expectedKobo) {
+    const amountMatches =
+      data.amount === expectedKobo || data.amount === expectedWithFeeKobo;
+
+    if (data.status === "success" && amountMatches) {
       payment.status = "success";
       payment.paidAt = new Date();
       payment.providerTransactionId = data.id?.toString();

@@ -4,6 +4,15 @@ import { Result } from "@/models/ExamResults";
 import { Exam } from "@/models/Exam";
 import mongoose from "mongoose";
 import { generateCertificatePDF } from "@/lib/pdfGenerator";
+import fs from "fs";
+import path from "path";
+
+function loadSealAsDataUri(): string {
+  const sealPath = path.join(process.cwd(), "public", "official_seal_v10.png");
+  const fileBuffer = fs.readFileSync(sealPath);
+  const base64 = fileBuffer.toString("base64");
+  return `data:image/png;base64,${base64}`;
+}
 
 export const GET = withAdmin(async (req: NextRequest, adminUser, context: RouteContext) => {
   const { id: certId } = await context.params;
@@ -38,18 +47,20 @@ export const GET = withAdmin(async (req: NextRequest, adminUser, context: RouteC
   }
 
   // Generate PDF
-  const pdfBuffer = await generateCertificatePDF({
-    userName: result.userName,
-    categoryName: result.categoryName,
-    skillLevel: result.skillLevel,
-    score: result.score,
-    correctCount: correctCount || 0,
-    totalQuestions: totalQuestions || 0,
-    passed: result.passed,
-    issuedAt: (result.certificateApprovedAt || result.createdAt).toISOString(),
-    verificationCode: result._id.toString(),
-  });
+  const sealImageSrc = loadSealAsDataUri();
 
+const pdfBuffer = await generateCertificatePDF({
+  userName: result.userName,
+  categoryName: result.categoryName,
+  skillLevel: result.skillLevel,
+  score: result.score,
+  correctCount: result.correctCount || 0,
+  totalQuestions: result.totalQuestions || 0,
+  passed: result.passed,
+  issuedAt: (result.certificateApprovedAt || result.createdAt).toISOString(),
+  verificationCode: result._id.toString(),
+  sealImageSrc,
+});
   // Mark as downloaded
   await Result.findByIdAndUpdate(certId, {
     $set: { certificateDownloaded: true },
