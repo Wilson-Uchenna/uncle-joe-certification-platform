@@ -240,6 +240,14 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+#faqs {
+  scroll-margin-top: 5rem; /* matches your pt-20 navbar offset */
+}
+
 @keyframes bounce-slow {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-10px); }

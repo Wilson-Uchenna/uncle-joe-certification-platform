@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import React from "react";
 
 /**
@@ -59,7 +60,10 @@ const socialLinks = [
     icon: (
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
-        <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" className="arwf-social-accent" />
+        <polygon
+          points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"
+          className="arwf-social-accent"
+        />
       </svg>
     ),
   },
@@ -69,8 +73,17 @@ const socialLinks = [
     icon: (
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" className="arwf-social-accent" />
-        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" className="arwf-social-accent-stroke" />
+        <path
+          d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"
+          className="arwf-social-accent"
+        />
+        <line
+          x1="17.5"
+          y1="6.5"
+          x2="17.51"
+          y2="6.5"
+          className="arwf-social-accent-stroke"
+        />
       </svg>
     ),
   },
@@ -85,10 +98,9 @@ const linkColumns: LinkColumn[] = [
   {
     title: "About",
     links: [
-      { label: "Who We Are", href: "#" },
-      { label: "Our Mission", href: "#" },
-      { label: "Leadership Team", href: "#" },
-      { label: "Partners & Accreditation", href: "#" },
+      { label: "Who We Are", href: "#whyskillora" },
+      { label: "Our Mission", href: "#impact" },
+      { label: "Partners & Accreditation", href: "#professionals" },
       { label: "Press & Media", href: "#" },
       { label: "Careers", href: "#", badge: "Hiring" },
     ],
@@ -96,10 +108,9 @@ const linkColumns: LinkColumn[] = [
   {
     title: "Examinations",
     links: [
-      { label: "Exam Overview", href: "#" },
-      { label: "Eligibility Criteria", href: "#" },
-      { label: "Register for Exam", href: "#" },
-      { label: "Exam Schedule", href: "#" },
+      { label: "Exam Overview", href: "#certification" },
+      { label: "Eligibility Criteria", href: "#certification" },
+
       { label: "Study Resources", href: "#" },
       { label: "Past Questions", href: "#" },
     ],
@@ -107,12 +118,14 @@ const linkColumns: LinkColumn[] = [
   {
     title: "Certification",
     links: [
-      { label: "Certificate Tracks", href: "#" },
-      { label: "Verify a Certificate", href: "#", badge: "New" },
-      { label: "Digital Badges", href: "#" },
-      { label: "Recertification", href: "#" },
-      { label: "Employer Directory", href: "#" },
-      { label: "Remote Job Board", href: "#" },
+      { label: "Certificate Tracks", href: "#certification" },
+      {
+        label: "Verify a Certificate",
+        href: "#certification-use",
+        badge: "New",
+      },
+
+      { label: "Recertification", href: "#certification" },
     ],
   },
   {
@@ -120,15 +133,20 @@ const linkColumns: LinkColumn[] = [
     links: [
       { label: "Help Centre", href: "#" },
       { label: "Contact Us", href: "#" },
-      { label: "FAQs", href: "#" },
+      { label: "FAQs", href: "#faqs" },
       { label: "Candidate Portal", href: "#" },
       { label: "Report an Issue", href: "#" },
-      { label: "Skillora Platform", href: "#", external: true },
+      { label: "A.R.W.P.C.E Platform", href: "#", external: true },
     ],
   },
 ];
 
-const legalLinks = ["Privacy Policy", "Terms of Use", "Cookie Policy", "Accessibility"];
+const legalLinks = [
+  "Privacy Policy",
+  "Terms of Use",
+  "Cookie Policy",
+  "Accessibility",
+];
 
 export default function Footer() {
   const [email, setEmail] = React.useState("");
@@ -152,12 +170,18 @@ export default function Footer() {
               <span className="arwf-brand-name">ARWPCE</span>
             </div>
             <p className="arwf-brand-tagline">
-              African Remote Workers Professional Certification Examination — empowering
-              Africa&apos;s remote workforce with globally recognised credentials.
+              African Remote Workers Professional Certification Examination —
+              empowering Africa&apos;s remote workforce with globally recognised
+              credentials.
             </p>
             <div className="arwf-socials">
               {socialLinks.map((s) => (
-                <a key={s.label} href={s.href} className="arwf-social-btn" aria-label={s.label}>
+                <a
+                  key={s.label}
+                  href={s.href}
+                  className="arwf-social-btn"
+                  aria-label={s.label}
+                >
                   {s.icon}
                 </a>
               ))}
@@ -167,8 +191,8 @@ export default function Footer() {
           <div className="arwf-newsletter">
             <div className="arwf-newsletter-label">Stay in the loop</div>
             <p className="arwf-newsletter-sub">
-              Get updates on exam dates, new certifications, and career opportunities — straight
-              to your inbox.
+              Get updates on exam dates, new certifications, and career
+              opportunities — straight to your inbox.
             </p>
             <form className="arwf-newsletter-form" onSubmit={handleSubscribe}>
               <input
@@ -194,10 +218,15 @@ export default function Footer() {
               <ul>
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className={link.external ? "arwf-external" : undefined}>
+                    <Link
+                      href={link.href}
+                      className={link.external ? "arwf-external" : undefined}
+                    >
                       {link.label}
-                      {link.badge && <span className="arwf-link-badge">{link.badge}</span>}
-                    </a>
+                      {link.badge && (
+                        <span className="arwf-link-badge">{link.badge}</span>
+                      )}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -207,7 +236,9 @@ export default function Footer() {
 
         {/* BOTTOM BAR */}
         <div className="arwf-bottom">
-          <span className="arwf-copy">© {new Date().getFullYear()} ARWPCE. All rights reserved.</span>
+          <span className="arwf-copy">
+            © {new Date().getFullYear()} ARWPCE. All rights reserved.
+          </span>
 
           <nav className="arwf-legal-links" aria-label="Legal">
             {legalLinks.map((label) => (

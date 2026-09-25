@@ -53,30 +53,16 @@ export default async function DashboardPage() {
 
       {/* Card Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        
         <DashboardCard
-          title="My Learning"
+          title="Study Resources"
           description={HOLD_MESSAGE}
-          linkText="Continue Learning"
-          href="/my-learning"
-          icon={PlayCircle}
-          iconColor="blue"
-        />
-        <DashboardCard
-          title="My Courses"
-          description={HOLD_MESSAGE}
-          linkText="View Courses"
-          href="/my-courses"
+          linkText="Study Resources"
+          href="/study-resources"
           icon={BookOpen}
           iconColor="amber"
         />
-        <DashboardCard
-          title="Learning Progress"
-          description={HOLD_MESSAGE}
-          linkText="View Progress"
-          href="/learning-progress"
-          icon={BarChart3}
-          iconColor="emerald"
-        />
+        
         <DashboardCard
           title="Certifications"
           description={HOLD_MESSAGE}
@@ -97,16 +83,7 @@ export default async function DashboardPage() {
           status="12 new"
           statusVariant="success"
         />
-        <DashboardCard
-          title="Applications"
-          description={HOLD_MESSAGE}
-          linkText="Find Opportunities"
-          href="/applications"
-          icon={FileText}
-          iconColor="teal"
-          status="Not started"
-          statusVariant="neutral"
-        />
+        
         <DashboardCard
           title="Leaderboard"
           description={HOLD_MESSAGE}
@@ -117,26 +94,8 @@ export default async function DashboardPage() {
           status="Rank #48"
           statusVariant="warning"
         />
-        <DashboardCard
-          title="Achievements"
-          description={HOLD_MESSAGE}
-          linkText="View Achievements"
-          href="/achievements"
-          icon={Gem}
-          iconColor="indigo"
-          status="3 unlocked"
-          statusVariant="accent"
-        />
-        <DashboardCard
-          title="Notifications"
-          description={HOLD_MESSAGE}
-          linkText="View Notifications"
-          href="/notifications"
-          icon={Bell}
-          iconColor="slate"
-          status="Not started"
-          statusVariant="neutral"
-        />
+        
+        
       </div>
 
 

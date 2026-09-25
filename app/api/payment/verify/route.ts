@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/local-db";
 import { Payment } from "@/models/payment";
-import { Exam } from "@/models/Exam";
-import { paystack } from "@/lib/paystack";
-import { Result } from "@/models/ExamResults";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import mongoose from "mongoose";
+import { grantStudyResourcesAccess } from "@/lib/studyResources";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,11 +17,14 @@ export async function POST(req: NextRequest) {
     }
     await connectDB();
 
-    const { reference, examId } = await req.json();
+    const { reference, transactionId } = await req.json();
 
-    if (!reference) {
+    if (!reference || !transactionId) {
       return NextResponse.json(
-        { success: false, error: "No reference" },
+        {
+          success: false,
+          error: "Missing payment reference or transaction ID",
+        },
         { status: 400 },
       );
     }
@@ -43,84 +45,86 @@ export async function POST(req: NextRequest) {
     }
 
     if (payment.status === "success") {
-      const exam = await Exam.findById(payment.examId).lean();
       return NextResponse.json({
         success: true,
         status: "success",
         message: "Already verified",
-        examId: payment.examId,
-        passed: exam?.passed ?? false,
       });
     }
 
-    const data = await paystack.transaction.verify(reference);
-
-    const expectedKobo = payment.amount * 100;
-    const expectedWithFeeKobo = Math.round(
-      ((payment.amount + 100) / 0.985) * 100,
+    console.log("Using key:", process.env.NEXT_PUBLIC_FLW_SECRET_KEY?.slice(0, 12) + "...");
+    const fwRes = await fetch(
+      `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_FLW_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      },
     );
+    const fwJson = await fwRes.json();
+    console.log("Flutterwave verify response:", JSON.stringify(fwJson, null, 2));
 
-    const amountMatches =
-      data.amount === expectedKobo || data.amount === expectedWithFeeKobo;
+    const data = fwJson.data;
+    const amountMatches = data?.amount >= payment.amount;
+    const currencyMatches = data?.currency === payment.currency;
+    const referenceMatches = data?.tx_ref === payment.providerReference;
 
-    if (data.status === "success" && amountMatches) {
+    const verified =
+      fwJson.status === "success" &&
+      data?.status === "successful" &&
+      referenceMatches &&
+      amountMatches &&
+      currencyMatches;
+
+    if (
+      fwJson.status === "success" &&
+      data?.status === "successful" &&
+      amountMatches &&
+      currencyMatches
+    ) {
       payment.status = "success";
       payment.paidAt = new Date();
       payment.providerTransactionId = data.id?.toString();
       await payment.save();
 
-      const exam = await Exam.findById(payment.examId);
-      if (!exam) {
-        return NextResponse.json(
-          { success: false, error: "Exam not found" },
-          { status: 404 },
-        );
+      if (payment.type === "registration") {
+        await mongoose.connection
+          .collection("user")
+          .updateOne(
+            { _id: new mongoose.Types.ObjectId(payment.userId) },
+            { $set: { hasPaid: true } },
+          );
       }
 
-      // Results always unlock on successful payment
-      exam.resultsPaidAt = new Date();
-
-      const resultUpdate: Record<string, any> = {
-        resultsPaidAt: new Date(),
-      };
-
-      // Certificate only unlocks if they actually passed
-      if (exam.passed) {
-        exam.certificatePaidAt = new Date();
-        resultUpdate.certificateAvailable = true;
-        resultUpdate.certificatePaidAt = new Date();
+      if (payment.type === "pdf_materials" || payment.type === "past_questions") {
+        await grantStudyResourcesAccess({
+          userId: payment.userId.toString(),
+          type: payment.type,
+          paymentReference: payment.providerReference,
+        });
       }
-      await exam.save();
-
-      await Result.updateMany(
-        { examId: payment.examId, passed: exam.passed },
-        resultUpdate,
-      );
 
       return NextResponse.json({
         success: true,
         status: "success",
         message: "Payment verified",
-        examId: payment.examId,
-        passed: exam.passed,
       });
     }
 
     payment.status =
-      data.status === "success"
+      data?.status === "successful"
         ? "failed"
-        : data.status === "failed"
-          ? "failed"
-          : "abandoned";
+        : "failed";
     await payment.save();
 
     return NextResponse.json({
       success: false,
       status: payment.status,
       message:
-        data.status === "success"
+        data?.status === "successful"
           ? "Amount mismatch — payment flagged for review"
-          : `Payment ${payment.status}`,
+          : `Payment ${data?.status ?? "unverified"}`,
     });
   } catch (error: any) {
     console.error("Verify error:", error);

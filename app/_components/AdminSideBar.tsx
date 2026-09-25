@@ -30,7 +30,7 @@ const menuItems = [
     active: true,
   },
   { label: "Learner Management", icon: Users, href: "/admin/learners" },
-  { label: "Employer Management", icon: Building2, href: "/admin/employers" },
+  { label: "Training Materials", icon: Building2, href: "/admin/study-resources/explanations" },
   { label: "Course Management", icon: BookOpen, href: "/admin/courses" },
   {
     label: "Assessment Management",

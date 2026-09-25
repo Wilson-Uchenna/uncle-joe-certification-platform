@@ -4,6 +4,7 @@ import { Check, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 
 type Category = {
   _id: string;
@@ -29,10 +30,28 @@ export default function RoleOnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  // Fetch categories on mount
+  // Check payment status before anything else, then fetch categories
   useEffect(() => {
-    fetchCategories();
+    checkPaymentThenLoad();
   }, []);
+
+  const checkPaymentThenLoad = async () => {
+    const { data: session } = await authClient.getSession();
+
+    if (!session?.user) {
+      router.push("/login");
+      return;
+    }
+
+    if (!(session.user.hasPaid)) {
+      router.push(
+        `/complete-payments?email=${encodeURIComponent(session.user.email)}&name=${encodeURIComponent(session.user.name)}`,
+      );
+      return;
+    }
+
+    fetchCategories();
+  };
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -58,6 +77,7 @@ export default function RoleOnboardingPage() {
       setLoading(false);
     }
   };
+
 
   const handleCategorySelect = (category: Category) => {
     // Clicking the already-selected tag collapses it again

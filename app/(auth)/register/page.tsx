@@ -94,6 +94,7 @@ export default function RegisterPage() {
     employer: "",
     state: "",
     country: "Nigeria",
+    hasPaid: false,
   });
 
   const handleChange = (
@@ -130,17 +131,6 @@ export default function RegisterPage() {
     return true;
   };
 
-  const handleNext = () => {
-    setError(null);
-    if (step === 1 && validateStep1()) {
-      setStep(2);
-    }
-  };
-
-  const handleBack = () => {
-    setError(null);
-    setStep(1);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,6 +150,7 @@ export default function RegisterPage() {
       employer: formData.employer,
       state: formData.state,
       country: formData.country,
+      hasPaid: formData.hasPaid,
     } as any);
 
     if (result.error) {

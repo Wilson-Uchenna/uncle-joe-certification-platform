@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import connectDB from "@/lib/local-db";
-import { Exam } from "@/models/Exam";
 import { Payment } from "@/models/payment";
-import { paystack } from "@/lib/paystack";
 
 const PRICES: Record<string, number> = {
-  results: 5000,
+  registration: 10000,
+  pdf_materials: 2000,
+  past_questions: 1000,
 };
 
 export async function POST(req: NextRequest) {
@@ -20,47 +20,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await connectDB();
-    const { examId, type = "results" } = await req.json();
+    const body = await req.json();
+    const type = body?.type;
 
-    const amount = PRICES[type];
-    if (!examId || !amount) {
+    if (!type || !(type in PRICES)) {
       return NextResponse.json(
-        { success: false, error: "Invalid data" },
+        { success: false, error: "Invalid payment type" },
         { status: 400 },
       );
     }
 
-    const exam = await Exam.findOne({
-      _id: examId,
-      userId: session.user.id,
-    }).lean();
-
-    if (!exam) {
-      return NextResponse.json(
-        { success: false, error: "Exam not found" },
-        { status: 404 },
-      );
-    }
+    await connectDB();
+    const amount = PRICES[type];
 
     const existingSuccess = await Payment.findOne({
       userId: session.user.id,
-      examId,
       type,
       status: "success",
     });
 
     if (existingSuccess) {
       return NextResponse.json(
-        { success: false, error: "Already paid for this exam" },
+        { success: false, error: "Already paid" },
         { status: 409 },
       );
     }
 
-    // NEW — reuse a still-fresh pending payment instead of creating another one
     const existingPending = await Payment.findOne({
       userId: session.user.id,
-      examId,
       type,
       status: "pending",
       createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) },
@@ -75,21 +62,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const reference = `RES-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const prefix = type === "pdf_materials" ? "PDF" : type === "past_questions" ? "PQ" : "REG";
+    const reference = `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
     await Payment.create({
       userId: session.user.id,
-      examId,
       type,
       amount,
       currency: "NGN",
-      provider: "paystack",
+      provider: "flutterwave",
       providerReference: reference,
       status: "pending",
       metadata: {
         userName: session.user.name,
         userEmail: session.user.email,
-        examCategory: exam.categoryName,
       },
     });
 

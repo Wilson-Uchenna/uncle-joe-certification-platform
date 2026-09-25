@@ -66,7 +66,12 @@ const authOptions = {
       selectedCategoryName: { type: "string", defaultValue: null, input: true },
       selectedCategorySlug: { type: "string", defaultValue: null, input: true },
       selectedRole: { type: "string", defaultValue: null, input: true },
-      tempPassword: { type: "boolean", defaultValue: false}
+      tempPassword: { type: "boolean", defaultValue: false },
+      hasPaid: {
+        type: "boolean",
+        defaultValue: false,
+        input: false, // prevents it being settable via signup/update-profile calls
+      },
     },
   },
   databaseHooks: {
@@ -154,9 +159,8 @@ export const auth = betterAuth({
           role: (userDoc?.role as "user" | "admin") || "user",
 
           onboardingComplete: userDoc?.onboardingComplete as
-            | boolean
-            | undefined,
-             tempPassword: (userDoc?.tempPassword as boolean) ?? false,
+            boolean | undefined,
+          tempPassword: (userDoc?.tempPassword as boolean) ?? false,
         },
         session,
       };

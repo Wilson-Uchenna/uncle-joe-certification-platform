@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   MailCheck,
   Loader2,
   CheckCircle2,
   ArrowLeft,
   AlertCircle,
-} from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
+} from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
-type Phase = 'checking' | 'pending' | 'verifying' | 'done' | 'error';
+type Phase = "checking" | "pending" | "verifying" | "done" | "error";
 
 function VerifyEmailInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const email = params.get('email');
+  const email = params.get("email");
 
-  const [phase, setPhase] = useState<Phase>('checking');
+  const [phase, setPhase] = useState<Phase>("checking");
   const [error, setError] = useState<string | null>(null);
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState("");
   const [resendTimer, setResendTimer] = useState(60);
   const finalizing = useRef(false);
 
@@ -31,10 +31,13 @@ function VerifyEmailInner() {
       const { data: session } = await authClient.getSession();
 
       if (session?.user?.emailVerified) {
-        setPhase('done');
-        setTimeout(() => router.replace('/role-onboarding'), 1500);
+        setPhase("done");
+        const target = session.user.hasPaid
+          ? "/role-onboarding"
+          : `/complete-payments?email=${encodeURIComponent(session.user.email)}&name=${encodeURIComponent(session.user.name)}`;
+        setTimeout(() => router.replace(target), 1500);
       } else {
-        setPhase('pending');
+        setPhase("pending");
         // Start resend countdown
         const interval = setInterval(() => {
           setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
@@ -48,7 +51,7 @@ function VerifyEmailInner() {
 
   // Send OTP on mount if email exists
   useEffect(() => {
-    if (email && phase === 'pending') {
+    if (email && phase === "pending") {
       sendOtp();
     }
   }, [email, phase]);
@@ -59,14 +62,14 @@ function VerifyEmailInner() {
     try {
       const { error } = await authClient.emailOtp.sendVerificationOtp({
         email,
-        type: 'email-verification',
+        type: "email-verification",
       });
 
       if (error) {
-        setError('Failed to send verification code. Please try again.');
+        setError("Failed to send verification code. Please try again.");
       }
     } catch (err) {
-      setError('Something went wrong sending the code.');
+      setError("Something went wrong sending the code.");
     }
   }
 
@@ -74,7 +77,7 @@ function VerifyEmailInner() {
     e.preventDefault();
     if (!email || !otp) return;
 
-    setPhase('verifying');
+    setPhase("verifying");
     setError(null);
 
     try {
@@ -84,17 +87,22 @@ function VerifyEmailInner() {
       });
 
       if (error) {
-        setPhase('pending');
-        setError('Invalid code. Please try again.');
+        setPhase("pending");
+        setError("Invalid code. Please try again.");
         return;
       }
 
       // Success
-      setPhase('done');
-      setTimeout(() => router.replace('/role-onboarding'), 1500);
+      setPhase("done");
+      const { data: session } = await authClient.getSession();
+      setTimeout(() => {
+        router.replace(
+          `/complete-payments?email=${encodeURIComponent(email)}&name=${encodeURIComponent(session?.user?.name ?? "")}`,
+        );
+      }, 1500);
     } catch (err) {
-      setPhase('pending');
-      setError('Verification failed. Please try again.');
+      setPhase("pending");
+      setError("Verification failed. Please try again.");
     }
   }
 
@@ -107,33 +115,35 @@ function VerifyEmailInner() {
     <main className="flex-grow flex items-center justify-center px-4 md:px-10 pt-28 pb-12">
       <div
         className="w-full max-w-[480px] bg-white rounded-xl p-8 md:p-12 border border-gray-200 text-center"
-        style={{ boxShadow: '0 20px 50px rgba(0, 32, 69, 0.1)' }}
+        style={{ boxShadow: "0 20px 50px rgba(0, 32, 69, 0.1)" }}
       >
         {/* Checking / Verifying / Done states */}
-        {(phase === 'checking' || phase === 'verifying' || phase === 'done') && (
+        {(phase === "checking" ||
+          phase === "verifying" ||
+          phase === "done") && (
           <>
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-600 rounded-full mb-3">
               <Loader2 className="w-8 h-8 animate-spin" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {phase === 'done'
-                ? 'Email verified!'
-                : phase === 'verifying'
-                ? 'Verifying...'
-                : 'One moment…'}
+              {phase === "done"
+                ? "Email verified!"
+                : phase === "verifying"
+                  ? "Verifying..."
+                  : "One moment…"}
             </h1>
             <p className="text-gray-600">
-              {phase === 'done'
-                ? 'Redirecting you to your role onboarding.'
-                : phase === 'verifying'
-                ? 'Checking your verification code.'
-                : 'Checking your verification status.'}
+              {phase === "done"
+                ? "Redirecting you to your role onboarding."
+                : phase === "verifying"
+                  ? "Checking your verification code."
+                  : "Checking your verification status."}
             </p>
           </>
         )}
 
         {/* Pending - Enter OTP */}
-        {phase === 'pending' && (
+        {phase === "pending" && (
           <>
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-600 rounded-full mb-3">
               <MailCheck className="w-8 h-8" strokeWidth={1.5} />
@@ -145,7 +155,7 @@ function VerifyEmailInner() {
               We&apos;ve sent a 6-digit code
               {email ? (
                 <>
-                  {' '}
+                  {" "}
                   to <span className="font-bold text-gray-900">{email}</span>
                 </>
               ) : null}
@@ -160,7 +170,7 @@ function VerifyEmailInner() {
                   inputMode="numeric"
                   maxLength={6}
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                   placeholder="000000"
                   className="w-full text-center text-2xl tracking-[0.5em] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   autoFocus
@@ -207,7 +217,7 @@ function VerifyEmailInner() {
         )}
 
         {/* Error state */}
-        {phase === 'error' && (
+        {phase === "error" && (
           <>
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 text-red-600 rounded-full mb-3">
               <AlertCircle className="w-8 h-8" />

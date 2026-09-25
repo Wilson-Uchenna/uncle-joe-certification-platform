@@ -1,6 +1,5 @@
 "use client";
 
-
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,37 +19,30 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
-
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/my-learning", label: "My Learning", icon: PlayCircle },
-  { href: "/my-courses", label: "My Courses", icon: BookOpen },
-  { href: "/learning-progress", label: "Learning Progress", icon: BarChart3 },
+
   { href: "/certificates", label: "Certifications", icon: Award },
   {
     href: "/career-opportunities",
     label: "Career Opportunities",
     icon: Briefcase,
   },
-  { href: "/applications", label: "Applications", icon: FileText },
+
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/achievements", label: "Achievements", icon: Gem },
-  { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/study-resources", label: "Study Resources", icon: BookOpen },
   { href: "/profile", label: "Profile", icon: User },
 ];
-
 
 export function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-
   const handleLogout = async () => {
     await authClient.signOut();
     router.push("/login");
   };
-
 
   function handleLogoClick(e: React.MouseEvent) {
     if (pathname === "/") {
@@ -58,7 +50,6 @@ export function Sidebar() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
-
 
   return (
     <>
@@ -76,12 +67,10 @@ export function Sidebar() {
           />
         </Link>
 
-
         <nav className="flex-1 px-3 pb-4 space-y-0.5">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
-
 
             return (
               <Link
@@ -100,7 +89,6 @@ export function Sidebar() {
           })}
         </nav>
 
-
         <div className="p-4 border-t border-gray-200">
           <button
             onClick={handleLogout}
@@ -111,7 +99,6 @@ export function Sidebar() {
           </button>
         </div>
       </aside>
-
 
       {/* ===== MOBILE HEADER (below lg) ===== */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white text-white">
@@ -128,7 +115,6 @@ export function Sidebar() {
               className="w-[6.5rem] md:w-[7rem]"
             />
           </Link>
-
 
           {/* Hamburger */}
           <button
@@ -155,7 +141,6 @@ export function Sidebar() {
           </button>
         </div>
 
-
         {/* Mobile Menu Dropdown */}
         <div
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
@@ -166,7 +151,6 @@ export function Sidebar() {
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
-
 
               return (
                 <Link
@@ -186,7 +170,6 @@ export function Sidebar() {
             })}
           </nav>
 
-
           <div className="p-4 border-t border-gray-200">
             <button
               onClick={handleLogout}
@@ -201,5 +184,3 @@ export function Sidebar() {
     </>
   );
 }
-
-
