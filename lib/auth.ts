@@ -23,6 +23,7 @@ const authOptions = {
   trustedOrigins: [
     "https://www.arwpce.name.ng",
     "http://localhost:3000",
+    "https://arwpce.name.ng", // include if www resolves too
     "https://uncle-joe-certification-platform.vercel.app",
     "https://uncle-joe-certification-platform-*.vercel.app",
   ],
