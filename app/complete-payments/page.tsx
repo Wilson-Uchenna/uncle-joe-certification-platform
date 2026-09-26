@@ -21,7 +21,7 @@ function CompletePaymentInner() {
       const res = await fetch("/api/payment/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ type: "registration" }), // was: { email }
       });
       if (res.status === 409) {
         router.push("/role-onboarding");
@@ -39,41 +39,41 @@ function CompletePaymentInner() {
   }, [email]);
 
   async function handleSuccess(payment: {
-  status: string;
-  transaction_id: number;
-  tx_ref: string;
-  amount: number;
-  currency: string;
-}) {
-  try {
-    const res = await fetch("/api/payment/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        reference: payment.tx_ref,
-        transactionId: payment.transaction_id,
-      }),
-    });
+    status: string;
+    transaction_id: number;
+    tx_ref: string;
+    amount: number;
+    currency: string;
+  }) {
+    try {
+      const res = await fetch("/api/payment/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reference: payment.tx_ref,
+          transactionId: payment.transaction_id,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok || !data.success) {
-      setError(
-        data?.error ||
-          data?.message ||
-          "Payment verification failed. Please try again.",
-      );
-      return;
+      if (!res.ok || !data.success) {
+        setError(
+          data?.error ||
+            data?.message ||
+            "Payment verification failed. Please try again.",
+        );
+        return;
+      }
+
+      router.push("/role-onboarding");
+    } catch (error) {
+      console.error("Payment confirmation error:", error);
+      setError("Could not confirm payment. Please try again.");
     }
-
-    router.push("/role-onboarding");
-  } catch (error) {
-    console.error("Payment confirmation error:", error);
-    setError("Could not confirm payment. Please try again.");
   }
-}
   return (
     <main className="flex-grow flex items-center justify-center px-4 pt-28 pb-12">
       <div className="w-full max-w-[480px] bg-white rounded-xl p-8 border border-gray-200 text-center">
