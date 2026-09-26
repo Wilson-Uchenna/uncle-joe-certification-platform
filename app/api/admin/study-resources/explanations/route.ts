@@ -30,7 +30,10 @@ export async function POST(req: NextRequest) {
     const skillLevel = formData.get("skillLevel") as string;
 
     if (!file || !title || !categoryId || !categoryName || !skillLevel) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      );
     }
 
     const bytes = await file.arrayBuffer();
@@ -49,7 +52,7 @@ export async function POST(req: NextRequest) {
           (error, result) => {
             if (error) reject(error);
             else resolve(result);
-          }
+          },
         )
         .end(buffer);
     });
@@ -60,6 +63,7 @@ export async function POST(req: NextRequest) {
       fileUrl: uploadResult.secure_url,
       publicId: uploadResult.public_id,
       fileSize: uploadResult.bytes,
+      originalFileName: file.name,
       categoryId,
       categoryName,
       skillLevel,
@@ -70,6 +74,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ id: resource._id }, { status: 201 });
   } catch (error: any) {
     console.error("Explanation upload error:", error);
-    return NextResponse.json({ error: error.message || "Upload failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Upload failed" },
+      { status: 500 },
+    );
   }
 }

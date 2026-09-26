@@ -32,21 +32,14 @@ export default function RoleOnboardingPage() {
 
   // Check payment status before anything else, then fetch categories
   useEffect(() => {
-    checkPaymentThenLoad();
+    loadUserThenCategories();
   }, []);
 
-  const checkPaymentThenLoad = async () => {
+  const loadUserThenCategories = async () => {
     const { data: session } = await authClient.getSession();
 
     if (!session?.user) {
       router.push("/login");
-      return;
-    }
-
-    if (!(session.user.hasPaid)) {
-      router.push(
-        `/complete-payments?email=${encodeURIComponent(session.user.email)}&name=${encodeURIComponent(session.user.name)}`,
-      );
       return;
     }
 
@@ -77,7 +70,6 @@ export default function RoleOnboardingPage() {
       setLoading(false);
     }
   };
-
 
   const handleCategorySelect = (category: Category) => {
     // Clicking the already-selected tag collapses it again
@@ -152,11 +144,7 @@ export default function RoleOnboardingPage() {
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
           <Link href="/" className="flex items-center gap-2">
-            <img
-              src={"/arwc.svg"}
-              alt="Company Logo"
-              className="w-[250px]"
-            />
+            <img src={"/arwc.svg"} alt="Company Logo" className="w-[250px]" />
           </Link>
         </div>
 
@@ -268,9 +256,9 @@ export default function RoleOnboardingPage() {
           </div>
 
           <p className="text-lg leading-relaxed mb-6">
-            African Remote Worker Certification Platform is an absolute game-changer. I took the exam, seamlessly
-            downloaded my certificate, and landed a remote internship just two
-            weeks later.
+            African Remote Worker Certification Platform is an absolute
+            game-changer. I took the exam, seamlessly downloaded my certificate,
+            and landed a remote internship just two weeks later.
           </p>
 
           <div>

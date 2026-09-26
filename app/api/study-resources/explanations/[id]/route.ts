@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { hasStudyResourcesAccess } from "@/lib/studyResources";
+import { hasResourceAccess } from "@/lib/resourceAccess";
 import ExplanationResource from "@/models/ExplanationResources";
 import connectDB from "@/lib/local-db";
 
@@ -15,7 +15,7 @@ cloudinary.config({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   await connectDB();
 
@@ -24,23 +24,29 @@ export async function GET(
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const hasAccess = await hasStudyResourcesAccess(session.user.id, "pdf_materials");
+  const { id } = await params;
+  const hasAccess = await hasResourceAccess(session.user.id, "explanation", id);
   if (!hasAccess) {
     return NextResponse.json({ error: "Access required" }, { status: 403 });
   }
-
-  const { id } = await params;
 
   const resource = await ExplanationResource.findById(id).lean();
   if (!resource || !resource.isPublished) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const signedUrl = cloudinary.utils.private_download_url(resource.publicId, "pdf", {
-    resource_type: "raw",
-    type: "authenticated",
-    expires_at: Math.floor(Date.now() / 1000) + 60 * 5,
-  });
+  const signedUrl = cloudinary.utils.private_download_url(
+    resource.publicId,
+    "pdf",
+    {
+      resource_type: "raw",
+      type: "authenticated",
+      expires_at: Math.floor(Date.now() / 1000) + 60 * 5,
+    },
+  );
 
-  return NextResponse.json({ url: signedUrl });
+  return NextResponse.json({
+    url: signedUrl,
+    fileName: resource.originalFileName,
+  });
 }

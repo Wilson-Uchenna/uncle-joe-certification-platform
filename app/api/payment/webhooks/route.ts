@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/local-db";
 import { Payment } from "@/models/payment";
-import { grantStudyResourcesAccess } from "@/lib/studyResources";
-import mongoose from "mongoose";
+import { grantResourceAccess } from "@/lib/resourceAccess";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,22 +40,32 @@ async function processWebhook(data: any) {
     payment.status = "success";
     payment.paidAt = new Date();
     payment.providerTransactionId = transactionId?.toString();
-    await payment.save();
 
-    if (payment.type === "registration") {
-      await mongoose.connection
-        .collection("user")
-        .updateOne(
-          { _id: new mongoose.Types.ObjectId(payment.userId) },
-          { $set: { hasPaid: true } },
-        );
+    if (payment.type === "exam") {
+      // Finalized the moment it's paid — non-refundable, no matter what
+      // happens (or doesn't happen) with the exam attempt afterward.
+      // /api/exam/start separately tracks whether this credit has been
+      // claimed yet, via payment.examId.
+      payment.consumedAt = new Date();
     }
 
-    if (payment.type === "pdf_materials" || payment.type === "past_questions") {
-      await grantStudyResourcesAccess({
+    await payment.save();
+
+    if (payment.type === "explanation") {
+      await grantResourceAccess({
         userId: payment.userId.toString(),
-        type: payment.type,
-        paymentReference: reference,
+        resourceType: "explanation",
+        resourceId: payment.metadata.explanationId,
+        paymentReference: payment.providerReference,
+      });
+    }
+
+    if (payment.type === "past_question_review") {
+      await grantResourceAccess({
+        userId: payment.userId.toString(),
+        resourceType: "exam_review",
+        resourceId: payment.metadata.examId,
+        paymentReference: payment.providerReference,
       });
     }
   } else {

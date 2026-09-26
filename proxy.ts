@@ -24,10 +24,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
+  const session = await auth.api.getSession({ headers: await headers() });
   const isLoggedIn = !!session?.user;
 
   const publicPaths = [
@@ -55,25 +52,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ─── Payment gate — runs before onboarding, since payment comes first ───
+  // ─── Onboarding gate — now the first gate after login. Free, no payment required. ───
   if (
     isLoggedIn &&
-    !(session.user as any).hasPaid &&
-    pathname !== "/complete-payments" &&
-    !pathname.startsWith("/api") &&
-    !pathname.startsWith("/verify-email")
-  ) {
-    return NextResponse.redirect(
-      new URL(
-        `/complete-payments?email=${encodeURIComponent(session.user.email)}&name=${encodeURIComponent(session.user.name)}`,
-        request.url,
-      ),
-    );
-  }
-
-  if (
-    isLoggedIn &&
-    (session.user as any).hasPaid &&
     !session.user?.onboardingComplete &&
     pathname !== "/role-onboarding" &&
     !pathname.startsWith("/api") &&
@@ -89,6 +70,11 @@ export async function proxy(request: NextRequest) {
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
+
+  // The payment gate that used to sit here has been intentionally removed.
+  // Payment now belongs at the point the user actually registers to sit
+  // an exam — not as a blanket gate on every route. See the exam-start
+  // page/route, which should check hasPaid itself before creating an Exam.
 
   return NextResponse.next();
 }

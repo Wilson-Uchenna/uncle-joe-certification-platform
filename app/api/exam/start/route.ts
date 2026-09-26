@@ -7,6 +7,7 @@ import { Question } from "@/models/Questions";
 import { Exam } from "@/models/Exam";
 import { ExamAttempt } from "@/models/ExamAttempts"; // NEW
 import { headers } from "next/headers";
+import Payment from "@/models/payment";
 
 const TOTAL_QUESTIONS = 100;
 
@@ -46,8 +47,31 @@ export async function POST(req: NextRequest) {
 
     if (!["entry", "mid", "advanced"].includes(skillLevel)) {
       return NextResponse.json(
-        { success: false, error: "Invalid skillLevel. Must be entry, mid, or advanced." },
+        {
+          success: false,
+          error: "Invalid skillLevel. Must be entry, mid, or advanced.",
+        },
         { status: 400 },
+      );
+    }
+
+    // After your existing categoryId/skillLevel validation:
+
+    const unclaimedPayment = await Payment.findOne({
+      userId: session.user.id,
+      type: "exam",
+      status: "success",
+      examId: { $exists: false },
+    });
+
+    if (!unclaimedPayment) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Payment required for this exam",
+          requiresPayment: true,
+        },
+        { status: 402 },
       );
     }
 
@@ -67,7 +91,13 @@ export async function POST(req: NextRequest) {
     // ─── Abandon any stale in-progress attempt (mirrors the Exam cleanup above) ───
     await ExamAttempt.updateMany(
       { userId: session.user.id, status: "in_progress" },
-      { $set: { status: "terminated", endReason: "abandoned", endedAt: new Date() } },
+      {
+        $set: {
+          status: "terminated",
+          endReason: "abandoned",
+          endedAt: new Date(),
+        },
+      },
     );
 
     // Rate limit — now attempt-based instead of Exam-based
@@ -78,7 +108,10 @@ export async function POST(req: NextRequest) {
 
     if (recentAttempts >= 3) {
       return NextResponse.json(
-        { success: false, error: "Too many exams started recently. Please wait." },
+        {
+          success: false,
+          error: "Too many exams started recently. Please wait.",
+        },
         { status: 429 },
       );
     }
@@ -153,31 +186,33 @@ export async function POST(req: NextRequest) {
       startedAt: new Date(),
     });
 
+    unclaimedPayment.examId = exam._id;
+    await unclaimedPayment.save();
+    
     const priorAttempts = await ExamAttempt.countDocuments({
-  userId: session.user.id,
-  categoryId,
-  skillLevel,
-});
+      userId: session.user.id,
+      categoryId,
+      skillLevel,
+    });
 
-
-   const attemptDoc = await ExamAttempt.findOneAndUpdate(
-  { userId: session.user.id, categoryId, skillLevel },
-  {
-    $push: {
-      attempts: {
-        examId: exam._id,
-        attemptNumber: 0, // placeholder, fixed right below
-        status: "in_progress",
-        startedAt: new Date(),
+    const attemptDoc = await ExamAttempt.findOneAndUpdate(
+      { userId: session.user.id, categoryId, skillLevel },
+      {
+        $push: {
+          attempts: {
+            examId: exam._id,
+            attemptNumber: 0, // placeholder, fixed right below
+            status: "in_progress",
+            startedAt: new Date(),
+          },
+        },
       },
-    },
-  },
-  { upsert: true, new: true },
-);
+      { upsert: true, new: true },
+    );
 
-const lastIndex = attemptDoc.attempts.length - 1;
-attemptDoc.attempts[lastIndex].attemptNumber = lastIndex + 1;
-await attemptDoc.save();
+    const lastIndex = attemptDoc.attempts.length - 1;
+    attemptDoc.attempts[lastIndex].attemptNumber = lastIndex + 1;
+    await attemptDoc.save();
 
     return NextResponse.json({
       success: true,

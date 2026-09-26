@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type PaymentType = 'registration' | 'bundle' | 'results' | 'pdf_materials' | 'past_questions';
+export type PaymentType = 'exam' | 'bundle' | 'results' | 'explanation' | 'past_question_review';
 export type PaymentStatus = 'pending' | 'success' | 'failed' | 'refunded';
 export type PaymentProvider = 'paystack' | 'flutterwave' | 'manual';
 
@@ -10,7 +10,8 @@ export interface IPayment extends Document {
   // What was paid for
   type: PaymentType;
   examId?: mongoose.Types.ObjectId;        // For certificate
-  materialId?: mongoose.Types.ObjectId;    // For training material
+  materialId?: mongoose.Types.ObjectId; 
+  consumedAt: Date;   // For training material
   
   // Amount
   amount: number;                          // In kobo/cents
@@ -39,9 +40,10 @@ const PaymentSchema = new Schema<IPayment>({
   
   type: { 
     type: String, 
-    enum: ['registration','results', 'past_questions', 'pdf_materials', 'bundle'], 
+    enum: ['exam', 'explanation', 'past_question_review', 'bundle'], 
     required: true 
   },
+  consumedAt: Date,
   examId: { type: Schema.Types.ObjectId, ref: 'Exam' },
   materialId: { type: Schema.Types.ObjectId, ref: 'TrainingMaterial' },
   

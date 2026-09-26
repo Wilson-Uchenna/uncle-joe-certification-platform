@@ -1,7 +1,9 @@
+// app/assessment/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { Category, ExamSubmitResponse } from "@/types/exam";
 import { ProgressBar } from "@/app/_components/exam/onboarding/ProgressBar";
 import { Step1Category } from "@/app/_components/exam/onboarding/Step1Category";
@@ -9,33 +11,60 @@ import { Step2RoleSelection } from "@/app/_components/exam/onboarding/Step2RoleS
 import { Step3Instructions } from "@/app/_components/exam/onboarding/Step3Instructions";
 import { Step3Exam } from "@/app/_components/exam/onboarding/Step3Exam";
 import { Step3Complete } from "@/app/_components/exam/onboarding/Step3Complete";
+import { ExamPaymentGate } from "@/app/_components/exam/onboarding/ExamPaymentGate";
 
 export default function ExamPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
   const [selectedRole, setSelectedRole] = useState("");
-  const [selectedSkillLevel, setSelectedSkillLevel] = useState<"entry" | "mid" | "advanced" | null>(null);
+  const [selectedSkillLevel, setSelectedSkillLevel] = useState<
+    "entry" | "mid" | "advanced" | null
+  >(null);
   const [examResult, setExamResult] = useState<ExamSubmitResponse | null>(null);
 
-  // API state
   const [categories, setCategories] = useState<Category[]>([]);
   const [userSkillLevel, setUserSkillLevel] = useState("");
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
 
-  // Fetch categories on mount
+  // NEW — payment gate state
+  const [checkingPayment, setCheckingPayment] = useState(true);
+  const [hasPaid, setHasPaid] = useState(false);
+
   useEffect(() => {
-    fetchCategories();
+    checkPaymentThenLoad();
   }, []);
+
+  const checkPaymentThenLoad = async () => {
+    setCheckingPayment(true);
+    const { data: session } = await authClient.getSession();
+
+    if (!session?.user) {
+      router.push("/login");
+      return;
+    }
+
+    const res = await fetch("/api/exam/payment-status", {
+      credentials: "include",
+    });
+    const data = await res.json();
+
+    setHasPaid(!!data.hasPaid);
+    setCheckingPayment(false);
+
+    if (data.hasPaid) {
+      fetchCategories();
+    }
+  };
 
   const fetchCategories = async () => {
     setLoading(true);
     setFetchError("");
     try {
-      const res = await fetch("/api/onboarding", {
-        credentials: "include",
-      });
+      const res = await fetch("/api/onboarding", { credentials: "include" });
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -46,9 +75,8 @@ export default function ExamPage() {
       }
 
       const data = await res.json();
-      if (!data.success) {
+      if (!data.success)
         throw new Error(data.error || "Failed to fetch categories");
-      }
 
       setCategories(data.categories);
       setUserSkillLevel(data.userSkillLevel);
@@ -59,46 +87,53 @@ export default function ExamPage() {
     }
   };
 
-  const handleCategorySelect = (cat: Category) => {
-    setSelectedCategory(cat);
-    setSelectedRole(""); // Reset role when category changes
+  const handlePaymentComplete = () => {
+    setHasPaid(true);
+    fetchCategories();
   };
 
-  const handleRoleSelect = (role: string) => {
-    setSelectedRole(role);
+  const handleCategorySelect = (cat: Category) => {
+    setSelectedCategory(cat);
+    setSelectedRole("");
   };
+
+  const handleRoleSelect = (role: string) => setSelectedRole(role);
 
   const handleSkillLevelSelect = (level: "entry" | "mid" | "advanced") => {
     setSelectedSkillLevel(level);
     setCurrentStep(4);
   };
 
-  const handleExamSubmit = (result: ExamSubmitResponse) => {
+  const handleExamSubmit = (result: ExamSubmitResponse) =>
     setExamResult(result);
-  };
 
-  const handleRestart = () => {
-    setCurrentStep(1);
-    setSelectedCategory(null);
-    setSelectedRole("");
-    setSelectedSkillLevel(null);
-    setExamResult(null);
-    fetchCategories();
-  };
+  // ===== PAYMENT GATE — checked first, before anything else =====
+  if (checkingPayment) {
+    return (
+      <div className="min-h-screen bg-[#f8f7fb] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600" />
+      </div>
+    );
+  }
 
-  // Loading state
+  if (!hasPaid) {
+    return <ExamPaymentGate onPaymentComplete={handlePaymentComplete} />;
+  }
+
+  // ===== Everything below is unchanged from before =====
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f7fb] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600 mx-auto mb-4" />
-          <p className="text-sm text-slate-500">Loading your learning path...</p>
+          <p className="text-sm text-slate-500">
+            Loading your learning path...
+          </p>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (fetchError) {
     return (
       <div className="min-h-screen bg-[#f8f7fb] flex items-center justify-center">
@@ -116,7 +151,6 @@ export default function ExamPage() {
     );
   }
 
-  // Empty categories state
   if (categories.length === 0) {
     return (
       <div className="min-h-screen bg-[#f8f7fb] flex items-center justify-center">
@@ -126,8 +160,9 @@ export default function ExamPage() {
             No Categories Available
           </h2>
           <p className="text-sm text-slate-500 mb-4">
-            No learning categories found for your skill level: <strong>{userSkillLevel}</strong>.
-            Please contact support or try again later.
+            No learning categories found for your skill level:{" "}
+            <strong>{userSkillLevel}</strong>. Please contact support or try
+            again later.
           </p>
           <button
             onClick={fetchCategories}
@@ -173,23 +208,30 @@ export default function ExamPage() {
           />
         )}
 
-        {currentStep === 4 && selectedCategory && selectedRole && selectedSkillLevel && !examResult && (
-          <Step3Exam
-            category={selectedCategory}
-            selectedRole={selectedRole}
-            skillLevel={selectedSkillLevel}
-            onSubmit={handleExamSubmit}
-          />
-        )}
+        {currentStep === 4 &&
+          selectedCategory &&
+          selectedRole &&
+          selectedSkillLevel &&
+          !examResult && (
+            <Step3Exam
+              category={selectedCategory}
+              selectedRole={selectedRole}
+              skillLevel={selectedSkillLevel}
+              onSubmit={handleExamSubmit}
+            />
+          )}
 
-        {currentStep === 4 && selectedCategory && selectedRole && selectedSkillLevel && examResult && (
-          <Step3Complete
-            category={selectedCategory}
-            selectedRole={selectedRole}
-            result={examResult}
-            
-          />
-        )}
+        {currentStep === 4 &&
+          selectedCategory &&
+          selectedRole &&
+          selectedSkillLevel &&
+          examResult && (
+            <Step3Complete
+              category={selectedCategory}
+              selectedRole={selectedRole}
+              result={examResult}
+            />
+          )}
       </div>
     </div>
   );

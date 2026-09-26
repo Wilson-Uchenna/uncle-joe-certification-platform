@@ -1,6 +1,21 @@
+"use client";
+
 import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 export default function SkilloraChoice() {
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+
+  function handleClick() {
+    if (session?.user) {
+      router.push("/dashboard");
+    } else {
+      router.push("/register");
+    }
+  }
+
   return (
     <section className="bg">
       <div className="py-6 md:py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-[600]">
@@ -25,8 +40,13 @@ export default function SkilloraChoice() {
               knowledge into real career outcomes.
             </p>
 
-            <button className="self-start bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors">
-              Create Your Free Account
+            <button
+              onClick={handleClick}
+              disabled={isPending}
+              className="self-start flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+            >
+              <Check className="w-4 h-4" strokeWidth={3} />
+              {session?.user ? "Go to Dashboard" : "Create Your Free Account"}
             </button>
           </div>
 

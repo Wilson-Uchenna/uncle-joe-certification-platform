@@ -12,6 +12,7 @@ export interface IExplanationResource extends Document {
   skillLevel: "entry" | "mid" | "advanced";
   isPublished: boolean;
   createdBy?: mongoose.Types.ObjectId;
+  originalFileName: { type: String, required: true },
 }
 
 const ExplanationResourceSchema = new Schema<IExplanationResource>(
@@ -26,6 +27,7 @@ const ExplanationResourceSchema = new Schema<IExplanationResource>(
     skillLevel: { type: String, enum: ["entry", "mid", "advanced"], required: true },
     isPublished: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+    originalFileName: { type: String, required: true },
   },
   { timestamps: true }
 );

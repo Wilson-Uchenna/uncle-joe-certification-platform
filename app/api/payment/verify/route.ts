@@ -1,10 +1,10 @@
+// app/api/payment/verify/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/local-db";
 import { Payment } from "@/models/payment";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import mongoose from "mongoose";
-import { grantStudyResourcesAccess } from "@/lib/studyResources";
+import { grantResourceAccess } from "@/lib/resourceAccess";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const { reference, transactionId } = await req.json();
-
     if (!reference || !transactionId) {
       return NextResponse.json(
         {
@@ -36,14 +35,12 @@ export async function POST(req: NextRequest) {
         { status: 404 },
       );
     }
-
     if (payment.userId.toString() !== session.user.id) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
         { status: 403 },
       );
     }
-
     if (payment.status === "success") {
       return NextResponse.json({
         success: true,
@@ -52,7 +49,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    console.log("Using key:", process.env.NEXT_PUBLIC_FLW_SECRET_KEY?.slice(0, 12) + "...");
     const fwRes = await fetch(
       `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
       {
@@ -63,19 +59,9 @@ export async function POST(req: NextRequest) {
       },
     );
     const fwJson = await fwRes.json();
-    console.log("Flutterwave verify response:", JSON.stringify(fwJson, null, 2));
-
     const data = fwJson.data;
     const amountMatches = data?.amount >= payment.amount;
     const currencyMatches = data?.currency === payment.currency;
-    const referenceMatches = data?.tx_ref === payment.providerReference;
-
-    const verified =
-      fwJson.status === "success" &&
-      data?.status === "successful" &&
-      referenceMatches &&
-      amountMatches &&
-      currencyMatches;
 
     if (
       fwJson.status === "success" &&
@@ -86,24 +72,31 @@ export async function POST(req: NextRequest) {
       payment.status = "success";
       payment.paidAt = new Date();
       payment.providerTransactionId = data.id?.toString();
+      if (payment.type === "exam") {
+        payment.consumedAt = new Date();
+      }
       await payment.save();
 
-      if (payment.type === "registration") {
-        await mongoose.connection
-          .collection("user")
-          .updateOne(
-            { _id: new mongoose.Types.ObjectId(payment.userId) },
-            { $set: { hasPaid: true } },
-          );
-      }
-
-      if (payment.type === "pdf_materials" || payment.type === "past_questions") {
-        await grantStudyResourcesAccess({
+      if (payment.type === "explanation") {
+        await grantResourceAccess({
           userId: payment.userId.toString(),
-          type: payment.type,
+          resourceType: "explanation",
+          resourceId: payment.metadata.explanationId,
           paymentReference: payment.providerReference,
         });
       }
+
+      if (payment.type === "past_question_review") {
+        await grantResourceAccess({
+          userId: payment.userId.toString(),
+          resourceType: "exam_review",
+          resourceId: payment.metadata.examId,
+          paymentReference: payment.providerReference,
+        });
+      }
+
+      // "exam" payments need no grant here — /api/exam/start finds and
+      // consumes this Payment document directly when the exam is created
 
       return NextResponse.json({
         success: true,
@@ -112,12 +105,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    payment.status =
-      data?.status === "successful"
-        ? "failed"
-        : "failed";
+    payment.status = "failed";
     await payment.save();
-
     return NextResponse.json({
       success: false,
       status: payment.status,
