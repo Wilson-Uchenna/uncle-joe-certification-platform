@@ -32,12 +32,27 @@ export function PastQuestionReview({ exam }: { exam: ExamReview }) {
       </div>
 
       {exam.questions.map((q, i) => (
-        <div key={i} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
+        <div
+          key={i}
+          style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}
+        >
           <p style={{ fontWeight: 500, marginBottom: 8 }}>
             {i + 1}. {q.questionText}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            
+            {q.options.map((opt, idx) => {
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                  }}
+                >
+                  {LETTERS[idx]}. {opt}
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
