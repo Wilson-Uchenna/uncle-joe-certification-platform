@@ -56,7 +56,7 @@ export default async function DashboardPage() {
         
         <DashboardCard
           title="Study Resources"
-          description={HOLD_MESSAGE}
+          description="Access learning materials, study guides, practice questions and other resources to support your preparation."
           linkText="Study Resources"
           href="/study-resources"
           icon={BookOpen}
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
         
         <DashboardCard
           title="Certifications"
-          description={HOLD_MESSAGE}
+          description="Write your Exams, Earn recognized certificates that help you demonstrate your knowledge, skills and professional development."
           linkText="Start Learning"
           href="/certificates"
           icon={Award}
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
         />
         <DashboardCard
           title="Career Opportunities"
-          description={HOLD_MESSAGE}
+          description="Discover internships, jobs, professional opportunities and pathways to advance your career."
           linkText="Explore Opportunities"
           href="/career-opportunities"
           icon={Briefcase}
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
         
         <DashboardCard
           title="Leaderboard"
-          description={HOLD_MESSAGE}
+          description="See your performance, track your progress and compare your results with other learners."
           linkText="View Rankings"
           href="/leaderboard"
           icon={Trophy}

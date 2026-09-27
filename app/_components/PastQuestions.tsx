@@ -37,30 +37,7 @@ export function PastQuestionReview({ exam }: { exam: ExamReview }) {
             {i + 1}. {q.questionText}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {q.options.map((opt, idx) => {
-              const isCorrect = idx === q.correctAnswer;
-              const isYourWrongPick = idx === q.selectedAnswer && !isCorrect;
-
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    border: isCorrect
-                      ? "2px solid #2e7d32"
-                      : isYourWrongPick
-                      ? "2px solid #c62828"
-                      : "1px solid #ddd",
-                    background: isCorrect ? "#eaf7ea" : isYourWrongPick ? "#fdeaea" : "transparent",
-                  }}
-                >
-                  {LETTERS[idx]}. {opt}
-                  {isCorrect && " ✓ Correct answer"}
-                  {isYourWrongPick && " ← Your answer"}
-                </div>
-              );
-            })}
+            
           </div>
         </div>
       ))}
