@@ -32,10 +32,7 @@ function VerifyEmailInner() {
 
       if (session?.user?.emailVerified) {
         setPhase("done");
-        const target = session.user.hasPaid
-          ? "/role-onboarding"
-          : `/complete-payments?email=${encodeURIComponent(session.user.email)}&name=${encodeURIComponent(session.user.name)}`;
-        setTimeout(() => router.replace(target), 1500);
+        setTimeout(() => router.replace("/role-onboarding"), 1500);
       } else {
         setPhase("pending");
         // Start resend countdown
@@ -94,11 +91,8 @@ function VerifyEmailInner() {
 
       // Success
       setPhase("done");
-      const { data: session } = await authClient.getSession();
       setTimeout(() => {
-        router.replace(
-          `/complete-payments?email=${encodeURIComponent(email)}&name=${encodeURIComponent(session?.user?.name ?? "")}`,
-        );
+        router.replace("/role-onboarding");
       }, 1500);
     } catch (err) {
       setPhase("pending");
