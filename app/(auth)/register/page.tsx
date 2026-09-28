@@ -131,12 +131,16 @@ export default function RegisterPage() {
     return true;
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!validateStep2()) return;
+
+    if (!agreed) {
+      setError("Please agree to the Terms of Service to continue.");
+      return;
+    }
 
     setIsLoading(true);
 
