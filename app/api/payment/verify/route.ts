@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         await grantResourceAccess({
           userId: payment.userId.toString(),
           resourceType: "past_question",
-          resourceId: payment.metadata.examId,
+          resourceId: payment.metadata.pastQuestionId,
           paymentReference: payment.providerReference,
         });
       }
