@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import FlutterwaveButton from "@/app/_components/payments/PaymentsButton";
 import { Loader2, Lock, FileText } from "lucide-react";
 
-interface Explanation {
+interface Resource {
   _id: string;
   title: string;
   fileSize?: number;
@@ -15,79 +15,48 @@ interface Explanation {
   hasAccess: boolean;
 }
 
-interface FailedExam {
-  _id: string;
-  categoryName: string;
-  skillLevel: string;
-  score: number;
-  correctCount: number;
-  totalQuestions: number;
-  completedAt: string;
-  hasAccess: boolean;
-}
-
 const EXPLANATION_PRICE = 2000;
-const PAST_QUESTION_REVIEW_PRICE = 1000;
+const PAST_QUESTION_PRICE = 1000;
 
 export function StudyResourcesTabs({
   explanations: initialExplanations,
-  failedExams: initialFailedExams,
+  pastQuestions: initialPastQuestions,
 }: {
-  explanations: Explanation[];
-  failedExams: FailedExam[];
+  explanations: Resource[];
+  pastQuestions: Resource[];
 }) {
-  const [tab, setTab] = useState<"explanations" | "past-questions">(
-    "explanations",
-  );
+  const [tab, setTab] = useState<"explanations" | "past-questions">("explanations");
   const [explanations, setExplanations] = useState(initialExplanations);
-  const [failedExams, setFailedExams] = useState(initialFailedExams);
+  const [pastQuestions, setPastQuestions] = useState(initialPastQuestions);
 
-  const grouped = explanations.reduce<Record<string, Explanation[]>>(
-    (acc, e) => {
-      (acc[e.categoryName] ??= []).push(e);
-      return acc;
-    },
-    {},
-  );
+  const groupedExplanations = explanations.reduce<Record<string, Resource[]>>((acc, e) => {
+    (acc[e.categoryName] ??= []).push(e);
+    return acc;
+  }, {});
 
-  function markExplanationUnlocked(id: string) {
-    setExplanations((prev) =>
-      prev.map((e) => (e._id === id ? { ...e, hasAccess: true } : e)),
-    );
-  }
+  const groupedPastQuestions = pastQuestions.reduce<Record<string, Resource[]>>((acc, p) => {
+    (acc[p.categoryName] ??= []).push(p);
+    return acc;
+  }, {});
 
-  function markExamUnlocked(id: string) {
-    setFailedExams((prev) =>
-      prev.map((e) => (e._id === id ? { ...e, hasAccess: true } : e)),
-    );
+  function markUnlocked(setter: typeof setExplanations, id: string) {
+    setter((prev) => prev.map((r) => (r._id === id ? { ...r, hasAccess: true } : r)));
   }
 
   return (
     <div>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ margin: 0 }}>Study resources</h1>
-        <p style={{ color: "#666", margin: 0 }}>
-          Pay per item — no bundle required.
-        </p>
+        <p style={{ color: "#666", margin: 0 }}>Pay per item — no bundle required.</p>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 16,
-          borderBottom: "1px solid #ddd",
-          marginBottom: 20,
-        }}
-      >
+      <div style={{ display: "flex", gap: 16, borderBottom: "1px solid #ddd", marginBottom: 20 }}>
         <button
           onClick={() => setTab("explanations")}
           style={{
             padding: "8px 4px",
             fontWeight: tab === "explanations" ? 600 : 400,
-            borderBottom:
-              tab === "explanations"
-                ? "2px solid #4f46e5"
-                : "2px solid transparent",
+            borderBottom: tab === "explanations" ? "2px solid #4f46e5" : "2px solid transparent",
             background: "none",
           }}
         >
@@ -98,10 +67,7 @@ export function StudyResourcesTabs({
           style={{
             padding: "8px 4px",
             fontWeight: tab === "past-questions" ? 600 : 400,
-            borderBottom:
-              tab === "past-questions"
-                ? "2px solid #4f46e5"
-                : "2px solid transparent",
+            borderBottom: tab === "past-questions" ? "2px solid #4f46e5" : "2px solid transparent",
             background: "none",
           }}
         >
@@ -111,49 +77,47 @@ export function StudyResourcesTabs({
 
       {tab === "explanations" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          {Object.entries(grouped).map(([categoryName, items]) => (
+          {Object.entries(groupedExplanations).map(([categoryName, items]) => (
             <div key={categoryName}>
               <h3 style={{ marginBottom: 8 }}>{categoryName}</h3>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: 12,
-                }}
-              >
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
                 {items.map((item) => (
-                  <ExplanationCard
+                  <ResourceCard
                     key={item._id}
                     item={item}
-                    onUnlocked={() => markExplanationUnlocked(item._id)}
+                    resourceType="explanation"
+                    price={EXPLANATION_PRICE}
+                    downloadEndpoint={`/api/study-resources/explanations/${item._id}`}
+                    onUnlocked={() => markUnlocked(setExplanations, item._id)}
                   />
                 ))}
               </div>
             </div>
           ))}
-          {explanations.length === 0 && (
-            <p style={{ color: "#999" }}>No explanations published yet.</p>
-          )}
+          {explanations.length === 0 && <p style={{ color: "#999" }}>No explanations published yet.</p>}
         </div>
       )}
 
       {tab === "past-questions" && (
-        <div>
-          {failedExams.length === 0 ? (
-            <p style={{ color: "#999" }}>
-              No failed attempts yet — this fills in after a failed exam.
-            </p>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {failedExams.map((exam) => (
-                <PastQuestionRow
-                  key={exam._id}
-                  exam={exam}
-                  onUnlocked={() => markExamUnlocked(exam._id)}
-                />
-              ))}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          {Object.entries(groupedPastQuestions).map(([categoryName, items]) => (
+            <div key={categoryName}>
+              <h3 style={{ marginBottom: 8 }}>{categoryName}</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+                {items.map((item) => (
+                  <ResourceCard
+                    key={item._id}
+                    item={item}
+                    resourceType="past_question"
+                    price={PAST_QUESTION_PRICE}
+                    downloadEndpoint={`/api/study-resources/past-questions/${item._id}`}
+                    onUnlocked={() => markUnlocked(setPastQuestions, item._id)}
+                  />
+                ))}
+              </div>
             </div>
-          )}
+          ))}
+          {pastQuestions.length === 0 && <p style={{ color: "#999" }}>No past questions published yet.</p>}
         </div>
       )}
     </div>
@@ -163,15 +127,14 @@ export function StudyResourcesTabs({
 /**
  * Shared inline unlock flow — initializes a payment for one specific
  * resource, renders the Flutterwave button, verifies on success, then
- * tells the parent to flip that one item to unlocked. Used by both the
- * explanation card and the past-question row below.
+ * tells the parent to flip that one item to unlocked.
  */
 function useInlineUnlock({
   type,
   metadata,
   onUnlocked,
 }: {
-  type: "explanation" | "past_question_review";
+  type: "explanation" | "past_question";
   metadata: Record<string, string>;
   onUnlocked: () => void;
 }) {
@@ -199,20 +162,14 @@ function useInlineUnlock({
     }
   }
 
-  async function handleSuccess(payment: {
-    tx_ref: string;
-    transaction_id: number;
-  }) {
+  async function handleSuccess(payment: { tx_ref: string; transaction_id: number }) {
     setVerifying(true);
     setError("");
     try {
       const res = await fetch("/api/payment/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reference: payment.tx_ref,
-          transactionId: payment.transaction_id,
-        }),
+        body: JSON.stringify({ reference: payment.tx_ref, transactionId: payment.transaction_id }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -228,49 +185,44 @@ function useInlineUnlock({
     }
   }
 
-  return {
-    session,
-    unlocking,
-    reference,
-    verifying,
-    error,
-    startUnlock,
-    handleSuccess,
-  };
+  return { session, unlocking, reference, verifying, error, startUnlock, handleSuccess };
 }
 
-function ExplanationCard({
+function ResourceCard({
   item,
+  resourceType,
+  price,
+  downloadEndpoint,
   onUnlocked,
 }: {
-  item: Explanation;
+  item: Resource;
+  resourceType: "explanation" | "past_question";
+  price: number;
+  downloadEndpoint: string;
   onUnlocked: () => void;
 }) {
   const [opening, setOpening] = useState(false);
+  const metadataKey = resourceType === "explanation" ? "explanationId" : "pastQuestionId";
   const unlock = useInlineUnlock({
-    type: "explanation",
-    metadata: { explanationId: item._id },
+    type: resourceType,
+    metadata: { [metadataKey]: item._id },
     onUnlocked,
   });
 
-  // components/StudyResourcesTabs.tsx — ExplanationCard's openPdf function
   async function openPdf() {
     setOpening(true);
     try {
-      const res = await fetch(`/api/study-resources/explanations/${item._id}`);
+      const res = await fetch(downloadEndpoint);
       if (!res.ok) throw new Error("Failed to get file");
       const { url, fileName } = await res.json();
 
-      // Fetch the actual PDF bytes, then trigger a download with the real
-      // filename — window.open(url) is what let Cloudinary's generated
-      // name win; this bypasses that entirely.
       const fileRes = await fetch(url);
       const blob = await fileRes.blob();
       const blobUrl = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = fileName || "explanation.pdf";
+      a.download = fileName || "resource.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -301,14 +253,10 @@ function ExplanationCard({
       </div>
       <div style={{ fontWeight: 500, fontSize: 14 }}>{item.title}</div>
       {item.fileSize && (
-        <div style={{ fontSize: 12, color: "#999" }}>
-          {(item.fileSize / 1024 / 1024).toFixed(1)} MB
-        </div>
+        <div style={{ fontSize: 12, color: "#999" }}>{(item.fileSize / 1024 / 1024).toFixed(1)} MB</div>
       )}
 
-      {unlock.error && (
-        <p style={{ fontSize: 12, color: "#c62828" }}>{unlock.error}</p>
-      )}
+      {unlock.error && <p style={{ fontSize: 12, color: "#c62828" }}>{unlock.error}</p>}
 
       {item.hasAccess ? (
         <button onClick={openPdf} disabled={opening} style={{ marginTop: 4 }}>
@@ -316,7 +264,7 @@ function ExplanationCard({
         </button>
       ) : !unlock.unlocking ? (
         <button onClick={unlock.startUnlock} style={{ marginTop: 4 }}>
-          Pay ₦{EXPLANATION_PRICE.toLocaleString()}
+          Pay ₦{price.toLocaleString()}
         </button>
       ) : unlock.verifying ? (
         <button disabled style={{ marginTop: 4 }}>
@@ -328,84 +276,13 @@ function ExplanationCard({
         <FlutterwaveButton
           email={unlock.session?.user?.email ?? ""}
           name={unlock.session?.user?.name ?? ""}
-          amount={EXPLANATION_PRICE}
+          amount={price}
           reference={unlock.reference}
-          metadata={{ type: "explanation", explanationId: item._id }}
+          metadata={{ type: resourceType, [metadataKey]: item._id }}
           onSuccess={unlock.handleSuccess}
           className="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm"
         />
       )}
-    </div>
-  );
-}
-
-function PastQuestionRow({
-  exam,
-  onUnlocked,
-}: {
-  exam: FailedExam;
-  onUnlocked: () => void;
-}) {
-  const unlock = useInlineUnlock({
-    type: "past_question_review",
-    metadata: { examId: exam._id },
-    onUnlocked,
-  });
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 16,
-        border: "1px solid #ddd",
-        borderRadius: 10,
-        gap: 16,
-      }}
-    >
-      <div>
-        <div style={{ fontWeight: 500 }}>
-          {exam.categoryName} — {exam.skillLevel}
-        </div>
-        <div style={{ fontSize: 13, color: "#666" }}>
-          {new Date(exam.completedAt).toLocaleDateString()} ·{" "}
-          {exam.correctCount}/{exam.totalQuestions} ({exam.score}%)
-        </div>
-        {unlock.error && (
-          <p style={{ fontSize: 12, color: "#c62828", marginTop: 4 }}>
-            {unlock.error}
-          </p>
-        )}
-      </div>
-
-      <div style={{ flexShrink: 0 }}>
-        {exam.hasAccess ? (
-          <a href={`/study-resources/past-questions/${exam._id}`}>
-            <button>Review</button>
-          </a>
-        ) : !unlock.unlocking ? (
-          <button onClick={unlock.startUnlock}>
-            Pay ₦{PAST_QUESTION_REVIEW_PRICE.toLocaleString()}
-          </button>
-        ) : unlock.verifying ? (
-          <button disabled>
-            <Loader2 size={14} className="animate-spin" /> Confirming…
-          </button>
-        ) : !unlock.reference ? (
-          <Loader2 size={16} className="animate-spin" />
-        ) : (
-          <FlutterwaveButton
-            email={unlock.session?.user?.email ?? ""}
-            name={unlock.session?.user?.name ?? ""}
-            amount={PAST_QUESTION_REVIEW_PRICE}
-            reference={unlock.reference}
-            metadata={{ type: "past_question_review", examId: exam._id }}
-            onSuccess={unlock.handleSuccess}
-            className="py-2 px-4 bg-indigo-600 text-white rounded-lg text-sm"
-          />
-        )}
-      </div>
     </div>
   );
 }

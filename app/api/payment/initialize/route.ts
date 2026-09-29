@@ -11,7 +11,7 @@ import { Payment } from "@/models/payment";
 const PRICES: Record<string, number> = {
   exam: 10000, // ← CHANGE THIS
   explanation: 2000,
-  past_question_review: 1000,
+  past_question: 1000,
 };
 
 export async function POST(req: NextRequest) {
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     if (type === "explanation") {
       dedupeFilter["metadata.explanationId"] = metadata.explanationId;
     }
-    if (type === "past_question_review") {
+    if (type === "past_question") {
       dedupeFilter["metadata.examId"] = metadata.examId;
     }
 

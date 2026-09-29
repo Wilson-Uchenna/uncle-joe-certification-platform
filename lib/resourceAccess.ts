@@ -4,7 +4,7 @@ import ResourcePurchase from "@/models/ResourcePurchase";
 
 export async function hasResourceAccess(
   userId: string,
-  resourceType: "explanation" | "exam_review",
+  resourceType: "explanation" | "past_question",
   resourceId: string
 ): Promise<boolean> {
   await connectDB();

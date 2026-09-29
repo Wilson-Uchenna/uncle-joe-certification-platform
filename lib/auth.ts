@@ -68,11 +68,7 @@ const authOptions = {
       selectedCategorySlug: { type: "string", defaultValue: null, input: true },
       selectedRole: { type: "string", defaultValue: null, input: true },
       tempPassword: { type: "boolean", defaultValue: false },
-      hasPaid: {
-        type: "boolean",
-        defaultValue: false,
-        input: false, // prevents it being settable via signup/update-profile calls
-      },
+      
     },
   },
   databaseHooks: {

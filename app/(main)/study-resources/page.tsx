@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { hasResourceAccess } from "@/lib/resourceAccess";
 import ExplanationResource from "@/models/ExplanationResources";
-import Exam from "@/models/Exam";
+import PastQuestionResource from "@/models/PastQuestionResource";
 import { StudyResourcesTabs } from "@/app/_components/StudyResourcesTabs";
 
 export default async function StudyResourcesPage() {
@@ -17,12 +17,17 @@ export default async function StudyResourcesPage() {
     return <p>Please log in to view study resources.</p>;
   }
 
-  const explanations = await ExplanationResource.find({ isPublished: true })
-    .select("title fileSize categoryName skillLevel")
-    .sort({ categoryName: 1 })
-    .lean();
+  const [explanations, pastQuestions] = await Promise.all([
+    ExplanationResource.find({ isPublished: true })
+      .select("title fileSize categoryName skillLevel")
+      .sort({ categoryName: 1 })
+      .lean(),
+    PastQuestionResource.find({ isPublished: true })
+      .select("title fileSize categoryName skillLevel")
+      .sort({ categoryName: 1 })
+      .lean(),
+  ]);
 
-  // Check access per explanation, not one global flag
   const explanationsWithAccess = await Promise.all(
     explanations.map(async (e) => ({
       ...e,
@@ -31,24 +36,18 @@ export default async function StudyResourcesPage() {
     }))
   );
 
-  const failedExams = await Exam.find({ userId, passed: false, status: "completed" })
-    .select("categoryName skillLevel score correctCount totalQuestions completedAt")
-    .sort({ completedAt: -1 })
-    .lean();
-
-  // Same per-item check for past-question reviews
-  const failedExamsWithAccess = await Promise.all(
-    failedExams.map(async (e) => ({
-      ...e,
-      _id: e._id.toString(),
-      hasAccess: await hasResourceAccess(userId, "exam_review", e._id.toString()),
+  const pastQuestionsWithAccess = await Promise.all(
+    pastQuestions.map(async (p) => ({
+      ...p,
+      _id: p._id.toString(),
+      hasAccess: await hasResourceAccess(userId, "past_question", p._id.toString()),
     }))
   );
 
   return (
     <StudyResourcesTabs
       explanations={JSON.parse(JSON.stringify(explanationsWithAccess))}
-      failedExams={JSON.parse(JSON.stringify(failedExamsWithAccess))}
+      pastQuestions={JSON.parse(JSON.stringify(pastQuestionsWithAccess))}
     />
   );
 }

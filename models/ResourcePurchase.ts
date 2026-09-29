@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IResourcePurchase extends Document {
   user: mongoose.Types.ObjectId;
-  resourceType: "explanation" | "exam_review";
+  resourceType: "explanation" | "past_question";
   resourceId: string; // ExplanationResource._id, or Exam._id for a review
   paymentReference: string;
   grantedAt: Date;
@@ -12,7 +12,7 @@ export interface IResourcePurchase extends Document {
 const ResourcePurchaseSchema = new Schema<IResourcePurchase>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    resourceType: { type: String, enum: ["explanation", "exam_review"], required: true },
+    resourceType: { type: String, enum: ["explanation", "past_question"], required: true },
     resourceId: { type: String, required: true },
     paymentReference: { type: String, required: true },
     grantedAt: { type: Date, default: Date.now },

@@ -18,7 +18,7 @@ export default async function PastQuestionDetailPage({
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return <p>Please log in.</p>;
 
-  const hasAccess = await hasResourceAccess(session.user.id, "exam_review", examId);
+  const hasAccess = await hasResourceAccess(session.user.id, "past_question", examId);
   if (!hasAccess) return <p>🔒 Pay to unlock this review.</p>;
 
   const exam = await Exam.findOne({ _id: examId, userId: session.user.id, passed: false })

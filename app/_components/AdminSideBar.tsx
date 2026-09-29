@@ -31,6 +31,7 @@ const menuItems = [
   },
   { label: "Learner Management", icon: Users, href: "/admin/learners" },
   { label: "Training Materials", icon: Building2, href: "/admin/study-resources/explanations" },
+  { label: "Past Questions", icon: FileText, href: "/admin/study-resources/past-questions/generate" }, // ← new
   { label: "Course Management", icon: BookOpen, href: "/admin/courses" },
   {
     label: "Assessment Management",
