@@ -19,7 +19,7 @@ export async function grantResourceAccess({
   paymentReference,
 }: {
   userId: string;
-  resourceType: "explanation" | "exam_review";
+  resourceType: "explanation" | "past_question";
   resourceId: string;
   paymentReference: string;
 }) {
