@@ -10,6 +10,10 @@ import { StudyResourcesTabs } from "@/app/_components/StudyResourcesTabs";
 export default async function StudyResourcesPage() {
   await connectDB();
 
+  // TEMP DEBUG — remove after confirming
+const debugCount = await PastQuestionResource.countDocuments({ isPublished: true });
+console.log("PastQuestionResource published count:", debugCount);
+
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user?.id;
 
