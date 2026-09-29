@@ -86,10 +86,10 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      if (payment.type === "past_question_review") {
+      if (payment.type === "past_question") {
         await grantResourceAccess({
           userId: payment.userId.toString(),
-          resourceType: "exam_review",
+          resourceType: "past_question",
           resourceId: payment.metadata.examId,
           paymentReference: payment.providerReference,
         });
