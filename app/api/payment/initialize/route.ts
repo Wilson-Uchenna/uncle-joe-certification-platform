@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (type === "explanation" && !metadata.explanationId) {
       return NextResponse.json({ success: false, error: "explanationId is required" }, { status: 400 });
     }
-    if (type === "past_question_review" && !metadata.examId) {
+    if (type === "past_question" && !metadata.examId) {
       return NextResponse.json({ success: false, error: "examId is required" }, { status: 400 });
     }
 

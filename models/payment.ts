@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type PaymentType = 'exam' | 'bundle' | 'results' | 'explanation' | 'past_question_review';
+export type PaymentType = 'exam' | 'bundle' | 'results' | 'explanation' | 'past_question';
 export type PaymentStatus = 'pending' | 'success' | 'failed' | 'refunded';
 export type PaymentProvider = 'paystack' | 'flutterwave' | 'manual';
 
@@ -40,7 +40,7 @@ const PaymentSchema = new Schema<IPayment>({
   
   type: { 
     type: String, 
-    enum: ['exam', 'explanation', 'past_question_review', 'bundle'], 
+    enum: ['exam', 'explanation', 'past_question', 'bundle'], 
     required: true 
   },
   consumedAt: Date,
