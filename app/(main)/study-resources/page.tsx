@@ -6,9 +6,19 @@ import { hasResourceAccess } from "@/lib/resourceAccess";
 import ExplanationResource from "@/models/ExplanationResources";
 import PastQuestionResource from "@/models/PastQuestionResource";
 import { StudyResourcesTabs } from "@/app/_components/StudyResourcesTabs";
+import mongoose from "mongoose";
+
 
 export default async function StudyResourcesPage() {
   await connectDB();
+  // ...after await connectDB();
+const conn = mongoose.connection;
+const all = await PastQuestionResource.countDocuments({});
+const pub = await PastQuestionResource.countDocuments({ isPublished: true });
+const sample = await PastQuestionResource.findOne().select("isPublished").lean();
+console.log("DB:", conn.host, conn.name, "| collection:", PastQuestionResource.collection.name,
+  "| total:", all, "| published:", pub, "| sample:", JSON.stringify(sample));
+
 
   // TEMP DEBUG — remove after confirming
 const debugCount = await PastQuestionResource.countDocuments({ isPublished: true });
