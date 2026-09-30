@@ -60,7 +60,7 @@ export function StudyResourcesTabs({
             background: "none",
           }}
         >
-          Explanations
+          Tutorial Questions and Answers
         </button>
         <button
           onClick={() => setTab("past-questions")}
