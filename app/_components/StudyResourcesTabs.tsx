@@ -25,7 +25,7 @@ export function StudyResourcesTabs({
   explanations: Resource[];
   pastQuestions: Resource[];
 }) {
-  const [tab, setTab] = useState<"explanations" | "past-questions">("explanations");
+  const [tab, setTab] = useState<"Tutorial Questions and Answers" | "past-questions">("Tutorial Questions and Answers");
   const [explanations, setExplanations] = useState(initialExplanations);
   const [pastQuestions, setPastQuestions] = useState(initialPastQuestions);
 
@@ -52,11 +52,11 @@ export function StudyResourcesTabs({
 
       <div style={{ display: "flex", gap: 16, borderBottom: "1px solid #ddd", marginBottom: 20 }}>
         <button
-          onClick={() => setTab("explanations")}
+          onClick={() => setTab("Tutorial Questions and Answers")}
           style={{
             padding: "8px 4px",
-            fontWeight: tab === "explanations" ? 600 : 400,
-            borderBottom: tab === "explanations" ? "2px solid #4f46e5" : "2px solid transparent",
+            fontWeight: tab === "Tutorial Questions and Answers" ? 600 : 400,
+            borderBottom: tab === "Tutorial Questions and Answers" ? "2px solid #4f46e5" : "2px solid transparent",
             background: "none",
           }}
         >
@@ -75,7 +75,7 @@ export function StudyResourcesTabs({
         </button>
       </div>
 
-      {tab === "explanations" && (
+      {tab === "Tutorial Questions and Answers" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           {Object.entries(groupedExplanations).map(([categoryName, items]) => (
             <div key={categoryName}>
